@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "AI Trading Bot (实盘/Paper)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["main.py"],
+      "port": null
+    },
+    {
+      "name": "Backtest Runner (回测)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["run_backtest.py"],
+      "port": null
+    },
+    {
+      "name": "Train ML Model (训练模型)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["train_model.py"],
+      "port": null
+    },
+    {
+      "name": "Account Dashboard (账户仪表盘)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["show_account.py"],
+      "port": null
+    },
+    {
+      "name": "Wheel Dashboard",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["wheel_server.py"],
+      "port": 5050
+    }
+  ]
+}
