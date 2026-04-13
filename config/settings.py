@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ── Alpaca API ──────────────────────────────────────────────────────────────
-API_KEY    = os.getenv("ALPACA_API_KEY", "")
-SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "")
+API_KEY    = os.getenv("ALPACA_API_KEY", "").strip()
+SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "").strip()
 BASE_URL   = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets/v2")
 PAPER      = os.getenv("PAPER_TRADING", "true").lower() == "true"
 
