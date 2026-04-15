@@ -60,7 +60,19 @@ REPORTS_DIR  = os.path.join(BASE_DIR, "reports")
 LOGS_DIR     = os.path.join(BASE_DIR, "logs")
 
 # ── Wheel 期权策略 ───────────────────────────────────────────────────────────
-WHEEL_SYMBOL         = "TSLA"   # 标的股票
+# WHEEL_SYMBOL 从 wheel_symbol.json 动态读取（支持自动切换）
+def _load_wheel_symbol() -> str:
+    import json
+    p = os.path.join(BASE_DIR, "wheel_symbol.json")
+    if os.path.exists(p):
+        try:
+            with open(p, encoding="utf-8") as f:
+                return json.load(f).get("active_symbol", "TSLA")
+        except Exception:
+            pass
+    return "TSLA"
+
+WHEEL_SYMBOL         = _load_wheel_symbol()
 WHEEL_TARGET_DELTA   = 0.25     # 卖出期权目标 Delta 绝对值
 WHEEL_MIN_DTE        = 1        # 最短到期天数（3-day weekly）
 WHEEL_MAX_DTE        = 5        # 最长到期天数（3-day weekly）

@@ -62,6 +62,28 @@ def build_summary(event: str = "update") -> str:
     lines.append(phase_desc[phase])
     lines.append("")
 
+    # ── 每轮评估决策 ──────────────────────────────────────────────────────
+    try:
+        from strategy.wheel_evaluator import evaluate_and_maybe_plan
+        from strategy.wheel_switch import load_state
+        decision = evaluate_and_maybe_plan(
+            current_symbol=sym,
+            current_phase_is_idle=(phase == WheelPhase.IDLE),
+        )
+        state = load_state()
+        plan = state.get("plan")
+        lines.append("## Cycle Evaluation")
+        lines.append("")
+        lines.append(f"- Health Verdict: **{decision.get('health_verdict','?')}**")
+        lines.append(f"- Action: `{decision.get('action','keep')}`")
+        lines.append(f"- {decision.get('message','')}")
+        if plan:
+            lines.append(f"- 📅 **Pending Switch**: {plan['from_symbol']} → **{plan['to_symbol']}** @ ≥{plan['trigger_date']}")
+            lines.append(f"  - Reason: _{plan.get('reason','')}_")
+        lines.append("")
+    except Exception as e:
+        lines.append(f"## Cycle Evaluation\n\n⚠️ 评估失败: {e}\n")
+
     # ── 账户 ─────────────────────────────────────────────────────────────
     acct = trading.get_account()
     eq  = float(acct.equity)

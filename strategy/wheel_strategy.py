@@ -11,6 +11,11 @@ from alpaca.data.requests import OptionChainRequest
 from config import settings
 from core.alpaca_client import AlpacaClients
 from execution.option_order_manager import OptionOrderManager
+from strategy.wheel_filters import (
+    pre_open_put_checks, pre_open_call_checks, kelly_contracts,
+)
+from strategy.wheel_switch import maybe_switch, get_active_symbol
+from strategy.wheel_evaluator import evaluate_and_maybe_plan
 from loguru import logger
 
 
@@ -179,16 +184,63 @@ class WheelStrategy:
         phase, obj = self.get_phase()
         logger.info(f"── Wheel 阶段: {phase.name} ──")
 
+        is_idle = (phase == WheelPhase.IDLE)
+
+        # ── 每轮评估：检查当前标的是否该切换（STOP/CAUTION/更优候选）──
+        try:
+            decision = evaluate_and_maybe_plan(
+                current_symbol=self.symbol,
+                current_phase_is_idle=is_idle,
+            )
+            logger.info(f"📊 评估: {decision['message']}")
+            self.last_decision = decision
+        except Exception as e:
+            logger.warning(f"每轮评估失败（继续执行）: {e}")
+            self.last_decision = None
+
+        # ── 切换检查：若计划切换且当前 IDLE，则触发切换并直接返回，等下一 cron ──
+        switched = maybe_switch(current_phase_is_idle=is_idle)
+        if switched:
+            old_sym, new_sym = switched
+            logger.warning(f"🔄 已从 {old_sym} 切换到 {new_sym}，本次周期跳过，下一轮用新标的")
+            # 更新实例标的以便本轮摘要正确
+            self.symbol = new_sym
+            return
+
         if phase == WheelPhase.IDLE:
+            # ── 回测验证的过滤器：财报/MA50趋势/极端波动 ──
+            ok, reason = pre_open_put_checks(self.symbol)
+            if not ok:
+                logger.warning(f"⏸️  跳过卖 Put: {reason}")
+                return
+            if reason:
+                logger.info(f"过滤检查通过 | {reason}")
+
             result = self.select_put()
             if result:
                 sym, mid = result
                 if mid <= 0:
                     logger.warning(f"权利金 mid={mid:.2f}，价格异常，跳过")
                     return
-                self._option_mgr.sell_to_open(sym, settings.WHEEL_CONTRACTS, mid)
+
+                # Kelly 动态仓位（降低最大回撤 18pp）
+                info = _parse_symbol(sym)
+                strike = info["strike"] if info else 0
+                cash = float(self._trading.get_account().cash)
+                contracts = kelly_contracts(cash=cash, strike=strike, premium=mid)
+                logger.info(f"Kelly 仓位: {contracts} 合约 (默认 {settings.WHEEL_CONTRACTS})")
+                if contracts < 1:
+                    logger.warning("Kelly 计算结果 < 1 合约，跳过")
+                    return
+                self._option_mgr.sell_to_open(sym, contracts, mid)
 
         elif phase == WheelPhase.LONG_STOCK:
+            # Covered Call 只过滤财报（必须继续卖以回收溢价）
+            ok, reason = pre_open_call_checks(self.symbol)
+            if not ok:
+                logger.warning(f"⏸️  跳过卖 Call: {reason}")
+                return
+
             cost_basis = float(obj.avg_entry_price)
             result = self.select_call(cost_basis)
             if result:
@@ -196,7 +248,10 @@ class WheelStrategy:
                 if mid <= 0:
                     logger.warning(f"权利金 mid={mid:.2f}，价格异常，跳过")
                     return
-                self._option_mgr.sell_to_open(sym, settings.WHEEL_CONTRACTS, mid)
+                # CC 合约数 = 持股数 / 100
+                contracts = int(float(obj.qty) // 100)
+                contracts = min(contracts, settings.WHEEL_CONTRACTS * 2)
+                self._option_mgr.sell_to_open(sym, contracts, mid)
 
         elif phase in (WheelPhase.SHORT_PUT, WheelPhase.SHORT_CALL):
             logger.info("期权已开仓，持仓中，等待到期或行权...")

@@ -1,0 +1,11 @@
+{
+  "active_symbol": "TSLA",
+  "plan": {
+    "from_symbol": "TSLA",
+    "to_symbol": "MSFT",
+    "trigger_date": "2026-04-18",
+    "reason": "TSLA 高波动 3-DTE wheel 5年回测亏损，MSFT 回测年化+2.7%/MaxDD 5.4%",
+    "planned_at": "2026-04-15T12:04:33"
+  },
+  "history": []
+}
