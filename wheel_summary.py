@@ -207,6 +207,15 @@ def build_summary(event: str = "update") -> str:
             )
         lines.append("")
 
+    # ── 收盘健康检查 ──────────────────────────────────────────────────────
+    if event == "close":
+        try:
+            from wheel_health_check import run_health_check, format_markdown
+            health = run_health_check(sym)
+            lines.append(format_markdown(health))
+        except Exception as e:
+            lines.append(f"## Suitability Check\n\n❌ Health check failed: {e}\n")
+
     lines.append("---")
     lines.append("_Automated by GitHub Actions — Wheel Strategy Bot_")
 
