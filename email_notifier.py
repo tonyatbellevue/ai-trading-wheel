@@ -84,6 +84,15 @@ def send(subject: str, markdown_body: str) -> bool:
 
     except Exception as e:
         logger.error(f"邮件发送失败: {e}")
+        # Fallback: 邮件失败时，把内容打到终端，不丢消息
+        print("\n" + "=" * 70)
+        print(f"⚠️  EMAIL 发送失败，下面是本应发送的内容：")
+        print(f"    主题: {subject}")
+        print(f"    收件人: {settings.NOTIFY_EMAIL}")
+        print(f"    错误: {e}")
+        print("=" * 70)
+        print(markdown_body)
+        print("=" * 70 + "\n")
         return False
 
 

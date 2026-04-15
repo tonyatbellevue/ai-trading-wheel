@@ -60,7 +60,13 @@ def main():
         try:
             from wheel_summary import build_summary
             md = build_summary("trade")
-            # 本地 Email 通知
+            # 始终打到终端（无论 email 是否配置/成功，保证看得到）
+            print("\n" + "=" * 70)
+            print("  🔔 新交易通知")
+            print("=" * 70)
+            print(md)
+            print("=" * 70 + "\n")
+            # 本地 Email 通知（email_notifier 内部失败时也会 fallback 打到终端）
             if settings.NOTIFY_EMAIL:
                 from email_notifier import send_trade_alert
                 send_trade_alert(md)
