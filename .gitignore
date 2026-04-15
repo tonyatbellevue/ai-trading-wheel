@@ -31,6 +31,8 @@ reports/
 # 运行时生成的输出（含账户数据，不应 commit）
 summary.md
 trade.flag
+dashboard_snapshot.html
+dashboard_data.json
 
 # IDE
 .vscode/
