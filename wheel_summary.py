@@ -207,6 +207,14 @@ def build_summary(event: str = "update") -> str:
             )
         lines.append("")
 
+    # ── 市场新闻（开盘和收盘都带）─────────────────────────────────────────
+    if event in ("open", "close"):
+        try:
+            from market_news import build_market_news
+            lines.append(build_market_news())
+        except Exception as e:
+            lines.append(f"## Market News\n\n❌ News fetch failed: {e}\n")
+
     # ── 健康检查 + 候选扫描（开盘和收盘都带）───────────────────────────────
     if event in ("open", "close"):
         try:
