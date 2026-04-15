@@ -207,8 +207,8 @@ def build_summary(event: str = "update") -> str:
             )
         lines.append("")
 
-    # ── 收盘健康检查 + 候选扫描 ───────────────────────────────────────────
-    if event == "close":
+    # ── 健康检查 + 候选扫描（开盘和收盘都带）───────────────────────────────
+    if event in ("open", "close"):
         try:
             from wheel_health_check import run_health_check, format_markdown
             health = run_health_check(sym)
