@@ -73,7 +73,7 @@ def send(subject: str, markdown_body: str) -> bool:
         # HTML 正文
         msg.attach(MIMEText(_md_to_html(markdown_body), "html", "utf-8"))
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as smtp:
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as smtp:
             smtp.ehlo()
             smtp.starttls()
             smtp.login(settings.SMTP_USER, settings.SMTP_PASS)
