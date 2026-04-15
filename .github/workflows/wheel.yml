@@ -1,16 +1,18 @@
 name: TSLA Wheel Strategy
 
-# 每5分钟运行一次（周一至周五，美东时间 9:25~16:05）
-# 美东夏令时 EDT = UTC-4，所以 9:25 ET = 13:25 UTC，16:05 ET = 20:05 UTC
+# 每5分钟运行一次（周一至周五，美东时间 9:30~16:00）
+# EDT = UTC-4, 13:30~20:00 UTC
 on:
   schedule:
     - cron: "*/5 13-20 * * 1-5"
-  workflow_dispatch:   # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   run-wheel:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      issues: write
 
     steps:
       - name: Checkout code
@@ -26,9 +28,30 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run Wheel cycle
+        id: wheel
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           ALPACA_BASE_URL: "https://paper-api.alpaca.markets/v2"
           PAPER_TRADING: "true"
         run: python wheel_once.py
+
+      - name: Check for trade
+        id: check
+        run: |
+          if [ -f trade.flag ]; then
+            echo "traded=true" >> $GITHUB_OUTPUT
+            echo "title=[Trade] TSLA Wheel — $(date -u +%Y-%m-%d_%H:%M)_UTC" >> $GITHUB_OUTPUT
+          else
+            echo "traded=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create trade notification issue
+        if: steps.check.outputs.traded == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: ${{ steps.check.outputs.title }}
+          content-filepath: ./summary.md
+          labels: |
+            wheel-trade
+            automated

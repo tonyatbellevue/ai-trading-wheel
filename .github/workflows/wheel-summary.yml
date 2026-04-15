@@ -1,0 +1,62 @@
+name: TSLA Wheel Daily Summary
+
+# 市场开盘 (9:30 AM ET = 13:30 UTC) 和收盘 (4:05 PM ET = 20:05 UTC)
+# 周一至周五
+on:
+  schedule:
+    - cron: "30 13 * * 1-5"   # Market Open
+    - cron: "5 20 * * 1-5"    # Market Close
+  workflow_dispatch:          # 允许手动触发
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      issues: write   # 需要创建 Issue 发通知
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine event type
+        id: event
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" -lt "16" ]; then
+            echo "event=open" >> $GITHUB_OUTPUT
+            echo "title=[Open] TSLA Wheel — $(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          else
+            echo "event=close" >> $GITHUB_OUTPUT
+            echo "title=[Close] TSLA Wheel — $(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate summary
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL: "https://paper-api.alpaca.markets/v2"
+          PAPER_TRADING: "true"
+        run: python wheel_summary.py ${{ steps.event.outputs.event }}
+
+      - name: Append to job summary
+        run: |
+          cat summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Create issue notification
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: ${{ steps.event.outputs.title }}
+          content-filepath: ./summary.md
+          labels: |
+            wheel-summary
+            automated

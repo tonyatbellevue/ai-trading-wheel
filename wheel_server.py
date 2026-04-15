@@ -221,10 +221,16 @@ def api_data():
         return jsonify({"error": str(e)}), 500
 
 
+import time as _time
+_cache = {"data": None, "ts": 0}
+
 @app.route("/")
 def index():
-    d = _get_dashboard_data()
-    return _render_html(d)
+    now = _time.time()
+    if _cache["data"] is None or (now - _cache["ts"]) > 20:
+        _cache["data"] = _get_dashboard_data()
+        _cache["ts"] = now
+    return _render_html(_cache["data"])
 
 
 def _render_html(d: dict) -> str:
@@ -233,7 +239,7 @@ def _render_html(d: dict) -> str:
     et_time   = mc.get("timestamp", "")[:19]
     next_close = mc.get("next_close", "")
     next_open  = mc.get("next_open", "")
-    refresh_sec = 5 if is_open else 0
+    refresh_sec = 0  # 禁用 auto-refresh，手动刷新即可
     meta_refresh = f'<meta http-equiv="refresh" content="{refresh_sec}">' if refresh_sec else ""
 
     s       = d.get("summary", {})

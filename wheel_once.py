@@ -2,13 +2,19 @@
 
 每次运行：检查市场状态 → 检查 Wheel 阶段 → 执行一次 run_cycle() → 退出
 由 GitHub Actions 每 5 分钟调用一次，无需本机保持开启。
+
+输出变量：
+- 如果下单，会写 trade.flag 文件 + 写 summary.md 供工作流发 Issue
 """
 import sys
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from core.alpaca_client import AlpacaClients
-from strategy.wheel_strategy import WheelStrategy
+from strategy.wheel_strategy import WheelStrategy, WheelPhase
+from execution.option_order_manager import OptionOrderManager
+from config import settings
 from loguru import logger
 
 ET = ZoneInfo("America/New_York")
@@ -31,12 +37,42 @@ def main():
         sys.exit(0)
 
     logger.info("市场开盘，执行 Wheel 策略检查...")
+
+    # 记录执行前的订单数，用于检测是否新下单
+    opt_mgr = OptionOrderManager()
+    before_orders = {o.id for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)}
+
     try:
-        WheelStrategy().run_cycle()
+        strategy = WheelStrategy()
+        phase_before, _ = strategy.get_phase()
+        strategy.run_cycle()
         logger.info("run_cycle() 完成")
     except Exception as e:
         logger.error(f"run_cycle() 异常: {e}")
         sys.exit(1)
+
+    # 检测是否有新下单
+    after_orders = {o.id for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)}
+    new_orders = after_orders - before_orders
+
+    if new_orders:
+        logger.info(f"检测到 {len(new_orders)} 个新下单 → 生成交易通知")
+        # 生成 summary 供工作流使用
+        try:
+            from wheel_summary import build_summary
+            md = build_summary("trade")
+            with open("summary.md", "w", encoding="utf-8") as f:
+                f.write(md)
+            # 写标记文件
+            with open("trade.flag", "w") as f:
+                f.write("1")
+            # 设置 GitHub Actions 输出
+            gh_out = os.environ.get("GITHUB_OUTPUT")
+            if gh_out:
+                with open(gh_out, "a") as f:
+                    f.write("traded=true\n")
+        except Exception as e:
+            logger.error(f"生成通知失败: {e}")
 
 
 if __name__ == "__main__":
