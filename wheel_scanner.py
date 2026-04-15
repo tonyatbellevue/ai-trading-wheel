@@ -302,6 +302,223 @@ def format_csp_md(candidates: list[dict]) -> str:
     return "\n".join(lines)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# LEAPS 长期看涨期权扫描器 (6-12 月 Buy Call)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# 优质公司池 — 长期看涨适合买入 LEAPS Call
+LEAPS_UNIVERSE = [
+    # Mega-tech
+    "NVDA", "MSFT", "AAPL", "GOOGL", "META", "AMZN",
+    # AI & 半导体
+    "AMD", "AVGO", "TSM", "ASML", "MU",
+    # 高增长
+    "TSLA", "NFLX", "COIN", "PLTR", "CRWD",
+    # 优质消费/金融
+    "V", "MA", "COST", "WMT", "JPM",
+]
+
+
+def _get_trend_metrics(sym: str, stk_data) -> Optional[dict]:
+    """获取趋势指标：20日 / 60日 / 200日表现"""
+    try:
+        bars = stk_data.get_stock_bars(StockBarsRequest(
+            symbol_or_symbols=sym,
+            timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=260),
+        ))[sym]
+        if len(bars) < 60:
+            return None
+        closes = [float(b.close) for b in bars]
+        current = closes[-1]
+        perf_20  = (current - closes[-20]) / closes[-20] if len(closes) >= 20 else 0
+        perf_60  = (current - closes[-60]) / closes[-60] if len(closes) >= 60 else 0
+        perf_200 = (current - closes[-200]) / closes[-200] if len(closes) >= 200 else 0
+        # 200日均线
+        ma200 = sum(closes[-200:]) / 200 if len(closes) >= 200 else sum(closes) / len(closes)
+        above_ma200 = (current - ma200) / ma200
+        return {
+            "price": current,
+            "perf_20d": perf_20,
+            "perf_60d": perf_60,
+            "perf_200d": perf_200,
+            "ma200": ma200,
+            "above_ma200": above_ma200,
+        }
+    except Exception:
+        return None
+
+
+def _find_best_leaps_call(sym: str, opt_data, dte_min: int, dte_max: int,
+                           target_delta: float = 0.70) -> Optional[dict]:
+    """找 LEAPS Call（Delta ≈ 0.70 为 stock replacement 策略）"""
+    today = date.today()
+    try:
+        chain = opt_data.get_option_chain(OptionChainRequest(
+            underlying_symbol=sym,
+            expiration_date_gte=today + timedelta(days=dte_min),
+            expiration_date_lte=today + timedelta(days=dte_max),
+            type="call",
+        ))
+    except Exception:
+        return None
+
+    best, best_diff = None, float("inf")
+    for s, snap in chain.items():
+        if not snap.greeks or snap.greeks.delta is None:
+            continue
+        if not snap.latest_quote:
+            continue
+        bid = float(snap.latest_quote.bid_price or 0)
+        ask = float(snap.latest_quote.ask_price or 0)
+        if bid <= 0 or ask <= 0:
+            continue
+        diff = abs(snap.greeks.delta - target_delta)
+        if diff < best_diff:
+            best_diff = diff
+            best = (s, snap, bid, ask)
+
+    if not best:
+        return None
+
+    s, snap, bid, ask = best
+    m = re.match(rf"^{sym}(\d{{6}})C(\d{{8}})$", s)
+    if not m:
+        return None
+    date_str, strike_str = m.groups()
+    expiry = date(2000 + int(date_str[:2]), int(date_str[2:4]), int(date_str[4:]))
+    strike = int(strike_str) / 1000.0
+    mid = round((bid + ask) / 2, 2)
+    dte = (expiry - today).days
+
+    return {
+        "symbol": s,
+        "strike": strike,
+        "expiry": expiry,
+        "dte": dte,
+        "bid": bid,
+        "ask": ask,
+        "mid": mid,
+        "delta": snap.greeks.delta,
+        "theta": snap.greeks.theta,
+        "iv": snap.implied_volatility or 0,
+    }
+
+
+def _score_leaps(trend: dict, call: dict) -> dict:
+    """LEAPS 评分：趋势强 + IV 低 + 杠杆高"""
+    price = trend["price"]
+    strike = call["strike"]
+    mid = call["mid"]
+    delta = call["delta"]
+    iv = call["iv"]
+
+    # 有效杠杆 = (Delta × Price) / Premium
+    eff_leverage = (delta * price) / mid if mid > 0 else 0
+    breakeven = strike + mid
+    breakeven_move = (breakeven - price) / price
+
+    # 1. 趋势分（20日+60日+200日综合）
+    trend_raw = (trend["perf_20d"] * 2 + trend["perf_60d"] + trend["perf_200d"]) / 4
+    trend_score = max(0, min(100, 50 + trend_raw * 200))  # 趋势+10% → 70分
+
+    # 2. IV 分（IV 越低越好，买方喜欢便宜的）
+    if iv < 0.30:
+        iv_score = 100
+    elif iv < 0.50:
+        iv_score = 100 - (iv - 0.30) / 0.20 * 30
+    elif iv < 0.80:
+        iv_score = 70 - (iv - 0.50) / 0.30 * 50
+    else:
+        iv_score = max(0, 20 - (iv - 0.80) / 0.20 * 20)
+
+    # 3. 杠杆分（目标 2-4x）
+    if eff_leverage < 1.5:
+        leverage_score = 30
+    elif eff_leverage <= 3.0:
+        leverage_score = 100
+    elif eff_leverage <= 5.0:
+        leverage_score = 100 - (eff_leverage - 3.0) / 2.0 * 30
+    else:
+        leverage_score = max(0, 70 - (eff_leverage - 5.0) * 10)
+
+    # 4. 200日均线之上加分
+    ma_score = 100 if trend["above_ma200"] > 0 else 40
+
+    total = (
+        trend_score * 0.35 +
+        iv_score * 0.25 +
+        leverage_score * 0.25 +
+        ma_score * 0.15
+    )
+
+    return {
+        "total_score": round(total, 1),
+        "trend_score": round(trend_score, 1),
+        "iv_score": round(iv_score, 1),
+        "leverage_score": round(leverage_score, 1),
+        "ma_score": ma_score,
+        "eff_leverage": eff_leverage,
+        "breakeven": breakeven,
+        "breakeven_move": breakeven_move,
+    }
+
+
+def scan_leaps_candidates(top_n: int = 3, dte_min: int = 180, dte_max: int = 365) -> list[dict]:
+    """扫描 LEAPS (6-12 月) Buy Call 候选"""
+    stk_data = StockHistoricalDataClient(api_key=settings.API_KEY, secret_key=settings.SECRET_KEY)
+    opt_data = OptionHistoricalDataClient(api_key=settings.API_KEY, secret_key=settings.SECRET_KEY)
+
+    results = []
+    for sym in LEAPS_UNIVERSE:
+        trend = _get_trend_metrics(sym, stk_data)
+        if not trend:
+            continue
+        call = _find_best_leaps_call(sym, opt_data, dte_min, dte_max, target_delta=0.70)
+        if not call:
+            continue
+        score = _score_leaps(trend, call)
+        results.append({
+            "symbol": sym,
+            "trend": trend,
+            "call": call,
+            "score": score,
+        })
+
+    results.sort(key=lambda r: r["score"]["total_score"], reverse=True)
+    return results[:top_n]
+
+
+def format_leaps_md(candidates: list[dict]) -> str:
+    """格式化 LEAPS 推荐"""
+    lines = []
+    lines.append("## Top LEAPS Buy Call Candidates (6-12 months)")
+    lines.append("")
+    lines.append("_Long-term bullish plays — buy Call with Delta ≈ 0.70 for stock replacement strategy_")
+    lines.append("")
+
+    if not candidates:
+        lines.append("_No qualifying candidates found._")
+        return "\n".join(lines)
+
+    lines.append("| Symbol | Price | Strike | Expiry | DTE | Premium | Δ | IV | Leverage | Breakeven | 6M Trend | Score |")
+    lines.append("|--------|-------|--------|--------|-----|---------|---|-----|----------|-----------|----------|-------|")
+    for r in candidates:
+        s = r["score"]
+        c = r["call"]
+        t = r["trend"]
+        lines.append(
+            f"| **{r['symbol']}** | ${t['price']:.2f} | ${c['strike']:.0f} | "
+            f"{c['expiry']} | {c['dte']}d | ${c['mid']:.2f} | "
+            f"{c['delta']:+.2f} | {c['iv']:.0%} | "
+            f"{s['eff_leverage']:.1f}x | ${s['breakeven']:.2f} ({s['breakeven_move']:+.1%}) | "
+            f"{t['perf_200d']:+.1%} | **{s['total_score']}** |"
+        )
+    lines.append("")
+    lines.append("_Leverage = (Delta × Price) ÷ Premium — higher = more bang per dollar_")
+    return "\n".join(lines)
+
+
 if __name__ == "__main__":
     import sys
     sys.stdout.reconfigure(encoding="utf-8")
@@ -313,3 +530,7 @@ if __name__ == "__main__":
     print("Scanning CSP candidates...")
     csp = scan_csp_candidates(top_n=3)
     print(format_csp_md(csp))
+    print()
+    print("Scanning LEAPS candidates...")
+    leaps = scan_leaps_candidates(top_n=3)
+    print(format_leaps_md(leaps))

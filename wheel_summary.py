@@ -218,13 +218,15 @@ def build_summary(event: str = "update") -> str:
 
         try:
             from wheel_scanner import (
-                scan_wheel_alternatives, scan_csp_candidates,
-                format_wheel_alternatives_md, format_csp_md,
+                scan_wheel_alternatives, scan_csp_candidates, scan_leaps_candidates,
+                format_wheel_alternatives_md, format_csp_md, format_leaps_md,
             )
             alt = scan_wheel_alternatives(exclude=sym, top_n=2)
             lines.append(format_wheel_alternatives_md(alt))
             csp = scan_csp_candidates(top_n=3)
             lines.append(format_csp_md(csp))
+            leaps = scan_leaps_candidates(top_n=3)
+            lines.append(format_leaps_md(leaps))
         except Exception as e:
             lines.append(f"## Candidate Scan\n\n❌ Scan failed: {e}\n")
 
