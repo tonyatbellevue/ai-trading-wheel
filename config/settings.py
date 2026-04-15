@@ -78,3 +78,15 @@ WHEEL_MIN_DTE        = 1        # 最短到期天数（3-day weekly）
 WHEEL_MAX_DTE        = 5        # 最长到期天数（3-day weekly）
 WHEEL_CONTRACTS      = 2        # 每次卖出合约数（受购买力限制）
 WHEEL_CHECK_INTERVAL = 300      # 持续监控检查间隔（秒）
+
+# ── Claude AI 分析（可选）───────────────────────────────────────────────────
+# 去 https://console.anthropic.com/settings/keys 获取
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
+
+# ── Email 通知（可选）──────────────────────────────────────────────────────
+# Gmail 需要应用专用密码：Google账户 → 安全性 → 两步验证 → 应用专用密码
+SMTP_HOST    = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT    = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER    = os.getenv("SMTP_USER", "").strip()
+SMTP_PASS    = os.getenv("SMTP_PASS", "").strip()
+NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", "").strip()

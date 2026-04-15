@@ -57,16 +57,14 @@ def main():
 
     if new_orders:
         logger.info(f"检测到 {len(new_orders)} 个新下单 → 生成交易通知")
-        # 生成 summary 供工作流使用
         try:
             from wheel_summary import build_summary
             md = build_summary("trade")
-            with open("summary.md", "w", encoding="utf-8") as f:
-                f.write(md)
-            # 写标记文件
-            with open("trade.flag", "w") as f:
-                f.write("1")
-            # 设置 GitHub Actions 输出
+            # 本地 Email 通知
+            if settings.NOTIFY_EMAIL:
+                from email_notifier import send_trade_alert
+                send_trade_alert(md)
+            # GitHub Actions 兼容（本地跑时 GITHUB_OUTPUT 不存在，自动跳过）
             gh_out = os.environ.get("GITHUB_OUTPUT")
             if gh_out:
                 with open(gh_out, "a") as f:
