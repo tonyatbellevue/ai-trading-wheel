@@ -261,9 +261,19 @@ def build_summary(event: str = "update") -> str:
             lines.append(f"## Candidate Scan\n\n❌ Scan failed: {e}\n")
 
     lines.append("---")
-    lines.append("_Automated by GitHub Actions — Wheel Strategy Bot_")
+    lines.append("_Automated by Wheel Strategy Bot_")
 
-    return "\n".join(lines)
+    md = "\n".join(lines)
+
+    # Claude AI 分析（ANTHROPIC_API_KEY 有值时追加，否则跳过）
+    if settings.ANTHROPIC_API_KEY:
+        try:
+            from claude_analyst import analyze
+            md += analyze(md)
+        except Exception as e:
+            pass
+
+    return md
 
 
 if __name__ == "__main__":
