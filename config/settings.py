@@ -126,7 +126,9 @@ WHEEL_SYMBOL         = _load_wheel_symbol()
 WHEEL_TARGET_DELTA   = 0.25     # 卖出期权目标 Delta 绝对值
 WHEEL_MIN_DTE        = 1        # 最短到期天数（3-day weekly）
 WHEEL_MAX_DTE        = 5        # 最长到期天数（3-day weekly）
-WHEEL_CONTRACTS      = 2        # 每次卖出合约数（受购买力限制）
+WHEEL_CONTRACTS      = 2        # 遗留字段：仅供 run_wheel_*.py 启动日志/Web Dashboard 展示
+                                # 实际合约数完全由 kelly_contracts() 动态算（4 层资金防护），
+                                # Sell Put 跟资金走，Sell Call 跟持股走（持 N 股 → 卖 N/100 张）
 WHEEL_CHECK_INTERVAL = 300      # 持续监控检查间隔（秒）
 
 # ── 资金安全缓冲（防止爆仓/平仓）──
@@ -134,3 +136,5 @@ WHEEL_CHECK_INTERVAL = 300      # 持续监控检查间隔（秒）
 CASH_BUFFER_PCT          = 0.10     # 权益的 10% 必须保留为现金，应对黑天鹅
 MAX_SINGLE_POSITION_PCT  = 0.70     # 单个新仓位不超过权益 70%（防止过度集中）
 MAX_TOTAL_EXPOSURE_PCT   = 0.90     # 所有 Put 抵押之和不超过权益 90%（防爆仓）
+MAX_SECTOR_EXPOSURE_PCT  = 0.60     # 同一 sector 所有 Put 抵押不超过权益 60%（防 sector beta）
+MAX_CONSECUTIVE_LOSSES   = 3        # 连亏 N 周期 → 强制换标的（stop-loss 逃生）

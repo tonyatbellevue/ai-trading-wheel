@@ -167,6 +167,20 @@ class HealthCheck:
         except Exception as e:
             self.add("shadow_rotation", "WARN", f"shadow 跳过: {e}")
 
+    def run_assignment_postmortem(self):
+        """扫最近 14 天的 assignment/expiration，为每个新事件生成复盘报告"""
+        try:
+            from metrics.assignment_postmortem import detect_and_analyze
+            new_reports = detect_and_analyze(since_days=14)
+            if new_reports:
+                names = ", ".join(p.name for p in new_reports[:3])
+                self.add("postmortem", "PASS",
+                         f"{len(new_reports)} 份新复盘已生成: {names}")
+            else:
+                self.add("postmortem", "PASS", "无新 assignment/expiration 事件")
+        except Exception as e:
+            self.add("postmortem", "WARN", f"复盘生成失败: {e}")
+
     def run_all(self):
         self.check_env()
         self.check_alpaca_api()
@@ -176,6 +190,7 @@ class HealthCheck:
         self.check_failed_email_queue()
         self.check_wheel_state()
         self.run_shadow_rotation()
+        self.run_assignment_postmortem()
 
     def format_report(self) -> str:
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

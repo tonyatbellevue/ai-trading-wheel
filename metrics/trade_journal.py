@@ -197,6 +197,138 @@ def read_journal() -> list[dict]:
         return list(csv.DictReader(f))
 
 
+def delta_calibration_report(lookback_days: int = 180) -> dict:
+    """Compare what the model **assumed** (delta → P(assignment)) with what
+    actually happened. If we targeted 0.25-delta puts and our real OTM rate
+    over the past N days is 82%, then the market was pricing 32% assignment
+    but we only saw 18% — we can afford to sell closer to the money (more
+    premium) without increasing real risk. Inverse also holds.
+
+    Returns:
+        {
+            "lookback_days": int,
+            "total_closed": int,
+            "by_delta_bucket": {
+                "0.10-0.15": {"assumed_wr": 0.85, "actual_wr": 0.XX, "n": N},
+                "0.15-0.20": {...},
+                "0.20-0.25": {...},
+                "0.25-0.30": {...},
+            },
+            "overall_assumed_wr": float,
+            "overall_actual_wr": float,
+            "delta_drift": float,         # + means we're safer than delta said
+            "recommendation": str,
+        }
+    """
+    from datetime import timedelta
+    cutoff = datetime.now() - timedelta(days=lookback_days)
+    rows = read_journal()
+
+    # Pair each entry with its matching exit (by contract symbol)
+    entries = {r["contract"]: r for r in rows
+               if r["event_type"] == "entry" and r.get("action") == "sell_put"
+               and datetime.fromisoformat(r["event_at"]) >= cutoff}
+    exits = {r["contract"]: r for r in rows
+             if r["event_type"] == "exit" and r["contract"] in entries}
+
+    buckets = {
+        "0.10-0.15": {"otm_wins": 0, "total": 0, "assumed_wr": 0.875},
+        "0.15-0.20": {"otm_wins": 0, "total": 0, "assumed_wr": 0.825},
+        "0.20-0.25": {"otm_wins": 0, "total": 0, "assumed_wr": 0.775},
+        "0.25-0.30": {"otm_wins": 0, "total": 0, "assumed_wr": 0.725},
+        "0.30+":     {"otm_wins": 0, "total": 0, "assumed_wr": 0.65},
+    }
+
+    def bucket_for(delta: float) -> str | None:
+        d = abs(delta)
+        if 0.10 <= d < 0.15: return "0.10-0.15"
+        if 0.15 <= d < 0.20: return "0.15-0.20"
+        if 0.20 <= d < 0.25: return "0.20-0.25"
+        if 0.25 <= d < 0.30: return "0.25-0.30"
+        if d >= 0.30:        return "0.30+"
+        return None
+
+    all_wins = 0
+    all_total = 0
+    for contract, entry in entries.items():
+        exit_row = exits.get(contract)
+        if not exit_row:
+            continue   # still open
+        try:
+            delta = float(entry.get("delta") or 0)
+        except (ValueError, TypeError):
+            continue
+        b = bucket_for(delta)
+        if not b:
+            continue
+        buckets[b]["total"] += 1
+        all_total += 1
+        if exit_row.get("exit_reason") in ("expired_otm", "btc_50pct_profit"):
+            buckets[b]["otm_wins"] += 1
+            all_wins += 1
+
+    # Fill actual win rates
+    for b in buckets.values():
+        b["actual_wr"] = (b["otm_wins"] / b["total"]) if b["total"] else None
+
+    overall_assumed = 0.75        # implied by target_delta = 0.25
+    overall_actual = (all_wins / all_total) if all_total else None
+    drift = (overall_actual - overall_assumed) if overall_actual is not None else 0
+
+    if all_total < 10:
+        rec = f"样本仅 {all_total} 笔，至少 10 笔后再做推断"
+    elif drift > 0.05:
+        rec = (f"真实胜率 {overall_actual:.0%} > 假设 {overall_assumed:.0%}；"
+               f"delta 可加激进到 0.30 多拿权利金（回测后再上）")
+    elif drift < -0.05:
+        rec = (f"真实胜率 {overall_actual:.0%} < 假设 {overall_assumed:.0%}；"
+               f"delta 降到 0.15 收紧风险")
+    else:
+        rec = "真实胜率与假设吻合，保持当前 delta 设定"
+
+    return {
+        "lookback_days": lookback_days,
+        "total_closed": all_total,
+        "by_delta_bucket": buckets,
+        "overall_assumed_wr": overall_assumed,
+        "overall_actual_wr": overall_actual,
+        "delta_drift": drift,
+        "recommendation": rec,
+    }
+
+
+def format_delta_calibration_md(lookback_days: int = 180) -> str:
+    r = delta_calibration_report(lookback_days)
+    lines = [f"## 📏 Delta 胜率校准 (最近 {lookback_days} 天)", ""]
+    n = r["total_closed"]
+    if n == 0:
+        lines.append("_没有已平仓的 put 交易，无法校准。_")
+        return "\n".join(lines)
+
+    actual = r["overall_actual_wr"]
+    assumed = r["overall_assumed_wr"]
+    drift = r["delta_drift"]
+
+    lines.append(f"- 样本: **{n}** 笔已平仓 put")
+    lines.append(f"- Delta 0.25 假设胜率: **{assumed:.0%}**")
+    lines.append(f"- 真实 OTM 胜率:       **{actual:.0%}**" if actual is not None else "- 真实胜率: n/a")
+    if actual is not None:
+        arrow = "↑" if drift > 0 else ("↓" if drift < 0 else "=")
+        lines.append(f"- 偏离:                {arrow} {drift:+.0%}")
+    lines.append("")
+
+    lines.append("| Delta 区间 | 假设胜率 | 真实胜率 | 样本 |")
+    lines.append("|---|---|---|---|")
+    for b_name, b in r["by_delta_bucket"].items():
+        actual_wr = b["actual_wr"]
+        actual_str = f"{actual_wr:.0%}" if actual_wr is not None else "—"
+        lines.append(f"| {b_name} | {b['assumed_wr']:.0%} | {actual_str} | {b['total']} |")
+    lines.append("")
+    lines.append(f"**建议**: {r['recommendation']}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def filter_contribution_analysis(days: int = 30) -> dict:
     """分析每个过滤器的贡献：跳过的次数 + 通过后的胜率
 

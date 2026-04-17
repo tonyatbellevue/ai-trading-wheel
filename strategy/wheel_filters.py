@@ -112,6 +112,8 @@ def kelly_contracts(
     max_single_position_pct: float = None,
     existing_put_collateral: float = 0.0,
     max_total_exposure_pct: float = None,
+    same_sector_collateral: float = 0.0,
+    max_sector_exposure_pct: float = None,
 ) -> int:
     """Resource-driven max safe contracts for a cash-secured put.
 
@@ -142,6 +144,8 @@ def kelly_contracts(
         max_single_position_pct = getattr(settings, "MAX_SINGLE_POSITION_PCT", 0.70)
     if max_total_exposure_pct is None:
         max_total_exposure_pct = getattr(settings, "MAX_TOTAL_EXPOSURE_PCT", 0.90)
+    if max_sector_exposure_pct is None:
+        max_sector_exposure_pct = getattr(settings, "MAX_SECTOR_EXPOSURE_PCT", 0.60)
     if equity is None:
         equity = max(cash, buying_power)
 
@@ -158,8 +162,13 @@ def kelly_contracts(
     total_exposure_cap = equity * max_total_exposure_pct
     remaining_exposure = total_exposure_cap - existing_put_collateral
 
+    # ── 层 5（新）：sector 剩余空间 ──
+    sector_cap = equity * max_sector_exposure_pct
+    remaining_sector = sector_cap - same_sector_collateral
+
     # 取最严格的限制
-    effective_available = min(available_bp, single_position_cap, remaining_exposure)
+    effective_available = min(available_bp, single_position_cap,
+                               remaining_exposure, remaining_sector)
 
     if effective_available < per_contract_cash:
         logger.warning(
@@ -168,6 +177,7 @@ def kelly_contracts(
             f"\n   层1 BP-缓冲: ${available_bp:,.0f}"
             f"\n   层2 单仓上限(权益{max_single_position_pct:.0%}): ${single_position_cap:,.0f}"
             f"\n   层3 总敞口剩余(权益{max_total_exposure_pct:.0%} - 现有持仓 ${existing_put_collateral:,.0f}): ${remaining_exposure:,.0f}"
+            f"\n   层5 sector 剩余(权益{max_sector_exposure_pct:.0%} - 同 sector 持仓 ${same_sector_collateral:,.0f}): ${remaining_sector:,.0f}"
             f"\n   → 实际可用: ${effective_available:,.0f}"
         )
         return 0
@@ -215,15 +225,47 @@ def check_buying_power_sufficient(
     return True, f"BP OK: 需 ${required:,.0f}, 可用 ${available:,.0f}"
 
 
+def check_spy_trend(window: int = 200) -> tuple[bool, str]:
+    """Market-wide systemic-risk filter: block new CSPs when SPY is below
+    its 200-day MA. A broken 200-MA historically precedes every meaningful
+    bear phase since 2000; selling puts into that tape is a known way to
+    get multiple symbols assigned simultaneously.
+
+    Returns (ok_to_sell, message). Fail-open on API errors.
+    """
+    try:
+        client = _stk_client()
+        bars = client.get_stock_bars(StockBarsRequest(
+            symbol_or_symbols="SPY",
+            timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=int(window * 1.6)),
+        ))["SPY"]
+        closes = [float(b.close) for b in bars][-window:]
+        if len(closes) < window // 2:
+            return True, ""    # not enough history, let it pass
+        ma = mean(closes)
+        spot = closes[-1]
+        if spot < ma:
+            return False, f"SPY ${spot:.2f} < MA{window} ${ma:.2f} (市场破位)"
+        return True, f"SPY=${spot:.2f} > MA{window}=${ma:.2f}"
+    except Exception as e:
+        logger.warning(f"SPY trend 检查失败: {e}")
+        return True, ""
+
+
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     """卖 Put（CSP）前的综合检查 — 组合所有回测验证有效的过滤器
 
     返回 (是否可开仓, 说明)
+
+    Order matters: SPY market filter first so we fail fast on systemic
+    bear tape before spending quotas on per-symbol API calls.
     """
     checks = [
-        ("earnings", check_earnings(symbol)),
-        ("ma_trend", check_ma_trend(symbol)),
-        ("rv_cap", check_realized_vol(symbol)),
+        ("spy_market", check_spy_trend()),      # new in v4: market-wide gate
+        ("earnings",   check_earnings(symbol)),
+        ("ma_trend",   check_ma_trend(symbol)),
+        ("rv_cap",     check_realized_vol(symbol)),
     ]
     reasons = []
     for name, (ok, msg) in checks:
