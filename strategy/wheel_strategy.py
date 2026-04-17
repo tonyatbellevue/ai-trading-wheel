@@ -87,7 +87,17 @@ class WheelStrategy:
         """If a short option has decayed to ≤ (1 - threshold) × entry premium,
         buy to close. Standard wheel convention at 50 %.
 
-        Returns True if BTC was placed, False otherwise.
+        Returns True if BTC order is in flight (new or already pending),
+        False when we decided not to close / not eligible.
+
+        Safety:
+         - Skips if there's already an open BTC order on this contract
+           (idempotent across 5-min cron re-runs).
+         - Uses a limit wide enough to actually fill on cheap options
+           (for < $0.10, anchor at current + $0.02; else 1.05×).
+         - Does NOT log an exit here — let the next run_cycle that sees
+           the position actually gone log the exit uniformly (same path
+           as assignment/expiration).
         """
         try:
             qty = float(pos.qty)
@@ -101,19 +111,31 @@ class WheelStrategy:
             if profit_pct < profit_threshold:
                 return False
 
+            # Idempotency: is a BTC already open on this contract?
+            try:
+                open_orders = self._option_mgr.get_open_option_orders(self.symbol)
+                for o in open_orders:
+                    if o.symbol == pos.symbol and str(o.side).endswith("BUY"):
+                        logger.info(
+                            f"⏳ BTC 已挂单: {pos.symbol} (order={o.id}), 等成交"
+                        )
+                        return True
+            except Exception as e:
+                logger.debug(f"开放订单检查失败: {e}")
+                # fall through — we'd rather risk a duplicate order than
+                # never close, and Alpaca rejects true duplicates by id
+
             close_qty = int(abs(qty))
-            # Pay a little over the mid to actually get filled
-            limit = round(current * 1.05, 2) or 0.01
+            # Pay a little over the bid/current to actually get filled.
+            # For very cheap options (< $0.10) a flat +$0.02 wins over
+            # percentage (which rounds to same cent).
+            limit = max(round(current * 1.05, 2), current + 0.02)
+            limit = max(limit, 0.01)
             logger.info(
                 f"💰 50%-profit BTC 触发: {pos.symbol} 入场 ${entry:.2f} → "
                 f"现价 ${current:.2f} ({profit_pct:.0%} 已实现), 挂 BTC @ ${limit:.2f}"
             )
             self._option_mgr.buy_to_close(pos.symbol, close_qty, limit)
-            _safe_journal("log_exit",
-                          symbol=self.symbol, contract=pos.symbol, qty=close_qty,
-                          pnl=(entry - current) * 100 * close_qty,
-                          exit_reason="btc_50pct_profit",
-                          notes=f"entry={entry:.2f} current={current:.2f}")
             return True
         except Exception as e:
             logger.warning(f"BTC 尝试失败（继续持有）: {e}")
@@ -182,8 +204,8 @@ class WheelStrategy:
             logger.error(f"获取期权链失败: {e}")
             return {}
 
-    def select_put(self) -> Optional[tuple[str, float]]:
-        """筛选 delta ≈ -WHEEL_TARGET_DELTA 的 Put，返回 (symbol, mid_price)"""
+    def select_put(self) -> Optional[tuple[str, float, float]]:
+        """筛选 delta ≈ -WHEEL_TARGET_DELTA 的 Put，返回 (symbol, mid_price, delta)."""
         chain = self._fetch_chain("put")
         target = -settings.WHEEL_TARGET_DELTA
         best_sym, best_snap, best_diff = None, None, float("inf")
@@ -206,15 +228,16 @@ class WheelStrategy:
         bid = float(best_snap.latest_quote.bid_price or 0)
         ask = float(best_snap.latest_quote.ask_price or 0)
         mid = round((bid + ask) / 2, 2)
+        delta = float(best_snap.greeks.delta)
         info = _parse_symbol(best_sym)
         logger.info(
             f"选定 Put: {best_sym} | 执行价={info['strike']:.2f} "
-            f"到期={info['expiry']} Δ={best_snap.greeks.delta:.3f} mid={mid:.2f}"
+            f"到期={info['expiry']} Δ={delta:.3f} mid={mid:.2f}"
         )
-        return best_sym, mid
+        return best_sym, mid, delta
 
-    def select_call(self, cost_basis: float) -> Optional[tuple[str, float]]:
-        """筛选 delta ≈ +WHEEL_TARGET_DELTA 且执行价 ≥ cost_basis 的 Call"""
+    def select_call(self, cost_basis: float) -> Optional[tuple[str, float, float]]:
+        """筛选 delta ≈ +WHEEL_TARGET_DELTA 且执行价 ≥ cost_basis 的 Call，返回 (symbol, mid, delta)."""
         chain = self._fetch_chain("call")
         target = settings.WHEEL_TARGET_DELTA
         best_sym, best_snap, best_diff = None, None, float("inf")
@@ -240,12 +263,13 @@ class WheelStrategy:
         bid = float(best_snap.latest_quote.bid_price or 0)
         ask = float(best_snap.latest_quote.ask_price or 0)
         mid = round((bid + ask) / 2, 2)
+        delta = float(best_snap.greeks.delta)
         info = _parse_symbol(best_sym)
         logger.info(
             f"选定 Call: {best_sym} | 执行价={info['strike']:.2f} "
-            f"到期={info['expiry']} Δ={best_snap.greeks.delta:.3f} mid={mid:.2f}"
+            f"到期={info['expiry']} Δ={delta:.3f} mid={mid:.2f}"
         )
-        return best_sym, mid
+        return best_sym, mid, delta
 
     # ── 主循环 ─────────────────────────────────────────────────────────────────
 
@@ -294,7 +318,7 @@ class WheelStrategy:
 
             result = self.select_put()
             if result:
-                sym, mid = result
+                sym, mid, delta = result
                 if mid <= 0:
                     logger.warning(f"权利金 mid={mid:.2f}，价格异常，跳过")
                     _safe_journal("log_skip", symbol=self.symbol, action="sell_put",
@@ -332,15 +356,15 @@ class WheelStrategy:
                     return
                 logger.info(f"✓ 资金检查通过: 开 {contracts} 张 | {bp_msg}")
                 self._option_mgr.sell_to_open(sym, contracts, mid)
-                # 记录开仓
+                # 记录开仓（delta 供周度校准使用）
                 expiry_str = info["expiry"].isoformat() if info and info.get("expiry") else ""
                 dte = (info["expiry"] - date.today()).days if info and info.get("expiry") else None
                 _safe_journal("log_entry",
                               symbol=self.symbol, action="sell_put",
                               contract=sym, strike=strike, expiry=expiry_str,
-                              qty=contracts, premium=mid, dte=dte,
-                              filters_passed={"earnings": True, "ma_trend": True, "vol": True},
-                              notes=f"kelly={contracts}")
+                              qty=contracts, premium=mid, delta=delta, dte=dte,
+                              filters_passed={"earnings": True, "ma_trend": True, "vol": True, "spy_market": True},
+                              notes=f"size={contracts}")
 
         elif phase == WheelPhase.LONG_STOCK:
             # Covered Call 只过滤财报（必须继续卖以回收溢价）
@@ -354,7 +378,7 @@ class WheelStrategy:
             cost_basis = float(obj.avg_entry_price)
             result = self.select_call(cost_basis)
             if result:
-                sym, mid = result
+                sym, mid, delta = result
                 if mid <= 0:
                     logger.warning(f"权利金 mid={mid:.2f}，价格异常，跳过")
                     _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
@@ -374,6 +398,7 @@ class WheelStrategy:
                 dte = (info["expiry"] - date.today()).days if info and info.get("expiry") else None
                 _safe_journal("log_entry",
                               symbol=self.symbol, action="sell_call",
+                              delta=delta,
                               contract=sym, strike=strike, expiry=expiry_str,
                               qty=contracts, premium=mid, dte=dte,
                               filters_passed={"earnings": True},
