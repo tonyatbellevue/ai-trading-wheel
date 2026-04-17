@@ -324,9 +324,12 @@ class WheelStrategy:
                     _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
                                   skip_reason=f"premium_invalid={mid:.2f}")
                     return
-                # CC 合约数 = 持股数 / 100
+                # CC 合约数严格由持股数决定（每 100 股支持 1 张 covered call）
+                # 卖 CC 不占现金（股票即抵押），不存在爆仓/平仓风险
                 contracts = int(float(obj.qty) // 100)
-                contracts = min(contracts, settings.WHEEL_CONTRACTS * 2)
+                if contracts < 1:
+                    logger.warning(f"持股 {obj.qty} < 100，不够 1 张 CC")
+                    return
                 self._option_mgr.sell_to_open(sym, contracts, mid)
                 # 记录开仓
                 info = _parse_symbol(sym)

@@ -247,6 +247,27 @@ def build_summary(event: str = "update") -> str:
         except Exception as e:
             lines.append(f"## Weekly Stats\n\n❌ Tracker failed: {e}\n")
 
+        # ── Assignment 复盘（有新事件才出现）──────────────────────────────
+        try:
+            from metrics.assignment_postmortem import (
+                detect_and_analyze, get_pending_summaries,
+            )
+            detect_and_analyze(since_days=14)
+            pending = get_pending_summaries(max_items=3)
+            if pending:
+                lines.append("# ⚖️ Assignment / Expiration Postmortems")
+                lines.append("")
+                lines.append("_Self-analysis of every option that got assigned or expired, "
+                             "with lessons for next cycle._")
+                lines.append("")
+                for snippet in pending:
+                    lines.append(snippet)
+                    lines.append("")
+                    lines.append("---")
+                    lines.append("")
+        except Exception as e:
+            lines.append(f"_Postmortem module failed: {e}_\n")
+
     # ── 市场新闻（开盘和收盘都带）─────────────────────────────────────────
     if event in ("open", "close"):
         try:
