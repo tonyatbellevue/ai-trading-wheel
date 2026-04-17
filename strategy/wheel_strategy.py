@@ -83,6 +83,42 @@ class WheelStrategy:
             logger.warning(f"计算总抵押失败: {e}")
         return total
 
+    def _try_take_profit(self, pos, profit_threshold: float = 0.50) -> bool:
+        """If a short option has decayed to ≤ (1 - threshold) × entry premium,
+        buy to close. Standard wheel convention at 50 %.
+
+        Returns True if BTC was placed, False otherwise.
+        """
+        try:
+            qty = float(pos.qty)
+            if qty >= 0:
+                return False    # not a short position
+            entry = float(pos.avg_entry_price)
+            current = float(pos.current_price)
+            if entry <= 0:
+                return False
+            profit_pct = (entry - current) / entry
+            if profit_pct < profit_threshold:
+                return False
+
+            close_qty = int(abs(qty))
+            # Pay a little over the mid to actually get filled
+            limit = round(current * 1.05, 2) or 0.01
+            logger.info(
+                f"💰 50%-profit BTC 触发: {pos.symbol} 入场 ${entry:.2f} → "
+                f"现价 ${current:.2f} ({profit_pct:.0%} 已实现), 挂 BTC @ ${limit:.2f}"
+            )
+            self._option_mgr.buy_to_close(pos.symbol, close_qty, limit)
+            _safe_journal("log_exit",
+                          symbol=self.symbol, contract=pos.symbol, qty=close_qty,
+                          pnl=(entry - current) * 100 * close_qty,
+                          exit_reason="btc_50pct_profit",
+                          notes=f"entry={entry:.2f} current={current:.2f}")
+            return True
+        except Exception as e:
+            logger.warning(f"BTC 尝试失败（继续持有）: {e}")
+            return False
+
     # ── 阶段检测 ──────────────────────────────────────────────────────────────
 
     def get_phase(self) -> tuple[WheelPhase, object]:
@@ -344,4 +380,10 @@ class WheelStrategy:
                               notes=f"cost_basis={cost_basis:.2f}")
 
         elif phase in (WheelPhase.SHORT_PUT, WheelPhase.SHORT_CALL):
+            # BTC at 50% profit — industry-standard wheel rule.
+            # If the contract has already given us 50% of max credit back,
+            # close it and free the capital. Frees us from the last week
+            # of gamma risk for barely any extra theta.
+            if self._try_take_profit(obj):
+                return
             logger.info("期权已开仓，持仓中，等待到期或行权...")

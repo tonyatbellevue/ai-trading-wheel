@@ -176,6 +176,13 @@ def build_weekly_review() -> str:
     except Exception:
         pass
 
+    # ── Delta 胜率校准（每周看看 delta 假设是否跑偏）──
+    try:
+        from metrics.trade_journal import format_delta_calibration_md
+        lines.append(format_delta_calibration_md(lookback_days=180))
+    except Exception:
+        pass
+
     # ── 当前持仓快照 ──
     try:
         from core.alpaca_client import AlpacaClients

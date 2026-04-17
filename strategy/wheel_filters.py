@@ -215,15 +215,47 @@ def check_buying_power_sufficient(
     return True, f"BP OK: 需 ${required:,.0f}, 可用 ${available:,.0f}"
 
 
+def check_spy_trend(window: int = 200) -> tuple[bool, str]:
+    """Market-wide systemic-risk filter: block new CSPs when SPY is below
+    its 200-day MA. A broken 200-MA historically precedes every meaningful
+    bear phase since 2000; selling puts into that tape is a known way to
+    get multiple symbols assigned simultaneously.
+
+    Returns (ok_to_sell, message). Fail-open on API errors.
+    """
+    try:
+        client = _stk_client()
+        bars = client.get_stock_bars(StockBarsRequest(
+            symbol_or_symbols="SPY",
+            timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=int(window * 1.6)),
+        ))["SPY"]
+        closes = [float(b.close) for b in bars][-window:]
+        if len(closes) < window // 2:
+            return True, ""    # not enough history, let it pass
+        ma = mean(closes)
+        spot = closes[-1]
+        if spot < ma:
+            return False, f"SPY ${spot:.2f} < MA{window} ${ma:.2f} (市场破位)"
+        return True, f"SPY=${spot:.2f} > MA{window}=${ma:.2f}"
+    except Exception as e:
+        logger.warning(f"SPY trend 检查失败: {e}")
+        return True, ""
+
+
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     """卖 Put（CSP）前的综合检查 — 组合所有回测验证有效的过滤器
 
     返回 (是否可开仓, 说明)
+
+    Order matters: SPY market filter first so we fail fast on systemic
+    bear tape before spending quotas on per-symbol API calls.
     """
     checks = [
-        ("earnings", check_earnings(symbol)),
-        ("ma_trend", check_ma_trend(symbol)),
-        ("rv_cap", check_realized_vol(symbol)),
+        ("spy_market", check_spy_trend()),      # new in v4: market-wide gate
+        ("earnings",   check_earnings(symbol)),
+        ("ma_trend",   check_ma_trend(symbol)),
+        ("rv_cap",     check_realized_vol(symbol)),
     ]
     reasons = []
     for name, (ok, msg) in checks:
