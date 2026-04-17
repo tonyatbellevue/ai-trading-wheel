@@ -106,9 +106,6 @@ def check_realized_vol(symbol: str, days: int = 20, max_iv: float = 0.90) -> tup
 
 def kelly_contracts(
     cash: float, strike: float, premium: float,
-    default_contracts: int = None,      # 已废弃，保留为向后兼容
-    win_rate_est: float = 0.85,          # 已废弃
-    kelly_fraction: float = 0.25,        # 已废弃
     buying_power: float = None,
     equity: float = None,
     cash_buffer_pct: float = None,
@@ -116,33 +113,19 @@ def kelly_contracts(
     existing_put_collateral: float = 0.0,
     max_total_exposure_pct: float = None,
 ) -> int:
-    """基于实际资金 + 最坏情况的动态仓位计算
+    """Resource-driven max safe contracts for a cash-secured put.
 
-    不固定张数，由"资金能承受多少"决定。
+    Name kept for back-compat only — the Kelly formula that once lived here
+    was dead code for 3-5 DTE puts (b = premium/strike ≈ 0.005~0.02 << q/p
+    ≈ 0.176, always clamped to 0). Current logic uses 4 layers of capital
+    protection:
 
-    ⚠ 历史：旧 Kelly 公式对 Wheel 3-5 DTE Put 无效（b = premium/strike ≈ 0.005~0.02
-       远小于 q/p ≈ 0.176），永远算出 0。已废弃 Kelly 参数。
+      L1 BP − cash buffer:     don't deploy more than (buying_power − equity × CASH_BUFFER_PCT)
+      L2 single-position cap:  one position ≤ equity × MAX_SINGLE_POSITION_PCT
+      L3 total-exposure cap:   all short puts combined ≤ equity × MAX_TOTAL_EXOSURE_PCT
+      L4 worst-case assertion: existing_collateral + new_collateral + buffer ≤ cash
 
-    【4 层资金防护】
-      层 1: 可用 BP = 购买力 − 权益 × 缓冲比例 (CASH_BUFFER_PCT)
-            → 确保至少 10% 权益保留为现金应对黑天鹅
-      层 2: 单仓上限 = 权益 × MAX_SINGLE_POSITION_PCT (默认 70%)
-            → 防止单一标的过度集中
-      层 3: 总敞口上限 = 权益 × MAX_TOTAL_EXPOSURE_PCT (默认 90%)
-            → 所有 short put 抵押之和不超过 90% 权益（考虑现有持仓）
-      层 4: 最坏情况 = 如果新开 N 张全部被行权 + 现有仓位被行权 ≤ cash
-            → 硬保证账户现金能扛住所有仓位同时行权
-
-    返回可安全开的最大张数（0 = 禁止开仓）
-
-    Args:
-        strike:                   Put 行权价
-        buying_power:             实际购买力（cash − 已冻结抵押）
-        equity:                   账户总权益
-        cash_buffer_pct:          现金缓冲比例
-        max_single_position_pct:  单仓占权益上限
-        existing_put_collateral:  现有 Short Put 总抵押（strike × 100 × qty 之和）
-        max_total_exposure_pct:   总敞口占权益上限
+    Returns 0 when no safe trade is possible.
     """
     if strike <= 0 or cash <= 0:
         logger.warning(f"仓位计算: 输入无效 cash={cash} strike={strike}")
