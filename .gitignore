@@ -28,6 +28,13 @@ logs/
 # 报告
 reports/
 
+# 本地运行时数据（账户快照/交易日志/shadow 账户等含敏感信息）
+metrics/data/
+test_dashboard.html
+
+# Claude Code 本地设置
+.claude/settings.local.json
+
 # IDE
 .vscode/
 .idea/

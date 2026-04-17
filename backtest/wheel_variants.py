@@ -91,10 +91,27 @@ def make_variants(earnings_dates: list) -> list[WheelConfig]:
                     use_ma_trend=True,
                     **base_kwargs),
 
-        # ★ 最终整合版 = 回测验证 ≥3/5 胜场次的改进
+        # ★ 整合版 v1 = 回测验证 ≥3/5 胜场次的改进
         WheelConfig(name="12_PRODUCTION",
                     use_earnings_filter=True,
                     use_ma_trend=True,
                     use_kelly_sizing=True,
+                    **base_kwargs),
+
+        # ★ 整合版 v2 (Week 2 新) = v1 + 修复后的 Roll
+        WheelConfig(name="13_PRODUCTION_V2",
+                    use_earnings_filter=True,
+                    use_ma_trend=True,
+                    use_kelly_sizing=True,
+                    use_itm_roll=True,
+                    **base_kwargs),
+
+        # ★ 整合版 v3 = v2 + Gap 过滤（NVDA 上 +19.9% 突出）
+        WheelConfig(name="14_PRODUCTION_V3",
+                    use_earnings_filter=True,
+                    use_ma_trend=True,
+                    use_kelly_sizing=True,
+                    use_itm_roll=True,
+                    use_gap_filter=True,
                     **base_kwargs),
     ]

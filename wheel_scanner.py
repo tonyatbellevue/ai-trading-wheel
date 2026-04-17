@@ -31,19 +31,38 @@ from alpaca.data.timeframe import TimeFrame
 from config import settings
 from core.alpaca_client import AlpacaClients
 
-# 高流动性 + 支持 3-day 期权的标的（每周多次到期）
+# ── 聚焦科技股 + COST + UNH（用户指定） ─────────────────────────────────
+# 精选逻辑：科技大市值 + 半导体 + 互联网龙头 + 两个防御股（COST、UNH）
+# 基于 Alpaca 数据验证（2026-04-16）：成交量、期权流动性双过滤
+
 WHEEL_UNIVERSE = [
-    "TSLA", "NVDA", "AAPL", "MSFT", "AMD", "META", "AMZN", "GOOGL",
-    "SPY", "QQQ", "IWM", "NFLX", "AVGO", "COIN",
+    # Mag 7 科技
+    "AAPL", "MSFT", "GOOGL", "META", "AMZN", "NVDA", "TSLA",
+    # 其他科技龙头
+    "AMD", "AVGO", "TSM", "NFLX", "ORCL", "CRM", "ADBE",
+    # 半导体
+    "MU", "QCOM", "INTC", "AMAT", "ARM",
+    # 高活跃科技相关
+    "PLTR", "HOOD", "COIN", "MSTR",
+    # 用户指定防御股
+    "COST", "UNH",
+    # 内存/AI 芯片主题 ETF（2026-04 新上市）
+    "DRAM",
+    # AI 下一波：光子计算 + CXL 内存扩展
+    "MRVL",  # CPO + CXL 双受益
+    "LITE",  # 硅光子纯玩（Lumentum）
+    # 光模块龙头
+    "COHR",  # Coherent — 800G/1.6T 光模块龙头
+    "IPGP",  # IPG Photonics — 工业激光器/光引擎
+    # CPU / 服务器系统（AI 算力整机）
+    "SMCI",  # Super Micro — AI 服务器整机龙头（CPU+GPU 系统）
+    # 水 / 数据中心冷却基础设施
+    "XYL",   # Xylem — 数据中心水冷/水处理龙头
 ]
 
-# CSP 候选（包括稳健品种）
-CSP_UNIVERSE = [
-    "TSLA", "NVDA", "AAPL", "MSFT", "AMD", "META", "AMZN", "GOOGL",
-    "SPY", "QQQ", "NFLX", "AVGO", "COIN",
-    # 稳健品种
-    "JPM", "BAC", "V", "MA", "KO", "PG", "WMT", "HD", "DIS",
-    "UNH", "JNJ", "LLY", "PFE", "XOM", "CVX",
+# CSP 池 = Wheel 池 + 主流科技 ETF（相同范围，仅增加 ETF 作为备选）
+CSP_UNIVERSE = WHEEL_UNIVERSE + [
+    "QQQ", "SPY", "SMH", "XLK",   # 科技 ETF
 ]
 
 
