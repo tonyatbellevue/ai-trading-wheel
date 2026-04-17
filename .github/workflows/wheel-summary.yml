@@ -1,13 +1,23 @@
 name: Wheel Daily Email Summary
 
-# 市场开盘 9:30 AM ET = 13:30 UTC
-# 市场收盘 4:05 PM ET = 20:05 UTC
-# 周一至周五
+# GitHub Actions cron on free tier is unreliable — scheduled runs are
+# regularly delayed or outright skipped under load. We fire each event
+# THREE times ~5-10 min apart as belt-and-suspenders redundancy. The
+# Python entrypoint writes an "already sent today" flag and silently
+# returns on subsequent calls, so we get at most one email per event.
+#
+# Market open  9:31 AM ET = 13:31 UTC
+# Market close 4:05 PM ET = 20:05 UTC
+# Mon-Fri only
 on:
   schedule:
-    - cron: "31 13 * * 1-5"   # Market Open + 1min buffer
-    - cron: "5 20 * * 1-5"    # Market Close
-  workflow_dispatch:          # 允许手动触发
+    - cron: "31 13 * * 1-5"   # OPEN  — primary
+    - cron: "36 13 * * 1-5"   # OPEN  — +5 min backup
+    - cron: "41 13 * * 1-5"   # OPEN  — +10 min backup
+    - cron: "5 20 * * 1-5"    # CLOSE — primary
+    - cron: "10 20 * * 1-5"   # CLOSE — +5 min backup
+    - cron: "15 20 * * 1-5"   # CLOSE — +10 min backup
+  workflow_dispatch:          # 手动触发（忽略幂等锁，总是发送）
 
 jobs:
   email-summary:
@@ -48,6 +58,9 @@ jobs:
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
+          # workflow_dispatch bypasses idempotency so manual re-runs always send;
+          # scheduled runs honor the daily "already sent" flag so 3 crons = 1 email
+          WHEEL_EMAIL_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
         run: python email_summary.py ${{ steps.event.outputs.event }}
 
       - name: Upload summary artifact (debug)
