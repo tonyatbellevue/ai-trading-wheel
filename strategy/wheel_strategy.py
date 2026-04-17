@@ -13,10 +13,27 @@ from core.alpaca_client import AlpacaClients
 from execution.option_order_manager import OptionOrderManager
 from strategy.wheel_filters import (
     pre_open_put_checks, pre_open_call_checks, kelly_contracts,
+    check_buying_power_sufficient,
 )
 from strategy.wheel_switch import maybe_switch, get_active_symbol
 from strategy.wheel_evaluator import evaluate_and_maybe_plan
 from loguru import logger
+
+# 交易日志（best-effort，不影响主流程）
+try:
+    from metrics import trade_journal as _journal
+except Exception:
+    _journal = None
+
+
+def _safe_journal(fn_name: str, **kwargs):
+    """安全调用 trade_journal，失败仅 warn 不抛异常"""
+    if _journal is None:
+        return
+    try:
+        getattr(_journal, fn_name)(**kwargs)
+    except Exception as e:
+        logger.warning(f"[Journal] {fn_name} 失败: {e}")
 
 
 class WheelPhase(Enum):
@@ -48,6 +65,23 @@ class WheelStrategy:
             secret_key=settings.SECRET_KEY,
         )
         self._option_mgr = OptionOrderManager()
+
+    def _calc_total_put_collateral(self) -> float:
+        """计算账户所有 Short Put 的总抵押（跨标的合计，防爆仓用）"""
+        total = 0.0
+        try:
+            all_positions = self._trading.get_all_positions()
+            for pos in all_positions:
+                info = _parse_symbol(pos.symbol)
+                if not info or info.get("type") != "P":
+                    continue
+                qty = float(pos.qty)
+                if qty >= 0:  # 跳过 long put
+                    continue
+                total += info["strike"] * 100 * abs(qty)
+        except Exception as e:
+            logger.warning(f"计算总抵押失败: {e}")
+        return total
 
     # ── 阶段检测 ──────────────────────────────────────────────────────────────
 
@@ -212,6 +246,12 @@ class WheelStrategy:
             ok, reason = pre_open_put_checks(self.symbol)
             if not ok:
                 logger.warning(f"⏸️  跳过卖 Put: {reason}")
+                # 记录跳过原因，识别哪个过滤器触发
+                fname = "earnings" if "财报" in reason or "earnings" in reason.lower() else \
+                        "ma_trend" if "MA" in reason or "trend" in reason.lower() else \
+                        "vol" if "波动" in reason or "vol" in reason.lower() else "other"
+                _safe_journal("log_skip", symbol=self.symbol, action="sell_put",
+                              skip_reason=reason, filter_name=fname)
                 return
             if reason:
                 logger.info(f"过滤检查通过 | {reason}")
@@ -221,24 +261,58 @@ class WheelStrategy:
                 sym, mid = result
                 if mid <= 0:
                     logger.warning(f"权利金 mid={mid:.2f}，价格异常，跳过")
+                    _safe_journal("log_skip", symbol=self.symbol, action="sell_put",
+                                  skip_reason=f"premium_invalid={mid:.2f}")
                     return
 
-                # Kelly 动态仓位（降低最大回撤 18pp）
+                # 动态仓位（资金驱动，4 层防护）
                 info = _parse_symbol(sym)
                 strike = info["strike"] if info else 0
-                cash = float(self._trading.get_account().cash)
-                contracts = kelly_contracts(cash=cash, strike=strike, premium=mid)
-                logger.info(f"Kelly 仓位: {contracts} 合约 (默认 {settings.WHEEL_CONTRACTS})")
+                acct = self._trading.get_account()
+                cash = float(acct.cash)
+                bp = float(acct.buying_power)
+                equity = float(acct.equity)
+                # 计算账户所有 Short Put 的总抵押（考虑跨标的组合风险）
+                existing_collateral = self._calc_total_put_collateral()
+                contracts = kelly_contracts(
+                    cash=cash, strike=strike, premium=mid,
+                    buying_power=bp, equity=equity,
+                    existing_put_collateral=existing_collateral,
+                )
                 if contracts < 1:
-                    logger.warning("Kelly 计算结果 < 1 合约，跳过")
+                    logger.warning(f"⏸️ 资金不足，跳过开仓 (cash=${cash:,.0f} bp=${bp:,.0f} existing=${existing_collateral:,.0f})")
+                    _safe_journal("log_skip", symbol=self.symbol, action="sell_put",
+                                  skip_reason=f"insufficient_funds")
                     return
+                # ★ 下单前硬检查（最后一道防线）
+                bp_ok, bp_msg = check_buying_power_sufficient(
+                    strike=strike, qty=contracts,
+                    buying_power=bp, equity=equity,
+                )
+                if not bp_ok:
+                    logger.error(f"🛑 BP 硬检查失败: {bp_msg} — 取消开仓")
+                    _safe_journal("log_skip", symbol=self.symbol, action="sell_put",
+                                  skip_reason=bp_msg)
+                    return
+                logger.info(f"✓ 资金检查通过: 开 {contracts} 张 | {bp_msg}")
                 self._option_mgr.sell_to_open(sym, contracts, mid)
+                # 记录开仓
+                expiry_str = info["expiry"].isoformat() if info and info.get("expiry") else ""
+                dte = (info["expiry"] - date.today()).days if info and info.get("expiry") else None
+                _safe_journal("log_entry",
+                              symbol=self.symbol, action="sell_put",
+                              contract=sym, strike=strike, expiry=expiry_str,
+                              qty=contracts, premium=mid, dte=dte,
+                              filters_passed={"earnings": True, "ma_trend": True, "vol": True},
+                              notes=f"kelly={contracts}")
 
         elif phase == WheelPhase.LONG_STOCK:
             # Covered Call 只过滤财报（必须继续卖以回收溢价）
             ok, reason = pre_open_call_checks(self.symbol)
             if not ok:
                 logger.warning(f"⏸️  跳过卖 Call: {reason}")
+                _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
+                              skip_reason=reason, filter_name="earnings")
                 return
 
             cost_basis = float(obj.avg_entry_price)
@@ -247,11 +321,24 @@ class WheelStrategy:
                 sym, mid = result
                 if mid <= 0:
                     logger.warning(f"权利金 mid={mid:.2f}，价格异常，跳过")
+                    _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
+                                  skip_reason=f"premium_invalid={mid:.2f}")
                     return
                 # CC 合约数 = 持股数 / 100
                 contracts = int(float(obj.qty) // 100)
                 contracts = min(contracts, settings.WHEEL_CONTRACTS * 2)
                 self._option_mgr.sell_to_open(sym, contracts, mid)
+                # 记录开仓
+                info = _parse_symbol(sym)
+                strike = info["strike"] if info else 0
+                expiry_str = info["expiry"].isoformat() if info and info.get("expiry") else ""
+                dte = (info["expiry"] - date.today()).days if info and info.get("expiry") else None
+                _safe_journal("log_entry",
+                              symbol=self.symbol, action="sell_call",
+                              contract=sym, strike=strike, expiry=expiry_str,
+                              qty=contracts, premium=mid, dte=dte,
+                              filters_passed={"earnings": True},
+                              notes=f"cost_basis={cost_basis:.2f}")
 
         elif phase in (WheelPhase.SHORT_PUT, WheelPhase.SHORT_CALL):
             logger.info("期权已开仓，持仓中，等待到期或行权...")

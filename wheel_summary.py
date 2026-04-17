@@ -82,7 +82,7 @@ def build_summary(event: str = "update") -> str:
             lines.append(f"  - Reason: _{plan.get('reason','')}_")
         lines.append("")
     except Exception as e:
-        lines.append(f"## Cycle Evaluation\n\n⚠️ 评估失败: {e}\n")
+        lines.append(f"## Cycle Evaluation\n\n⚠️ Evaluation failed: {e}\n")
 
     # ── 账户 ─────────────────────────────────────────────────────────────
     acct = trading.get_account()
@@ -228,6 +228,24 @@ def build_summary(event: str = "update") -> str:
                 f"| {t} | `{o.symbol}` | {side} | ${float(o.filled_avg_price or 0):.2f} | {o.filled_qty} |"
             )
         lines.append("")
+
+    # ── 本周表现分析（仅收盘带，且仅周五）───────────────────────────────────
+    if event == "close":
+        try:
+            from metrics.baseline_tracker import record_snapshot, format_weekly_report
+            # 每日收盘记录一次快照
+            record_snapshot()
+            # 周五收盘附上周报和深度复盘
+            if datetime.now(ET).weekday() == 4:
+                lines.append(format_weekly_report())
+                # 新增：本周复盘报告
+                try:
+                    from metrics.weekly_review import build_weekly_review
+                    lines.append(build_weekly_review())
+                except Exception as e:
+                    lines.append(f"## Weekly Review\n\n❌ Review failed: {e}\n")
+        except Exception as e:
+            lines.append(f"## Weekly Stats\n\n❌ Tracker failed: {e}\n")
 
     # ── 市场新闻（开盘和收盘都带）─────────────────────────────────────────
     if event in ("open", "close"):

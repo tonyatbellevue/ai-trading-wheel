@@ -1,8 +1,51 @@
-"""全局配置中心 — 所有可调参数集中于此"""
+"""全局配置中心 — 所有可调参数集中于此
+
+注意：本模块自动检测 git worktree 环境。如果当前在 worktree 中运行，
+.env 会从主项目根目录加载，避免 worktree 与主项目凭证不同步。
+"""
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+
+def _resolve_env_path() -> Path:
+    """智能定位 .env 文件
+
+    1. 优先使用环境变量 AI_TRADING_ENV_PATH 指定的路径
+    2. 如果当前在 git worktree 中，从主项目根加载
+    3. 否则使用当前项目根的 .env
+    """
+    # 1. 环境变量覆盖
+    env_override = os.environ.get("AI_TRADING_ENV_PATH")
+    if env_override and Path(env_override).exists():
+        return Path(env_override)
+
+    cur_root = Path(__file__).resolve().parent.parent  # config/.. → 项目根
+    git_marker = cur_root / ".git"
+
+    # 2. worktree 检测：.git 是文件且包含 "gitdir:" 指向主项目
+    if git_marker.is_file():
+        try:
+            content = git_marker.read_text(encoding="utf-8").strip()
+            if content.startswith("gitdir:"):
+                gitdir = content.split(":", 1)[1].strip()
+                # gitdir 形如 ".../主项目/.git/worktrees/<name>"
+                # 主项目 .git 路径 = gitdir 去掉 "/worktrees/<name>"
+                main_git = Path(gitdir).parent.parent  # /worktrees/<name> 上两级
+                main_root = main_git.parent  # .git 的父目录 = 主项目根
+                main_env = main_root / ".env"
+                if main_env.exists():
+                    return main_env
+        except Exception:
+            pass
+
+    # 3. 默认：当前项目根
+    return cur_root / ".env"
+
+
+_ENV_PATH = _resolve_env_path()
+load_dotenv(dotenv_path=_ENV_PATH, override=True)
+_ENV_LOADED_FROM = str(_ENV_PATH)  # 用于调试和健康检查
 
 # ── Alpaca API ──────────────────────────────────────────────────────────────
 API_KEY    = os.getenv("ALPACA_API_KEY", "").strip()
@@ -52,6 +95,13 @@ INITIAL_CAPITAL   = 100_000.0   # 初始资金 10万美元
 COMMISSION_PER_SHARE = 0.005    # 每股手续费
 SLIPPAGE_FACTOR   = 0.001       # 滑点系数
 
+# ── 邮件通知 ────────────────────────────────────────────────────────────────
+EMAIL_SMTP_SERVER = os.getenv("EMAIL_SMTP_SERVER", "smtp-mail.outlook.com")
+EMAIL_SMTP_PORT   = int(os.getenv("EMAIL_SMTP_PORT", "587"))
+EMAIL_SENDER      = os.getenv("EMAIL_SENDER", "")
+EMAIL_PASSWORD    = os.getenv("EMAIL_PASSWORD", "")
+EMAIL_RECIPIENT   = os.getenv("EMAIL_RECIPIENT", "bellevuetony@hotmail.com")
+
 # ── 路径 ────────────────────────────────────────────────────────────────────
 BASE_DIR     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_CACHE   = os.path.join(BASE_DIR, "data_cache")
@@ -78,3 +128,9 @@ WHEEL_MIN_DTE        = 1        # 最短到期天数（3-day weekly）
 WHEEL_MAX_DTE        = 5        # 最长到期天数（3-day weekly）
 WHEEL_CONTRACTS      = 2        # 每次卖出合约数（受购买力限制）
 WHEEL_CHECK_INTERVAL = 300      # 持续监控检查间隔（秒）
+
+# ── 资金安全缓冲（防止爆仓/平仓）──
+# 所有新开仓前必须保证：buying_power - 最小现金保留 ≥ strike × 100 × qty
+CASH_BUFFER_PCT          = 0.10     # 权益的 10% 必须保留为现金，应对黑天鹅
+MAX_SINGLE_POSITION_PCT  = 0.70     # 单个新仓位不超过权益 70%（防止过度集中）
+MAX_TOTAL_EXPOSURE_PCT   = 0.90     # 所有 Put 抵押之和不超过权益 90%（防爆仓）

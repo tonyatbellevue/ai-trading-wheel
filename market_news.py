@@ -93,7 +93,7 @@ def build_market_news() -> str:
     lines.append(_format_section("🖥️ Tech Sector", tech, max_items=5))
     lines.append("")
 
-    # 2. 政策 & 宏观（从政策敏感股票聚合）
+    # 2. 政策 & 宏观
     policy = _fetch(POLICY_SENSITIVE_SYMBOLS, hours=48, limit=20)
     lines.append(_format_section("🏛️ Policy & Macro (Healthcare / Defense / Energy)", policy, max_items=5))
     lines.append("")

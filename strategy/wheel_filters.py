@@ -106,34 +106,130 @@ def check_realized_vol(symbol: str, days: int = 20, max_iv: float = 0.90) -> tup
 
 def kelly_contracts(
     cash: float, strike: float, premium: float,
-    default_contracts: int = None,
-    win_rate_est: float = 0.85,
-    kelly_fraction: float = 0.25,
+    default_contracts: int = None,      # 已废弃，保留为向后兼容
+    win_rate_est: float = 0.85,          # 已废弃
+    kelly_fraction: float = 0.25,        # 已废弃
+    buying_power: float = None,
+    equity: float = None,
+    cash_buffer_pct: float = None,
+    max_single_position_pct: float = None,
+    existing_put_collateral: float = 0.0,
+    max_total_exposure_pct: float = None,
 ) -> int:
-    """Kelly Criterion 动态仓位
+    """基于实际资金 + 最坏情况的动态仓位计算
 
-    f* = p - q/b, 其中 b = premium/strike（单次收益/风险比）
-    实际用 f*/4（分数 Kelly）降低破产风险
-    回测证明：平均降低最大回撤 18pp
+    不固定张数，由"资金能承受多少"决定。
+
+    ⚠ 历史：旧 Kelly 公式对 Wheel 3-5 DTE Put 无效（b = premium/strike ≈ 0.005~0.02
+       远小于 q/p ≈ 0.176），永远算出 0。已废弃 Kelly 参数。
+
+    【4 层资金防护】
+      层 1: 可用 BP = 购买力 − 权益 × 缓冲比例 (CASH_BUFFER_PCT)
+            → 确保至少 10% 权益保留为现金应对黑天鹅
+      层 2: 单仓上限 = 权益 × MAX_SINGLE_POSITION_PCT (默认 70%)
+            → 防止单一标的过度集中
+      层 3: 总敞口上限 = 权益 × MAX_TOTAL_EXPOSURE_PCT (默认 90%)
+            → 所有 short put 抵押之和不超过 90% 权益（考虑现有持仓）
+      层 4: 最坏情况 = 如果新开 N 张全部被行权 + 现有仓位被行权 ≤ cash
+            → 硬保证账户现金能扛住所有仓位同时行权
+
+    返回可安全开的最大张数（0 = 禁止开仓）
+
+    Args:
+        strike:                   Put 行权价
+        buying_power:             实际购买力（cash − 已冻结抵押）
+        equity:                   账户总权益
+        cash_buffer_pct:          现金缓冲比例
+        max_single_position_pct:  单仓占权益上限
+        existing_put_collateral:  现有 Short Put 总抵押（strike × 100 × qty 之和）
+        max_total_exposure_pct:   总敞口占权益上限
     """
-    default_contracts = default_contracts or settings.WHEEL_CONTRACTS
-    if premium <= 0 or strike <= 0 or cash <= 0:
-        return default_contracts
+    if strike <= 0 or cash <= 0:
+        logger.warning(f"仓位计算: 输入无效 cash={cash} strike={strike}")
+        return 0
 
-    p = win_rate_est
-    q = 1 - p
-    b = premium / strike  # 每美元抵押能获得的权利金
-    kelly = max(p - q / b, 0.0) * kelly_fraction
+    if buying_power is None:
+        buying_power = cash
+        logger.warning("kelly_contracts 未传 buying_power，使用 cash — 风险：可能高估")
 
-    allowed_cash = cash * kelly
-    max_contracts = int(allowed_cash // (strike * 100))
+    # 配置读取
+    if cash_buffer_pct is None:
+        cash_buffer_pct = getattr(settings, "CASH_BUFFER_PCT", 0.10)
+    if max_single_position_pct is None:
+        max_single_position_pct = getattr(settings, "MAX_SINGLE_POSITION_PCT", 0.70)
+    if max_total_exposure_pct is None:
+        max_total_exposure_pct = getattr(settings, "MAX_TOTAL_EXPOSURE_PCT", 0.90)
+    if equity is None:
+        equity = max(cash, buying_power)
 
-    # 限制：至少 1，最多默认 × 2
-    result = max(1, min(max_contracts, default_contracts * 2))
-    # 现金足够性兜底
-    max_by_cash = int(cash // (strike * 100))
-    result = min(result, max_by_cash)
-    return max(result, 0)
+    per_contract_cash = strike * 100
+    safety_buffer = equity * cash_buffer_pct
+
+    # ── 层 1：BP − 缓冲 ──
+    available_bp = buying_power - safety_buffer
+
+    # ── 层 2：单仓上限 ──
+    single_position_cap = equity * max_single_position_pct
+
+    # ── 层 3：总敞口剩余空间（扣现有持仓） ──
+    total_exposure_cap = equity * max_total_exposure_pct
+    remaining_exposure = total_exposure_cap - existing_put_collateral
+
+    # 取最严格的限制
+    effective_available = min(available_bp, single_position_cap, remaining_exposure)
+
+    if effective_available < per_contract_cash:
+        logger.warning(
+            f"🛑 资金不足开 1 张 (strike ${strike:,.2f}):"
+            f"\n   单张需求: ${per_contract_cash:,.0f}"
+            f"\n   层1 BP-缓冲: ${available_bp:,.0f}"
+            f"\n   层2 单仓上限(权益{max_single_position_pct:.0%}): ${single_position_cap:,.0f}"
+            f"\n   层3 总敞口剩余(权益{max_total_exposure_pct:.0%} - 现有持仓 ${existing_put_collateral:,.0f}): ${remaining_exposure:,.0f}"
+            f"\n   → 实际可用: ${effective_available:,.0f}"
+        )
+        return 0
+
+    # ── 层 4：最坏情况硬检查 ──
+    # 假设开 N 张 + 现有仓位都被行权，现金必须能扛住
+    max_by_effective = int(effective_available // per_contract_cash)
+    for trial in range(max_by_effective, 0, -1):
+        worst_case_cash_need = existing_put_collateral + (per_contract_cash * trial)
+        if worst_case_cash_need + safety_buffer <= cash:
+            logger.info(
+                f"✓ 动态仓位: {trial} 张 (strike ${strike:,.2f})"
+                f"\n   权益: ${equity:,.0f} | BP: ${buying_power:,.0f} | 现金: ${cash:,.0f}"
+                f"\n   现有抵押: ${existing_put_collateral:,.0f} + 新仓 ${per_contract_cash * trial:,.0f}"
+                f" = 最坏情况 ${worst_case_cash_need:,.0f}"
+                f"\n   缓冲后可用: ${cash - safety_buffer:,.0f} ≥ 最坏情况 ✓"
+            )
+            return trial
+
+    logger.warning(f"🛑 最坏情况硬检查：任何张数都会超限")
+    return 0
+
+
+def check_buying_power_sufficient(
+    strike: float, qty: int, buying_power: float,
+    equity: float = None, cash_buffer_pct: float = None,
+) -> tuple[bool, str]:
+    """硬检查：下单前最后一道防线，确保 BP 足够承担本次新开仓抵押 + 保留缓冲。
+
+    与 kelly_contracts 分离 — 即使 Kelly 算出合约数，这里再检查一次。
+    """
+    if cash_buffer_pct is None:
+        cash_buffer_pct = getattr(settings, "CASH_BUFFER_PCT", 0.10)
+    if equity is None:
+        equity = buying_power
+    safety_buffer = equity * cash_buffer_pct
+    required = strike * 100 * qty
+    available = buying_power - safety_buffer
+
+    if required > available:
+        return False, (
+            f"购买力不足: 需抵押 ${required:,.0f} > 可用 ${available:,.0f} "
+            f"(BP ${buying_power:,.0f} − {cash_buffer_pct:.0%} 缓冲 ${safety_buffer:,.0f})"
+        )
+    return True, f"BP OK: 需 ${required:,.0f}, 可用 ${available:,.0f}"
 
 
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:

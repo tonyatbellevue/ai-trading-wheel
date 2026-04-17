@@ -107,6 +107,65 @@ def _next_expiry_dte(df: pd.DataFrame, idx: int, cfg: WheelConfig) -> tuple[int,
     return 0, -1
 
 
+def _try_roll_put(df: pd.DataFrame, idx: int, old_trade: Trade,
+                   state: WheelState, cfg: WheelConfig, S: float,
+                   iv: float, r: float) -> Optional[dict]:
+    """尝试把 ITM Put 滚到下周更低 strike
+
+    机制：
+      1. 平掉当前 Put: BTC 成本 ≈ 内在价值 (max(strike - S, 0))
+      2. 卖新 Put: strike_new = min(old_strike, S) × (1 - roll_down_pct)
+      3. 必须满足: 新权利金 ≥ BTC 成本 × 0.5 才滚（否则白滚）
+      4. 必须满足: 现金能 cover 新 strike × 100 × qty
+
+    Returns:
+        {"new_trade": Trade, "btc_cost": float} 滚单成功
+        None 不滚（让原 trade 正常被行权）
+    """
+    # BTC 成本（内在价值）
+    intrinsic = max(old_trade.strike - S, 0)
+    btc_cost = intrinsic * 100 * old_trade.qty_contracts
+
+    # 找下一个到期
+    new_dte, new_idx = _next_expiry_dte(df, idx, cfg)
+    if new_idx < 0:
+        return None  # 数据不够，不能滚
+
+    # 新 strike：在 min(原strike, 当前价) 基础上再下移 roll_down_pct
+    base_strike = min(old_trade.strike, S)
+    new_strike = base_strike * (1 - cfg.roll_down_pct)
+    # 现金检查
+    required_cash = new_strike * 100 * old_trade.qty_contracts
+    if required_cash > state.cash + btc_cost:
+        # 现金不够（注意 BTC 成本已经从 cash 扣除）
+        return None
+
+    # 新权利金报价
+    q = quote_option(S, new_strike, new_dte, iv, is_call=False, r=r)
+    new_premium = q.price
+    new_total_premium = new_premium * 100 * old_trade.qty_contracts
+
+    # 滚单经济性检查：新权利金至少能补回 BTC 成本的 50%
+    if new_total_premium < btc_cost * 0.5:
+        return None  # 滚不动，不如接货后卖 Call
+
+    # 执行 Roll
+    state.cash -= btc_cost                          # 平旧 Put 支出
+    state.cash += new_total_premium                  # 卖新 Put 收入
+
+    new_trade_obj = Trade(
+        open_date=df.index[idx].date() if hasattr(df.index[idx], "date") else df.index[idx],
+        close_date=df.index[new_idx].date() if hasattr(df.index[new_idx], "date") else df.index[new_idx],
+        option_type="P",
+        strike=new_strike,
+        dte=new_dte,
+        iv=iv,
+        premium_per_share=new_premium,
+        qty_contracts=old_trade.qty_contracts,
+    )
+    return {"new_trade": new_trade_obj, "btc_cost": btc_cost}
+
+
 def run_wheel_backtest(df: pd.DataFrame, cfg: WheelConfig,
                        initial_capital: float = 100_000.0,
                        r: float = 0.045) -> BacktestResult:
@@ -142,6 +201,22 @@ def run_wheel_backtest(df: pd.DataFrame, cfg: WheelConfig,
         if state.current_trade and state.current_trade.close_date == today:
             tr = state.current_trade
             if tr.option_type == "P":
+                # ── ITM Roll：Put 到期且 ITM 时，先尝试滚单 ──
+                if cfg.use_itm_roll and S < tr.strike:
+                    rolled = _try_roll_put(df, i, tr, state, cfg, S, iv, r)
+                    if rolled is not None:
+                        # 滚单成功：标记原合约 outcome=rolled，开新 trade
+                        tr.outcome = "rolled"
+                        tr.pnl = (tr.premium_per_share * 100 * tr.qty_contracts
+                                  - rolled["btc_cost"])
+                        state.current_trade = rolled["new_trade"]
+                        trades.append(rolled["new_trade"])
+                        # 已 roll，跳过本轮新开仓判断
+                        equity = state.cash + state.shares * S
+                        equity_curve.append((today, equity))
+                        continue
+
+                # 未启用 Roll 或滚单不可行 → 正常结算
                 if S < tr.strike:
                     # 被行权：现金→股票
                     cost = tr.strike * 100 * tr.qty_contracts
@@ -168,12 +243,6 @@ def run_wheel_backtest(df: pd.DataFrame, cfg: WheelConfig,
                     tr.outcome = "expire_otm"
                     tr.pnl = tr.premium_per_share * 100 * tr.qty_contracts
             state.current_trade = None
-
-        # ── ITM Roll（提前处理，到期当日发现 ITM 时滚单到下周）──
-        # 简化：只在到期前 0 DTE 触发
-        # 已在上面结算，若启用 use_itm_roll，这里改为不立即行权而是开新仓
-        # （为简洁，此处仅在 expire 前判断）
-        # —— skip complex mid-cycle roll to keep model tractable
 
         # ── 是否可开新仓 ──
         if state.current_trade is not None:
