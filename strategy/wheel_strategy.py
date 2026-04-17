@@ -68,6 +68,14 @@ class WheelStrategy:
 
     def _calc_total_put_collateral(self) -> float:
         """计算账户所有 Short Put 的总抵押（跨标的合计，防爆仓用）"""
+        return self._calc_put_collateral_by_sector().get("__total__", 0.0)
+
+    def _calc_put_collateral_by_sector(self) -> dict:
+        """Return {sector: collateral_sum} for every short put on the account,
+        plus a "__total__" key. Used by the sector-exposure filter.
+        """
+        from strategy.sector_map import sector_of
+        buckets: dict[str, float] = {}
         total = 0.0
         try:
             all_positions = self._trading.get_all_positions()
@@ -76,12 +84,16 @@ class WheelStrategy:
                 if not info or info.get("type") != "P":
                     continue
                 qty = float(pos.qty)
-                if qty >= 0:  # 跳过 long put
+                if qty >= 0:  # skip long puts
                     continue
-                total += info["strike"] * 100 * abs(qty)
+                collateral = info["strike"] * 100 * abs(qty)
+                sec = sector_of(info["underlying"])
+                buckets[sec] = buckets.get(sec, 0.0) + collateral
+                total += collateral
         except Exception as e:
-            logger.warning(f"计算总抵押失败: {e}")
-        return total
+            logger.warning(f"计算 sector 抵押失败: {e}")
+        buckets["__total__"] = total
+        return buckets
 
     def _try_take_profit(self, pos, profit_threshold: float = 0.50) -> bool:
         """If a short option has decayed to ≤ (1 - threshold) × entry premium,
@@ -275,6 +287,18 @@ class WheelStrategy:
 
     def run_cycle(self):
         """检查当前阶段并执行相应动作（幂等）"""
+        # Reconcile exits first — this logs assignment / expiration / BTC-fill
+        # events that happened since the last cron tick, so downstream code
+        # (evaluator's "was last cycle profitable?", weekly review, etc.)
+        # reads a current trade journal.
+        try:
+            from metrics.position_tracker import reconcile
+            events = reconcile()
+            if events:
+                logger.info(f"[tracker] 探测到 {len(events)} 笔 exit，已写入 journal")
+        except Exception as e:
+            logger.warning(f"position reconcile failed (continuing): {e}")
+
         phase, obj = self.get_phase()
         logger.info(f"── Wheel 阶段: {phase.name} ──")
 
@@ -325,19 +349,24 @@ class WheelStrategy:
                                   skip_reason=f"premium_invalid={mid:.2f}")
                     return
 
-                # 动态仓位（资金驱动，4 层防护）
+                # 动态仓位（资金驱动，5 层防护）
                 info = _parse_symbol(sym)
                 strike = info["strike"] if info else 0
                 acct = self._trading.get_account()
                 cash = float(acct.cash)
                 bp = float(acct.buying_power)
                 equity = float(acct.equity)
-                # 计算账户所有 Short Put 的总抵押（考虑跨标的组合风险）
-                existing_collateral = self._calc_total_put_collateral()
+                # 计算账户所有 Short Put 的总抵押 + 按 sector 拆分（防 sector beta）
+                sector_buckets = self._calc_put_collateral_by_sector()
+                existing_collateral = sector_buckets.get("__total__", 0.0)
+                from strategy.sector_map import sector_of
+                this_sector = sector_of(self.symbol)
+                same_sector = sector_buckets.get(this_sector, 0.0)
                 contracts = kelly_contracts(
                     cash=cash, strike=strike, premium=mid,
                     buying_power=bp, equity=equity,
                     existing_put_collateral=existing_collateral,
+                    same_sector_collateral=same_sector,
                 )
                 if contracts < 1:
                     logger.warning(f"⏸️ 资金不足，跳过开仓 (cash=${cash:,.0f} bp=${bp:,.0f} existing=${existing_collateral:,.0f})")

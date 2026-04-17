@@ -136,3 +136,5 @@ WHEEL_CHECK_INTERVAL = 300      # 持续监控检查间隔（秒）
 CASH_BUFFER_PCT          = 0.10     # 权益的 10% 必须保留为现金，应对黑天鹅
 MAX_SINGLE_POSITION_PCT  = 0.70     # 单个新仓位不超过权益 70%（防止过度集中）
 MAX_TOTAL_EXPOSURE_PCT   = 0.90     # 所有 Put 抵押之和不超过权益 90%（防爆仓）
+MAX_SECTOR_EXPOSURE_PCT  = 0.60     # 同一 sector 所有 Put 抵押不超过权益 60%（防 sector beta）
+MAX_CONSECUTIVE_LOSSES   = 3        # 连亏 N 周期 → 强制换标的（stop-loss 逃生）

@@ -125,13 +125,32 @@ def evaluate_and_maybe_plan(
     # ── Step 5: GO + IDLE（option 周期结束）→ 主动比较 Top1 vs baseline ──
     # 持仓中（非 IDLE）时不主动换，等本周期到期再评估
     if current_phase_is_idle:
+        # ★ 连亏 stop-loss：防止被某一标的永久套牢
+        consecutive_losses = _count_consecutive_losses(current_symbol)
+        max_consecutive = getattr(settings, "MAX_CONSECUTIVE_LOSSES", 3)
+        if consecutive_losses >= max_consecutive:
+            escape_sym = _find_best_alternative(exclude=current_symbol)
+            if escape_sym:
+                trigger = date.today()
+                reason = (f"stop-loss: {consecutive_losses} consecutive losing cycles "
+                          f"on {current_symbol}, escape to {escape_sym}")
+                plan_switch(current_symbol, escape_sym, trigger.isoformat(), reason)
+                decision["action"] = "plan_switch"
+                decision["new_symbol"] = escape_sym
+                decision["reason"] = reason
+                decision["message"] = (
+                    f"🚨 {current_symbol} 连亏 {consecutive_losses} 次 → 强制止损换到 {escape_sym}"
+                )
+                return decision
+            # else: no healthy alternative, fall through to the "stay" path below
+
         # ★ 关键：只在"正常赚钱结束"时才换，被行权/亏损周期不换
         profitable, reason_why = _last_cycle_was_profitable(current_symbol)
         if not profitable:
             decision["action"] = "keep"
             decision["message"] = (
                 f"⏸️ {current_symbol} IDLE 但上一周期 {reason_why} — 不切换，"
-                f"先在原标的恢复盈利"
+                f"先在原标的恢复盈利 (连亏 {consecutive_losses}/{max_consecutive})"
             )
             return decision
 
@@ -178,6 +197,36 @@ def evaluate_and_maybe_plan(
     decision["action"] = "keep"
     decision["message"] = f"✅ {current_symbol} GO - 持仓中，等本周期到期再评估"
     return decision
+
+
+def _count_consecutive_losses(symbol: str, max_lookback: int = 20) -> int:
+    """Count how many of the most-recent exit events on this symbol were
+    losses, stopping at the first win. Used for stop-loss escape logic.
+
+    "Loss" = pnl ≤ 0  OR  exit_reason == "assigned" + stock never closed
+    profitably since. "Win" = any exit with pnl > 0.
+    """
+    try:
+        from metrics.trade_journal import read_journal
+        rows = read_journal()
+    except Exception:
+        return 0
+
+    # Filter to this symbol's exits, newest first
+    exits = [r for r in rows
+             if r.get("event_type") == "exit" and r.get("symbol") == symbol]
+    exits.sort(key=lambda r: r.get("event_at", ""), reverse=True)
+
+    streak = 0
+    for r in exits[:max_lookback]:
+        try:
+            pnl = float(r.get("pnl") or 0)
+        except (ValueError, TypeError):
+            pnl = 0
+        if pnl > 0:
+            break    # hit a win, streak resets
+        streak += 1
+    return streak
 
 
 def _last_cycle_was_profitable(symbol: str, lookback_days: int = 14) -> tuple[bool, str]:
