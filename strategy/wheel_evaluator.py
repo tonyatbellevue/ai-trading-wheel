@@ -22,10 +22,17 @@ from loguru import logger
 from config import settings
 from strategy.wheel_switch import load_state, plan_switch
 
+# Hoisted from per-call lazy imports — 5-min cron × 288 runs/day makes
+# import machinery overhead worth shaving. These modules are safe to
+# import at startup (no side effects beyond Alpaca client construction
+# which already happens module-wide).
+from wheel_health_check import run_health_check
+from wheel_scanner import scan_wheel_alternatives
 
-# ── 切换阈值（数据驱动）──
-SWITCH_ON_CAUTION = 0.10      # CAUTION 时只要 +10% 就换
-SWITCH_ON_IDLE_GO = 0.15      # GO+IDLE 时 +15% 才换（避免过度交易）
+
+# Rotation thresholds (higher during healthy idle to avoid churn)
+SWITCH_ON_CAUTION = getattr(settings, "SWITCH_ON_CAUTION", 0.10)
+SWITCH_ON_IDLE_GO = getattr(settings, "SWITCH_ON_IDLE_GO", 0.15)
 
 
 def evaluate_and_maybe_plan(
@@ -60,7 +67,6 @@ def evaluate_and_maybe_plan(
 
     # ── Step 1: 健康检查当前标的 ──
     try:
-        from wheel_health_check import run_health_check
         health = run_health_check(current_symbol)
         decision["health_verdict"] = health.get("verdict", "UNKNOWN")
         decision["health_warnings"] = health.get("warnings", [])
@@ -133,7 +139,6 @@ def evaluate_and_maybe_plan(
         if new_sym and improvement >= SWITCH_ON_IDLE_GO:
             # 必须是 GO 健康标的才切换
             try:
-                from wheel_health_check import run_health_check
                 target_health = run_health_check(new_sym).get("verdict", "UNKNOWN")
             except Exception:
                 target_health = "UNKNOWN"
@@ -289,8 +294,6 @@ def _find_best_alternative(exclude: str) -> Optional[str]:
     若 Top 5 都不 GO，再 fallback 到防御标的（QQQ/COST/UNH）作为兜底。
     """
     try:
-        from wheel_scanner import scan_wheel_alternatives
-        from wheel_health_check import run_health_check
 
         # 按评分扫描全部候选
         alts = scan_wheel_alternatives(exclude=exclude, top_n=10)
@@ -322,7 +325,6 @@ def _find_best_alternative(exclude: str) -> Optional[str]:
         if sym == exclude:
             continue
         try:
-            from wheel_health_check import run_health_check
             h = run_health_check(sym)
             if h.get("verdict") == "GO":
                 logger.info(f"STOP→ fallback 选择 {sym}")
@@ -340,7 +342,6 @@ def _find_better_alternative(current: str) -> tuple[Optional[str], float]:
     - all: 全部 Top 5（万一没 better 也能对比）
     """
     try:
-        from wheel_scanner import scan_wheel_alternatives
 
         alts = scan_wheel_alternatives(exclude=current, top_n=5)
         if not alts or not isinstance(alts, dict):
