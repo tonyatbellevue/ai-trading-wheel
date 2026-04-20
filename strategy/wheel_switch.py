@@ -5,7 +5,9 @@
 2. 每次 run_cycle 开头调用 maybe_switch() 检查：
    - 今天 >= trigger_date
    - 且当前 phase == IDLE（无持仓无挂单）
-   - 则修改 wheel_symbol.json 将 active_symbol 改为 to_symbol，清空 plan
+   - **触发时重扫 scan_wheel_alternatives**：若当天 top-1 ≠ plan.to_symbol
+     则采用当天 top-1（避免用过期排名）；扫描失败则回退原计划
+   - 修改 wheel_symbol.json 将 active_symbol 改为最终选出的 symbol，清空 plan
 3. config.settings.WHEEL_SYMBOL 从 wheel_symbol.json 动态读取
 
 文件位置：仓库根 wheel_symbol.json（持久化进 git 仓库，GitHub Actions 跨运行可见）
@@ -99,18 +101,53 @@ def maybe_switch(current_phase_is_idle: bool) -> Optional[tuple[str, str]]:
         logger.info(f"切换计划待触发: 当前仍有持仓/挂单，等待 IDLE 状态")
         return None
 
-    # 执行切换
     old_symbol = state["active_symbol"]
-    new_symbol = plan["to_symbol"]
+    planned_symbol = plan["to_symbol"]
+
+    # 触发时重新扫描：用当天 top-1，不盲信几天前的 plan。
+    # 市场数据在 plan 登记到触发之间可能已变，排名会变。
+    new_symbol = planned_symbol
+    rescan_note = ""
+    try:
+        from wheel_scanner import scan_wheel_alternatives
+        alts = scan_wheel_alternatives(exclude=old_symbol, top_n=5)
+        candidates = (alts or {}).get("all", []) if isinstance(alts, dict) else []
+        if candidates:
+            top = candidates[0]
+            top_sym = top.get("symbol")
+            top_score = top.get("score", {}).get("total_score", 0)
+            if top_sym and top_sym != planned_symbol:
+                rescan_note = (
+                    f"触发时重扫: 原计划 {planned_symbol} 已非 top-1，"
+                    f"改用 {top_sym} (score={top_score:.1f})"
+                )
+                logger.warning(f"🔁 {rescan_note}")
+                new_symbol = top_sym
+            else:
+                logger.info(
+                    f"触发时重扫: {planned_symbol} 仍为 top-1 (score={top_score:.1f})，按原计划切换"
+                )
+        else:
+            logger.warning("触发时重扫无候选，回退到原计划标的")
+    except Exception as e:
+        logger.warning(f"触发时重扫失败，回退原计划 {planned_symbol}: {e}")
+
     state["active_symbol"] = new_symbol
-    state["history"].append({
+    history_entry = {
         "switched_at": datetime.now().isoformat(),
         "from": old_symbol,
         "to": new_symbol,
+        "planned_to": planned_symbol,
         "reason": plan.get("reason", ""),
-    })
+    }
+    if rescan_note:
+        history_entry["rescan_note"] = rescan_note
+    state["history"].append(history_entry)
     state["plan"] = None
     save_state(state)
 
-    logger.warning(f"🔄 Wheel 标的切换: {old_symbol} → {new_symbol}（原因: {plan.get('reason', 'manual plan')}）")
+    logger.warning(
+        f"🔄 Wheel 标的切换: {old_symbol} → {new_symbol}"
+        f"（计划 {planned_symbol}{'，重扫后改选' if new_symbol != planned_symbol else ''}）"
+    )
     return (old_symbol, new_symbol)

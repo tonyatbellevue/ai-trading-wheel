@@ -1,11 +1,14 @@
 {
-  "active_symbol": "TSLA",
-  "plan": {
-    "from_symbol": "TSLA",
-    "to_symbol": "MSFT",
-    "trigger_date": "2026-04-18",
-    "reason": "TSLA 高波动 3-DTE wheel 5年回测亏损，MSFT 回测年化+2.7%/MaxDD 5.4%",
-    "planned_at": "2026-04-15T12:04:33"
-  },
-  "history": []
+  "active_symbol": "QCOM",
+  "plan": null,
+  "history": [
+    {
+      "switched_at": "2026-04-20T14:23:55.712581",
+      "from": "TSLA",
+      "to": "QCOM",
+      "planned_to": "MSFT",
+      "reason": "TSLA 高波动 3-DTE wheel 5年回测亏损，MSFT 回测年化+2.7%/MaxDD 5.4%",
+      "rescan_note": "触发时重扫: 原计划 MSFT 已非 top-1，改用 QCOM (score=100.0)"
+    }
+  ]
 }
