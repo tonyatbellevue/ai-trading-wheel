@@ -1,0 +1,42 @@
+name: Wheel Scanner Top Candidates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - name: Scan
+        env:
+          ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL:   "https://paper-api.alpaca.markets/v2"
+          PAPER_TRADING:     "true"
+        run: |
+          python -c "
+          import io, sys
+          sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+          from loguru import logger; logger.remove()
+          from wheel_scanner import scan_candidates, WHEEL_UNIVERSE
+          from core.alpaca_client import AlpacaClients
+          cash = float(AlpacaClients.trading().get_account().cash)
+          print('SCAN_START')
+          results = scan_candidates(WHEEL_UNIVERSE, dte_min=1, dte_max=5, cash=cash, contracts=2)
+          for r in results[:8]:
+              s = r['score']
+              p = r['put']
+              st = r['stock']
+              print(f\"RANK|{r['symbol']}|score={s['total_score']:.0f}|price=\${st['price']:.2f}|\"
+                    f\"strike=\${p['strike']:.0f}|dte={p['dte']}|premium=\${p['mid']:.2f}|\"
+                    f\"iv={p['iv']:.0%}|delta={p['delta']:+.2f}|annyield={s['annualized_yield']:.0%}|\"
+                    f\"rv={st.get('realized_vol',0):.0%}|drop={st.get('max_drop',0):+.1%}\")
+          print('SCAN_END')
+          "
