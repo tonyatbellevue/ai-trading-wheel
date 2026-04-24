@@ -1,6 +1,12 @@
 {
   "active_symbol": "QCOM",
-  "plan": null,
+  "plan": {
+    "from_symbol": "QCOM",
+    "to_symbol": "AMZN",
+    "trigger_date": "2026-04-26",
+    "reason": "CAUTION + better alternative (AMZN score +100%)",
+    "planned_at": "2026-04-24T16:41:12.705426"
+  },
   "history": [
     {
       "switched_at": "2026-04-20T14:23:55.712581",
