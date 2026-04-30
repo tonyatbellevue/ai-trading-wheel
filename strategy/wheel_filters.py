@@ -5,6 +5,8 @@
 - Kelly sizing:        2/5  平均降 MaxDD 18pp  ✅
 - Earnings filter:     3/5  ✅
 - Low IV skip:         3/5（对稳定股有效）
+- VIX regime gate:     v5  ✅ (panic-mode skip)
+- IV rank gate:        v6  ✅ (premium-floor skip)
 
 用法：
     from strategy.wheel_filters import pre_open_checks, kelly_contracts
@@ -15,6 +17,7 @@
         return
 """
 from __future__ import annotations
+import os
 from datetime import date, timedelta
 from math import sqrt, log
 from statistics import stdev, mean
@@ -28,18 +31,58 @@ from loguru import logger
 from config import settings
 
 
-# TSLA/NVDA/MSFT/AAPL 近期财报日 — 按季度更新
+# 财报日 DB — 按季度更新。Format: ISO date strings.
+#
+# Coverage: hand-maintained for the active wheel universe. When a symbol
+# isn't in this dict, check_earnings() logs a WARN and falls open (so the
+# bot doesn't lock up on first encounter with a new ticker), but a missing
+# entry is the #1 cause of "we accidentally sold into earnings". Keep this
+# fresh.
+#
+# To verify: https://finance.yahoo.com/calendar/earnings?symbol=XXX
 EARNINGS_DB = {
-    "TSLA": ["2025-04-22", "2025-07-23", "2025-10-22", "2026-01-28", "2026-04-21"],
-    "NVDA": ["2025-05-28", "2025-08-27", "2025-11-19", "2026-02-25", "2026-05-27"],
-    # MSFT Q3 FY2026 财报：2026-04-29 盘后（日期保险起见两天都列）
+    "TSLA": ["2025-04-22", "2025-07-23", "2025-10-22", "2026-01-28", "2026-04-21", "2026-07-22"],
+    "NVDA": ["2025-05-28", "2025-08-27", "2025-11-19", "2026-02-25", "2026-05-27", "2026-08-26"],
+    # MSFT Q3 FY2026 财报：2026-04-29 盘后
     "MSFT": ["2025-04-30", "2025-07-30", "2025-10-29", "2026-01-28",
              "2026-04-29", "2026-04-30", "2026-07-29", "2026-10-28"],
-    "AAPL": ["2025-05-01", "2025-07-31", "2025-10-30", "2026-01-29", "2026-05-01"],
-    "GOOGL": ["2025-04-24", "2025-07-24", "2025-10-28", "2026-01-27"],
-    "META": ["2025-04-30", "2025-07-30", "2025-10-29", "2026-01-28"],
-    "AMZN": ["2025-05-01", "2025-07-31", "2025-10-30", "2026-02-04"],
+    "AAPL": ["2025-05-01", "2025-07-31", "2025-10-30", "2026-01-29", "2026-05-01", "2026-07-30"],
+    "GOOGL": ["2025-04-24", "2025-07-24", "2025-10-28", "2026-01-27", "2026-04-23", "2026-07-23"],
+    "META":  ["2025-04-30", "2025-07-30", "2025-10-29", "2026-01-28", "2026-04-29", "2026-07-29"],
+    "AMZN":  ["2025-05-01", "2025-07-31", "2025-10-30", "2026-02-04", "2026-04-30", "2026-07-30"],
+    # Semis
+    "AVGO": ["2025-03-06", "2025-06-05", "2025-09-04", "2025-12-11", "2026-03-05", "2026-06-04"],
+    "AMD":  ["2025-05-06", "2025-08-05", "2025-11-04", "2026-02-03", "2026-05-05", "2026-08-04"],
+    "QCOM": ["2025-05-01", "2025-07-30", "2025-11-05", "2026-02-04", "2026-04-30", "2026-07-29"],
+    "TSM":  ["2025-04-17", "2025-07-17", "2025-10-16", "2026-01-15", "2026-04-16", "2026-07-16"],
+    "MU":   ["2025-03-20", "2025-06-25", "2025-09-23", "2025-12-18", "2026-03-19", "2026-06-24"],
+    "AMAT": ["2025-05-15", "2025-08-14", "2025-11-13", "2026-02-12", "2026-05-14", "2026-08-13"],
+    # Healthcare / defensive
+    "UNH":  ["2025-04-17", "2025-07-15", "2025-10-14", "2026-01-22", "2026-04-16", "2026-07-15"],
+    "JNJ":  ["2025-04-15", "2025-07-15", "2025-10-14", "2026-01-23", "2026-04-14", "2026-07-14"],
+    "COST": ["2025-03-06", "2025-05-29", "2025-09-25", "2025-12-11", "2026-03-05", "2026-05-28"],
+    # PLTR
+    "PLTR": ["2025-05-05", "2025-08-04", "2025-11-03", "2026-02-02", "2026-05-04", "2026-08-03"],
 }
+
+
+def _earnings_db_is_stale() -> bool:
+    """Detect when EARNINGS_DB has no future dates anywhere — a sign that
+    nobody's updated the file in months. Logs a WARN; doesn't block trading.
+    """
+    today = date.today()
+    for sym, dates in EARNINGS_DB.items():
+        if any(date.fromisoformat(d) >= today for d in dates):
+            return False
+    return True
+
+
+# Run once on import — alerts the user if the DB has gone fully stale.
+if _earnings_db_is_stale():
+    logger.warning(
+        "⚠️ EARNINGS_DB has zero future dates across all symbols — "
+        "the DB is stale. Update strategy/wheel_filters.py:EARNINGS_DB."
+    )
 
 
 def _stk_client() -> StockHistoricalDataClient:
@@ -48,16 +91,87 @@ def _stk_client() -> StockHistoricalDataClient:
     )
 
 
+def _fetch_finnhub_earnings(symbol: str) -> list[date]:
+    """Optional Finnhub fallback when EARNINGS_DB is missing a symbol.
+
+    Activated only if FINNHUB_API_KEY is set in the environment. Free tier
+    gives 60 calls/min which is plenty for this use case. Caches via
+    function-level dict so each cycle hits the API at most once per symbol.
+    """
+    api_key = os.environ.get("FINNHUB_API_KEY", "").strip()
+    if not api_key:
+        return []
+    if symbol in _fetch_finnhub_earnings._cache:
+        return _fetch_finnhub_earnings._cache[symbol]
+    try:
+        import requests
+        today = date.today()
+        end = today + timedelta(days=120)
+        r = requests.get(
+            "https://finnhub.io/api/v1/calendar/earnings",
+            params={
+                "from": today.isoformat(),
+                "to": end.isoformat(),
+                "symbol": symbol,
+                "token": api_key,
+            },
+            timeout=5,
+        )
+        r.raise_for_status()
+        data = r.json().get("earningsCalendar", [])
+        dates = [date.fromisoformat(e["date"]) for e in data if "date" in e]
+        _fetch_finnhub_earnings._cache[symbol] = dates
+        if dates:
+            logger.info(f"📅 Finnhub: {symbol} earnings → {[d.isoformat() for d in dates]}")
+        return dates
+    except Exception as e:
+        logger.warning(f"Finnhub earnings lookup failed for {symbol}: {e}")
+        _fetch_finnhub_earnings._cache[symbol] = []
+        return []
+_fetch_finnhub_earnings._cache = {}
+
+
 def check_earnings(symbol: str, dte_max: int = None) -> tuple[bool, str]:
-    """财报窗口过滤：未来 dte_max 天内有财报则跳过"""
+    """财报窗口过滤：未来 dte_max 天内有财报则跳过
+
+    Sources, in order:
+      1. EARNINGS_DB (hand-maintained, fast, no network)
+      2. Finnhub API (only if FINNHUB_API_KEY is set, falls back silently)
+
+    When a symbol has no source at all, logs WARN and fails open. Better to
+    sometimes accidentally trade through earnings than to lock the bot out
+    of an entire ticker because nobody filled in the dates.
+    """
     dte_max = dte_max or settings.WHEEL_MAX_DTE
-    earnings = EARNINGS_DB.get(symbol, [])
     today = date.today()
     horizon = today + timedelta(days=dte_max + 1)
-    for e_str in earnings:
-        e = date.fromisoformat(e_str)
+
+    # 1. Static DB
+    db_dates = [date.fromisoformat(d) for d in EARNINGS_DB.get(symbol, [])]
+
+    # 2. Finnhub fallback — only if key is set
+    api_dates = _fetch_finnhub_earnings(symbol)
+
+    all_dates = sorted(set(db_dates) | set(api_dates))
+
+    # No coverage at all → warn but pass
+    if not all_dates:
+        logger.warning(
+            f"⚠️ {symbol} not in EARNINGS_DB and no Finnhub data — "
+            f"earnings risk unchecked. Add to wheel_filters.py:EARNINGS_DB "
+            f"or set FINNHUB_API_KEY."
+        )
+        return True, "earnings:NO_DATA"
+
+    # Window check
+    for e in all_dates:
         if today <= e <= horizon:
             return False, f"财报日 {e} 在 {dte_max}d 窗口内"
+    # Find next earnings for the message
+    future = [e for e in all_dates if e >= today]
+    if future:
+        days_to = (future[0] - today).days
+        return True, f"earnings T+{days_to}d ({future[0]})"
     return True, ""
 
 
@@ -293,6 +407,55 @@ def check_vix_regime(rv_threshold: float = 0.25) -> tuple[bool, str]:
         return True, ""
 
 
+def check_iv_rank(symbol: str, lookback: int = 252, window: int = 20,
+                  min_rank: float = 30) -> tuple[bool, str]:
+    """Premium-floor gate: skip CSPs when current IV rank is too low.
+
+    Alpaca's option chain only gives a snapshot of current IV, so we use
+    realized-vol percentile as a proxy: roll the past `lookback` days into
+    a series of `window`-day annualized RVs, then compute today's RV
+    percentile within that distribution.
+
+    A rank ≥ 30 means today's RV is in the top 70% of the past year — i.e.
+    premium is roughly at-or-above its annual median. Below 30 means we'd
+    be selling cheap insurance for thin compensation, which is poor
+    risk-reward (same gamma exposure, smaller paycheck).
+
+    This complements check_realized_vol (which CAPS at 90% to skip
+    extreme-vol tickers): together they bracket the wheel's sweet zone.
+
+    Returns (ok_to_sell, message). Fail-open on errors.
+    """
+    try:
+        client = _stk_client()
+        bars = client.get_stock_bars(StockBarsRequest(
+            symbol_or_symbols=symbol, timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=int(lookback * 1.5) + window),
+        ))[symbol]
+        closes = [float(b.close) for b in bars]
+        if len(closes) < window + 30:
+            return True, ""    # not enough history, fail open
+        rets = [log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
+        # Rolling window-day annualized RV
+        rv_series = []
+        for i in range(window, len(rets) + 1):
+            rv = stdev(rets[i-window:i]) * sqrt(252)
+            rv_series.append(rv)
+        if len(rv_series) < 30:
+            return True, ""
+        # Limit to past `lookback` trading days for the percentile base
+        rv_window = rv_series[-lookback:]
+        current_rv = rv_series[-1]
+        rank = sum(1 for x in rv_window if x <= current_rv) / len(rv_window) * 100
+        if rank < min_rank:
+            return False, (f"IV rank {rank:.0f} < {min_rank:.0f} "
+                           f"(RV {current_rv:.0%}, premium too thin)")
+        return True, f"IV rank {rank:.0f} (RV {current_rv:.0%})"
+    except Exception as e:
+        logger.warning(f"IV rank check failed for {symbol}: {e}")
+        return True, ""
+
+
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     """卖 Put（CSP）前的综合检查 — 组合所有回测验证有效的过滤器
 
@@ -302,11 +465,12 @@ def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     don't waste per-symbol API quota when the whole market is unsafe.
     """
     checks = [
-        ("vix_regime", check_vix_regime()),     # new in v5: panic-mode gate
+        ("vix_regime", check_vix_regime()),     # v5: market-wide panic gate
         ("spy_market", check_spy_trend()),      # market-wide trend gate
         ("earnings",   check_earnings(symbol)),
         ("ma_trend",   check_ma_trend(symbol)),
         ("rv_cap",     check_realized_vol(symbol)),
+        ("iv_rank",    check_iv_rank(symbol)),  # v6: premium-floor gate
     ]
     reasons = []
     for name, (ok, msg) in checks:
