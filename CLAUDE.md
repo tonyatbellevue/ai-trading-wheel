@@ -22,6 +22,14 @@ US market close 16:05 ET = 20:05 UTC = 04:05 SGT next day (user's pre-dawn)
 
 The user's "today" is mostly SGT, so when they wake up they're checking the *previous* US trading day's close email and considering an action for *that same evening's* US session.
 
+## 🎯 Scope — Alpaca paper account ONLY
+
+**Never discuss the user's real-money brokerage account (Merrill Lynch / ML).** All conversations, recommendations, status checks, and analysis are scoped to the Alpaca paper trading account that the wheel bot operates on.
+
+If the user asks about positions, P&L, options trades, or "the account," default to Alpaca paper. Do not bring up ML holdings (PLTR, QQQ, UNH, cost basis, LTCG, real-money covered calls) unless the user explicitly opens that thread, and even then keep it minimal.
+
+The bot's universe is the 32 tickers in `wheel_scanner.WHEEL_UNIVERSE`. The bot's account is the one returned by `AlpacaClients.trading()`. That's it.
+
 ## What this repo is
 
 A paper-trading Wheel options bot running against Alpaca. The strategy sells cash-secured puts, takes assignment when they go ITM, sells covered calls, and rotates the underlying symbol based on health + evaluator score. Separately, there's an older EMA/RSI + RandomForest stock-trading entry point that predates the wheel work.
