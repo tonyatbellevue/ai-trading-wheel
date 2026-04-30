@@ -27,6 +27,8 @@ logs/
 
 # 报告
 reports/
+# Exception: daily_sent_state.json must persist across GHA runners to dedupe emails
+!reports/daily_sent_state.json
 
 # 本地运行时数据（账户快照/交易日志/shadow 账户等含敏感信息）
 metrics/data/

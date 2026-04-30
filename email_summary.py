@@ -48,6 +48,30 @@ def _already_sent_today(event: str) -> bool:
     return state.get(f"{et_date}:{event}") is True or state.get(key) is True
 
 
+def _is_us_trading_day() -> bool:
+    """Return True if today is a US equity trading day.
+
+    Uses Alpaca's calendar — covers weekends, federal holidays, and the
+    occasional half-day. We check the calendar rather than `clock.is_open`
+    so the close email at 16:05 ET still recognizes today was a session.
+    """
+    try:
+        from core.alpaca_client import AlpacaClients
+        from alpaca.trading.requests import GetCalendarRequest
+        today = datetime.now(ET).date()
+        cal = AlpacaClients.trading().get_calendar(
+            GetCalendarRequest(start=today, end=today)
+        )
+        return any(c.date == today for c in cal)
+    except Exception as e:
+        # If Alpaca is unreachable, fall back to weekday check so we don't
+        # miss a normal trading day. Federal holidays slip through here,
+        # but this is rare and the next Alpaca-up run will be correct.
+        logger.warning(f"Alpaca calendar lookup failed ({e}); "
+                       f"falling back to weekday check.")
+        return datetime.now(ET).weekday() < 5  # Mon-Fri
+
+
 def _mark_sent(event: str) -> None:
     SENT_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -68,6 +92,13 @@ def _mark_sent(event: str) -> None:
 
 def main(event: str = "update"):
     force = os.environ.get("WHEEL_EMAIL_FORCE", "").strip() == "1"
+
+    # Skip on weekends and US market holidays (open/close emails only;
+    # manual workflow_dispatch with WHEEL_EMAIL_FORCE=1 still goes through).
+    if not force and event in ("open", "close") and not _is_us_trading_day():
+        logger.info(f"📅 Today is not a US trading day — skipping {event} email.")
+        return True
+
     if not force and _already_sent_today(event):
         logger.info(f"📭 Today's {event} email was already sent — skipping "
                     f"(set WHEEL_EMAIL_FORCE=1 to override).")
