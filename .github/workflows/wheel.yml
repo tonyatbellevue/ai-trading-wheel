@@ -35,6 +35,15 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           ALPACA_BASE_URL: "https://paper-api.alpaca.markets/v2"
           PAPER_TRADING: "true"
+          # Wheel cycle also acts as a piggyback trigger for OPEN/CLOSE
+          # emails — wheel-summary.yml's hourly cron is unreliable on GHA
+          # free tier (we've seen 1-2h delays and outright misses), so
+          # this 5-min cron does a windowed idempotent re-check.
+          EMAIL_SMTP_SERVER: ${{ secrets.EMAIL_SMTP_SERVER }}
+          EMAIL_SMTP_PORT: ${{ secrets.EMAIL_SMTP_PORT }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
         run: python wheel_once.py
 
       - name: Check for trade
