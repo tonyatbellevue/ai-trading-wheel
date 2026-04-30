@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⏰ User timezone — ALWAYS double-stamp times
+
+The user lives in **Singapore (SGT, UTC+8)**. The market is **US Eastern (ET, UTC-4 with DST)**. GitHub Actions cron runs in **UTC**. These three are 12+ hours apart, and ambiguous timestamps have already caused real confusion.
+
+**Rules when writing or speaking times:**
+
+1. **Always tag the timezone explicitly.** Never say "21:30" alone — always "21:30 SGT" or "09:30 ET".
+2. **For schedules and emails, show both SGT and ET.** Example: "OPEN email at 09:31 ET = 21:31 SGT".
+3. **For "today" / "tomorrow", clarify which calendar.** US trading day 4/30 spans SGT 4/30 evening through SGT 5/1 morning — say "美东 4/30" or "ET 4/30" to disambiguate.
+4. **Cron strings stay in UTC** (that's what GHA reads), but include the SGT translation in the comment.
+
+**Quick reference:**
+```
+SGT = UTC + 8     SGT = ET + 12 (DST)  SGT = ET + 13 (non-DST)
+US market open  09:31 ET = 13:31 UTC = 21:31 SGT (user's evening)
+US market close 16:05 ET = 20:05 UTC = 04:05 SGT next day (user's pre-dawn)
+```
+
+The user's "today" is mostly SGT, so when they wake up they're checking the *previous* US trading day's close email and considering an action for *that same evening's* US session.
+
 ## What this repo is
 
 A paper-trading Wheel options bot running against Alpaca. The strategy sells cash-secured puts, takes assignment when they go ITM, sells covered calls, and rotates the underlying symbol based on health + evaluator score. Separately, there's an older EMA/RSI + RandomForest stock-trading entry point that predates the wheel work.
