@@ -1,5 +1,5 @@
 {
-  "active_symbol": "QCOM",
+  "active_symbol": "UNH",
   "plan": null,
   "history": [
     {
@@ -9,6 +9,13 @@
       "planned_to": "MSFT",
       "reason": "TSLA 高波动 3-DTE wheel 5年回测亏损，MSFT 回测年化+2.7%/MaxDD 5.4%",
       "rescan_note": "触发时重扫: 原计划 MSFT 已非 top-1，改用 QCOM (score=100.0)"
+    },
+    {
+      "switched_at": "2026-04-27T13:58:44.458020",
+      "from": "QCOM",
+      "to": "UNH",
+      "planned_to": "UNH",
+      "reason": "CAUTION + better alternative (UNH score +19%)"
     }
   ]
 }
