@@ -95,6 +95,63 @@ class WheelStrategy:
         buckets["__total__"] = total
         return buckets
 
+    def _try_stop_loss(self, pos, loss_multiple: float = 3.0) -> bool:
+        """Tail-risk killer: BTC at market when a short option's price has
+        risen to `loss_multiple` × entry premium.
+
+        Without this, a single ITM blowup (UNH down 20% on a fraud headline,
+        TSLA earnings miss, etc.) can wipe out weeks of profits and force
+        assignment at the worst possible price. This caps single-trade loss
+        at ~2× premium received: we sold for $X, paid up to $3X to close.
+
+        Triggered BEFORE _try_take_profit in the SHORT_PUT/SHORT_CALL branch
+        — if we're in stop-loss territory we obviously aren't in
+        take-profit territory.
+
+        Idempotent: skips if a BTC order already exists on this contract.
+        """
+        try:
+            qty = float(pos.qty)
+            if qty >= 0:
+                return False
+            entry = float(pos.avg_entry_price)
+            current = float(pos.current_price)
+            if entry <= 0:
+                return False
+            # We sold at `entry`, current price is what we'd pay to close.
+            # Stop loss only fires when current is well above entry.
+            if current < entry * loss_multiple:
+                return False
+
+            # Idempotency: don't double-place a BTC.
+            try:
+                open_orders = self._option_mgr.get_open_option_orders(self.symbol)
+                for o in open_orders:
+                    if o.symbol == pos.symbol and str(o.side).endswith("BUY"):
+                        logger.warning(
+                            f"⛔ stop-loss BTC 已挂单: {pos.symbol} (order={o.id})"
+                        )
+                        return True
+            except Exception as e:
+                logger.debug(f"开放订单检查失败: {e}")
+
+            close_qty = int(abs(qty))
+            # Aggressive limit: 5% above current to ensure fill in fast move.
+            # Stop-loss triggers usually coincide with rapid IV expansion,
+            # so spreads can blow out — 5% above mid is a sane ceiling.
+            limit = round(current * 1.05, 2)
+            limit = max(limit, current + 0.02)
+            logger.warning(
+                f"🛑 STOP-LOSS 触发: {pos.symbol} 入场 ${entry:.2f} → "
+                f"现价 ${current:.2f} ({current/entry:.1f}x), "
+                f"强制 BTC @ ${limit:.2f}"
+            )
+            self._option_mgr.buy_to_close(pos.symbol, close_qty, limit)
+            return True
+        except Exception as e:
+            logger.warning(f"stop-loss 尝试失败（继续持有）: {e}")
+            return False
+
     def _try_take_profit(self, pos, profit_threshold: float = 0.50) -> bool:
         """If a short option has decayed to ≤ (1 - threshold) × entry premium,
         buy to close. Standard wheel convention at 50 %.
@@ -434,10 +491,13 @@ class WheelStrategy:
                               notes=f"cost_basis={cost_basis:.2f}")
 
         elif phase in (WheelPhase.SHORT_PUT, WheelPhase.SHORT_CALL):
-            # BTC at 50% profit — industry-standard wheel rule.
-            # If the contract has already given us 50% of max credit back,
-            # close it and free the capital. Frees us from the last week
-            # of gamma risk for barely any extra theta.
+            # 1. STOP-LOSS first — if a position has blown out (price >= 3×
+            #    entry), close it before checking take-profit. Tail-risk
+            #    killer: caps single-trade loss at ~2× premium received.
+            if self._try_stop_loss(obj):
+                return
+            # 2. TAKE-PROFIT — BTC at 50% profit, industry-standard wheel rule.
+            #    Frees capital and skips the last-week gamma window.
             if self._try_take_profit(obj):
                 return
             logger.info("期权已开仓，持仓中，等待到期或行权...")

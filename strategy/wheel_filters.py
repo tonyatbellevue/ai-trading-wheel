@@ -253,16 +253,57 @@ def check_spy_trend(window: int = 200) -> tuple[bool, str]:
         return True, ""
 
 
+def check_vix_regime(rv_threshold: float = 0.25) -> tuple[bool, str]:
+    """Tail-risk gate: skip new CSPs when the broader market is in panic mode.
+
+    Alpaca's data feed doesn't carry the VIX index, so we use SPY's 30-day
+    annualized realized volatility as a robust proxy. Historically SPY 30d
+    RV tracks VIX with a small offset (VIX ≈ RV plus ~3-5pp IV premium).
+    When SPY 30d RV crosses 25%, that maps to VIX in the 28-30 zone — the
+    historical "elevated panic" threshold (2008/2020/2022 all started here
+    or higher).
+
+    Why this matters: in panic regimes correlations spike to 1, and selling
+    puts on multiple symbols means simultaneous ITM, simultaneous assignment,
+    no escape. Sitting out for a week of VIX > 25 has historically saved
+    much more than the missed premium.
+
+    Returns (ok_to_sell, message). Fail-open on API errors so a data hiccup
+    doesn't freeze the whole bot.
+    """
+    try:
+        client = _stk_client()
+        bars = client.get_stock_bars(StockBarsRequest(
+            symbol_or_symbols="SPY",
+            timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=50),
+        ))["SPY"]
+        closes = [float(b.close) for b in bars][-31:]
+        if len(closes) < 21:
+            return True, ""    # not enough history, fail open
+        # Daily log returns → annualized stdev (sqrt(252) trading days)
+        returns = [log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
+        annual_vol = stdev(returns) * sqrt(252)
+        if annual_vol > rv_threshold:
+            return False, (f"SPY 30d RV {annual_vol:.0%} > {rv_threshold:.0%} "
+                           f"(panic regime, ≈ VIX > 28)")
+        return True, f"SPY 30d RV {annual_vol:.0%} (calm)"
+    except Exception as e:
+        logger.warning(f"VIX regime check failed: {e}")
+        return True, ""
+
+
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     """卖 Put（CSP）前的综合检查 — 组合所有回测验证有效的过滤器
 
     返回 (是否可开仓, 说明)
 
-    Order matters: SPY market filter first so we fail fast on systemic
-    bear tape before spending quotas on per-symbol API calls.
+    Order matters: market-wide gates first (cheapest, fail-fast) so we
+    don't waste per-symbol API quota when the whole market is unsafe.
     """
     checks = [
-        ("spy_market", check_spy_trend()),      # new in v4: market-wide gate
+        ("vix_regime", check_vix_regime()),     # new in v5: panic-mode gate
+        ("spy_market", check_spy_trend()),      # market-wide trend gate
         ("earnings",   check_earnings(symbol)),
         ("ma_trend",   check_ma_trend(symbol)),
         ("rv_cap",     check_realized_vol(symbol)),
