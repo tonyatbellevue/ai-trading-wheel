@@ -2,34 +2,28 @@ name: Wheel Daily Email Summary
 
 # Goal: exactly ONE open + ONE close email per US trading day.
 #
-# Reliability strategy:
-#   - 3 redundant crons per event (5 min apart) — survives GHA delays/skips
-#   - Concurrency lock per event-type — serializes the 3 crons
-#   - Idempotency state committed back to repo (reports/daily_sent_state.json)
-#     so the second/third cron sees the first one already sent and exits
-#   - Holiday/weekend skip lives in email_summary.py via Alpaca's calendar
+# Architecture (simplified after the 4/30 incident where 3 redundant
+# crons all fired within 3 min of each other and concurrency lock failed
+# to dedupe, sending 2 emails for one event):
 #
-# Market open  9:31 AM ET = 13:31 UTC
-# Market close 4:05 PM ET = 20:05 UTC
+#   - One cron per event in this workflow (OPEN at 13:31 UTC, CLOSE at
+#     20:05 UTC). Free-tier GHA delays these by 1-2h regularly, but
+#     that's OK because of the backup below.
+#   - The REAL reliability comes from wheel.yml's 5-min cron, which
+#     calls email_summary.py inside an OPEN/CLOSE window check (see
+#     wheel_once.py:_maybe_send_scheduled_email). That cron almost
+#     never gets dropped.
+#   - Idempotency is enforced in email_summary.py via the local
+#     daily_sent_state.json file. As long as the same runner sees a
+#     prior send within the same day, it skips. Cross-runner state
+#     persistence isn't worth the complexity it added.
+#
+# Holiday/weekend skip lives in email_summary.py via Alpaca's calendar.
 on:
   schedule:
-    - cron: "31 13 * * 1-5"   # OPEN  — primary
-    - cron: "36 13 * * 1-5"   # OPEN  — +5 min backup
-    - cron: "41 13 * * 1-5"   # OPEN  — +10 min backup
-    - cron: "5 20 * * 1-5"    # CLOSE — primary
-    - cron: "10 20 * * 1-5"   # CLOSE — +5 min backup
-    - cron: "15 20 * * 1-5"   # CLOSE — +10 min backup
-  workflow_dispatch:          # manual run — bypasses idempotency, always sends
-
-# Serialize redundant same-event crons. OPEN crons (hour 13 UTC) share one
-# group; CLOSE crons (hour 20 UTC) share another. Manual runs get their
-# own group so they can run in parallel with scheduled ones.
-concurrency:
-  group: wheel-email-${{ github.event_name == 'schedule' && (startsWith(github.event.schedule, '31 13') || startsWith(github.event.schedule, '36 13') || startsWith(github.event.schedule, '41 13')) && 'open' || github.event_name == 'schedule' && 'close' || 'manual' }}
-  cancel-in-progress: false
-
-permissions:
-  contents: write             # needed to push sent_state back to repo
+    - cron: "31 13 * * 1-5"   # OPEN  — 9:31 ET / 21:31 SGT
+    - cron: "5 20 * * 1-5"    # CLOSE — 16:05 ET / 04:05 SGT (next day)
+  workflow_dispatch:          # manual — bypasses idempotency, always sends
 
 jobs:
   email-summary:
@@ -39,9 +33,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0      # full history so rebase-on-push works
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -73,39 +64,9 @@ jobs:
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
-          # Manual run forces send (bypasses idempotency); scheduled runs
-          # honor the committed sent_state file so 3 crons = 1 email.
+          # Manual run forces send; scheduled runs honor idempotency.
           WHEEL_EMAIL_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
         run: python email_summary.py ${{ steps.event.outputs.event }}
-
-      # Commit the updated sent_state so the next redundant cron sees it
-      # and the idempotency check skips the duplicate send. Skip on manual
-      # dispatch (force-send shouldn't pollute the state file).
-      - name: Persist sent_state to repo
-        if: github.event_name == 'schedule' && success()
-        run: |
-          if [ ! -f reports/daily_sent_state.json ]; then
-            echo "No sent_state file (email may have skipped) — nothing to commit."
-            exit 0
-          fi
-          git config user.email "wheel-bot@github-actions.local"
-          git config user.name "wheel-bot"
-          git add -f reports/daily_sent_state.json
-          if git diff --staged --quiet; then
-            echo "sent_state unchanged — nothing to commit."
-            exit 0
-          fi
-          git commit -m "[skip ci] update daily_sent_state ($(date -u +%F) ${{ steps.event.outputs.event }})"
-          # Race-safe push: if another concurrent run beat us, rebase + retry
-          for i in 1 2 3; do
-            if git pull --rebase origin master && git push origin HEAD:master; then
-              echo "Pushed sent_state on attempt $i"
-              exit 0
-            fi
-            echo "Push failed on attempt $i, retrying..."
-            sleep $((i * 3))
-          done
-          echo "::warning::Failed to push sent_state after 3 attempts — duplicate email risk on next cron"
 
       - name: Upload summary artifact (debug)
         if: always()
