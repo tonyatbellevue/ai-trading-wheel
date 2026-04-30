@@ -22,6 +22,27 @@ US market close 16:05 ET = 20:05 UTC = 04:05 SGT next day (user's pre-dawn)
 
 The user's "today" is mostly SGT, so when they wake up they're checking the *previous* US trading day's close email and considering an action for *that same evening's* US session.
 
+## 🎯 Scope — Alpaca paper account ONLY
+
+**Never discuss the user's real-money brokerage account (Merrill Lynch / ML).** All conversations, recommendations, status checks, and analysis are scoped to the Alpaca paper trading account that the wheel bot operates on.
+
+If the user asks about positions, P&L, options trades, or "the account," default to Alpaca paper. Do not bring up ML holdings (PLTR, QQQ, UNH, cost basis, LTCG, real-money covered calls) unless the user explicitly opens that thread, and even then keep it minimal.
+
+The bot's universe is the 32 tickers in `wheel_scanner.WHEEL_UNIVERSE`. The bot's account is the one returned by `AlpacaClients.trading()`. That's it.
+
+## 📅 Earnings — ALWAYS check before any option recommendation
+
+Before recommending or analyzing any option trade (open / hold / roll / BTC), **first check the underlying's next earnings date**. This is a hard reflex, not a suggestion. The user has had to remind Claude multiple times — that's a signal Claude was being lazy, not that the rule is wrong.
+
+**Rule:**
+- If earnings within 7 days → flag it explicitly. Most plays should skip.
+- If earnings 7-30 days → mention it, factor IV elevation into the analysis.
+- If earnings > 30 days → still mention it once for the record.
+
+**How to check:** Yahoo Finance `/calendar/earnings?symbol=XXX`, Nasdaq earnings calendar, the Alpaca news feed, or just ask the user to verify on their broker. Never *recommend* without having confirmed earnings timing.
+
+This applies to every option discussion — wheel bot's underlying, candidate symbols in a scan, hypothetical alternatives the user asks about.
+
 ## What this repo is
 
 A paper-trading Wheel options bot running against Alpaca. The strategy sells cash-secured puts, takes assignment when they go ITM, sells covered calls, and rotates the underlying symbol based on health + evaluator score. Separately, there's an older EMA/RSI + RandomForest stock-trading entry point that predates the wheel work.
