@@ -1,12 +1,6 @@
 {
-  "active_symbol": "UNH",
-  "plan": {
-    "from_symbol": "UNH",
-    "to_symbol": "AMZN",
-    "trigger_date": "2026-05-03",
-    "reason": "CAUTION + better alternative (AMZN score +100%)",
-    "planned_at": "2026-05-01T14:13:05.430838"
-  },
+  "active_symbol": "TSLA",
+  "plan": null,
   "history": [
     {
       "switched_at": "2026-04-20T14:23:55.712581",
@@ -22,6 +16,13 @@
       "to": "UNH",
       "planned_to": "UNH",
       "reason": "CAUTION + better alternative (UNH score +19%)"
+    },
+    {
+      "switched_at": "2026-05-01T15:15:31.546654",
+      "from": "UNH",
+      "to": "TSLA",
+      "planned_to": "TSLA",
+      "reason": "CAUTION + better alternative (TSLA score +100%)"
     }
   ]
 }
