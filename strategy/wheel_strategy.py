@@ -159,6 +159,14 @@ class WheelStrategy:
         Returns True if BTC order is in flight (new or already pending),
         False when we decided not to close / not eligible.
 
+        v6 expiry-aware override: if option is near worthless (< $0.10) AND
+        within 1 day of expiry, SKIP the BTC and let it expire OTM. Reason:
+          - Tiny BTC premiums get crushed by bid-ask spread (often 50%+)
+          - Letting it expire = pocket every cent of remaining premium
+          - Saves Alpaca activity fee (~$0.05/contract)
+          - The wheel is in the home stretch — gamma risk is symmetric
+            around strike anyway
+
         Safety:
          - Skips if there's already an open BTC order on this contract
            (idempotent across 5-min cron re-runs).
@@ -179,6 +187,24 @@ class WheelStrategy:
             profit_pct = (entry - current) / entry
             if profit_pct < profit_threshold:
                 return False
+
+            # Expiry-aware override: don't BTC tiny near-expiry options.
+            # Better to let them expire OTM and pocket the last cent.
+            try:
+                info = _parse_symbol(pos.symbol)
+                if info:
+                    from datetime import date, datetime
+                    expiry = datetime.strptime(info["expiry"], "%Y-%m-%d").date()
+                    dte = (expiry - date.today()).days
+                    if dte <= 1 and current <= 0.10:
+                        logger.info(
+                            f"⏭️ skip BTC: {pos.symbol} 太便宜 (current ${current:.2f}) "
+                            f"+ DTE {dte} → 让它到期归零比 BTC 划算"
+                        )
+                        return False
+            except Exception as e:
+                logger.debug(f"expiry check failed: {e}")
+                # fall through — better to BTC than skip on parse failure
 
             # Idempotency: is a BTC already open on this contract?
             try:
@@ -274,9 +300,20 @@ class WheelStrategy:
             return {}
 
     def select_put(self) -> Optional[tuple[str, float, float]]:
-        """筛选 delta ≈ -WHEEL_TARGET_DELTA 的 Put，返回 (symbol, mid_price, delta)."""
+        """筛选 delta ≈ -target_delta 的 Put，返回 (symbol, mid_price, delta).
+
+        v6: target delta is now adaptive on IV rank — see
+        wheel_filters.target_delta_for_iv_rank. High IV → smaller delta
+        (further OTM, premium still ample). Low IV → standard 0.25.
+        """
+        from strategy.wheel_filters import compute_iv_rank, target_delta_for_iv_rank
+        rank = compute_iv_rank(self.symbol)
+        target_abs = target_delta_for_iv_rank(rank)
+        target = -target_abs
+        if rank is not None:
+            logger.info(f"📊 {self.symbol} IV rank={rank:.0f} → target Δ={target:.2f}")
+
         chain = self._fetch_chain("put")
-        target = -settings.WHEEL_TARGET_DELTA
         best_sym, best_snap, best_diff = None, None, float("inf")
 
         for sym, snap in chain.items():
