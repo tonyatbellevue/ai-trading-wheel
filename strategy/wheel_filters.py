@@ -407,24 +407,11 @@ def check_vix_regime(rv_threshold: float = 0.25) -> tuple[bool, str]:
         return True, ""
 
 
-def check_iv_rank(symbol: str, lookback: int = 252, window: int = 20,
-                  min_rank: float = 30) -> tuple[bool, str]:
-    """Premium-floor gate: skip CSPs when current IV rank is too low.
+def compute_iv_rank(symbol: str, lookback: int = 252, window: int = 20) -> Optional[float]:
+    """Compute IV rank as RV percentile. Returns float 0-100, or None on error.
 
-    Alpaca's option chain only gives a snapshot of current IV, so we use
-    realized-vol percentile as a proxy: roll the past `lookback` days into
-    a series of `window`-day annualized RVs, then compute today's RV
-    percentile within that distribution.
-
-    A rank ≥ 30 means today's RV is in the top 70% of the past year — i.e.
-    premium is roughly at-or-above its annual median. Below 30 means we'd
-    be selling cheap insurance for thin compensation, which is poor
-    risk-reward (same gamma exposure, smaller paycheck).
-
-    This complements check_realized_vol (which CAPS at 90% to skip
-    extreme-vol tickers): together they bracket the wheel's sweet zone.
-
-    Returns (ok_to_sell, message). Fail-open on errors.
+    Shared helper so check_iv_rank (binary gate) and select_put (dynamic
+    delta target) can use the same number without recomputing.
     """
     try:
         client = _stk_client()
@@ -434,26 +421,61 @@ def check_iv_rank(symbol: str, lookback: int = 252, window: int = 20,
         ))[symbol]
         closes = [float(b.close) for b in bars]
         if len(closes) < window + 30:
-            return True, ""    # not enough history, fail open
+            return None
         rets = [log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
-        # Rolling window-day annualized RV
         rv_series = []
         for i in range(window, len(rets) + 1):
             rv = stdev(rets[i-window:i]) * sqrt(252)
             rv_series.append(rv)
         if len(rv_series) < 30:
-            return True, ""
-        # Limit to past `lookback` trading days for the percentile base
+            return None
         rv_window = rv_series[-lookback:]
         current_rv = rv_series[-1]
         rank = sum(1 for x in rv_window if x <= current_rv) / len(rv_window) * 100
-        if rank < min_rank:
-            return False, (f"IV rank {rank:.0f} < {min_rank:.0f} "
-                           f"(RV {current_rv:.0%}, premium too thin)")
-        return True, f"IV rank {rank:.0f} (RV {current_rv:.0%})"
+        return rank
     except Exception as e:
-        logger.warning(f"IV rank check failed for {symbol}: {e}")
-        return True, ""
+        logger.warning(f"compute_iv_rank failed for {symbol}: {e}")
+        return None
+
+
+def target_delta_for_iv_rank(rank: Optional[float]) -> float:
+    """Adaptive delta-target based on IV rank.
+
+    Standard wheel uses fixed delta 0.25. But the same delta means very
+    different things at different IV regimes:
+      - High IV (rank ≥ 70): premium is fat, can afford further-OTM
+        strikes — lower delta = lower assignment probability
+      - Low IV (rank < 30): premium thin, need closer-to-ATM to make
+        the trade worthwhile (but check_iv_rank already blocks < 30)
+
+    Returns the delta absolute value to target. Caller flips sign for puts.
+    Falls back to settings.WHEEL_TARGET_DELTA when rank is unknown.
+    """
+    if rank is None:
+        return settings.WHEEL_TARGET_DELTA
+    if rank >= 70:
+        return 0.15      # extreme premium — go further OTM
+    if rank >= 50:
+        return 0.20      # elevated premium — slight pullback from ATM
+    return settings.WHEEL_TARGET_DELTA   # 30-50 = standard
+
+
+def check_iv_rank(symbol: str, lookback: int = 252, window: int = 20,
+                  min_rank: float = 30) -> tuple[bool, str]:
+    """Premium-floor gate: skip CSPs when current IV rank is too low.
+
+    Uses compute_iv_rank() under the hood. Threshold 30 = current RV is
+    in top 70% of past year. Below 30 means thin premium relative to
+    historical base — same gamma exposure, smaller paycheck.
+
+    Returns (ok_to_sell, message). Fail-open on errors.
+    """
+    rank = compute_iv_rank(symbol, lookback=lookback, window=window)
+    if rank is None:
+        return True, ""    # not enough data / API error — fail open
+    if rank < min_rank:
+        return False, f"IV rank {rank:.0f} < {min_rank:.0f} (premium too thin)"
+    return True, f"IV rank {rank:.0f}"
 
 
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
