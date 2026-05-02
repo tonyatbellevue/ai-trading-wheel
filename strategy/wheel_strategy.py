@@ -193,9 +193,12 @@ class WheelStrategy:
             try:
                 info = _parse_symbol(pos.symbol)
                 if info:
-                    from datetime import date, datetime
-                    expiry = datetime.strptime(info["expiry"], "%Y-%m-%d").date()
-                    dte = (expiry - date.today()).days
+                    from datetime import date as _date
+                    # _parse_symbol returns expiry as a date object, NOT a string.
+                    # (Caught this in 3-pass code review — earlier version called
+                    # datetime.strptime which would TypeError silently.)
+                    expiry = info["expiry"]
+                    dte = (expiry - _date.today()).days
                     if dte <= 1 and current <= 0.10:
                         logger.info(
                             f"⏭️ skip BTC: {pos.symbol} 太便宜 (current ${current:.2f}) "
