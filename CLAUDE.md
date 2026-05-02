@@ -41,6 +41,31 @@ Before recommending or analyzing any option trade (open / hold / roll / BTC), **
 
 **How to check:** Yahoo Finance `/calendar/earnings?symbol=XXX`, Nasdaq earnings calendar, the Alpaca news feed, or just ask the user to verify on their broker. Never *recommend* without having confirmed earnings timing.
 
+## 🔍 3-pass review before declaring "done"
+
+Pattern from real session: I shipped 4 PRs in one day, two of which had silent bugs that only the user's "检查 3 遍" caught. Default behavior must be **review, not ship and pray**.
+
+After any non-trivial code change (new function, parameter change, control-flow edit), run all three passes before claiming the work is complete:
+
+**Pass 1 — Static / structural**
+- `grep` old constant value across the repo (catches stale CLAUDE.md docs, hardcoded fallbacks like `getattr(..., OLD_VALUE)`)
+- Check every call site of changed functions still type-checks
+- Verify all new functions are actually called from somewhere
+
+**Pass 2 — Functional**
+- Run the function with boundary inputs (0, None, negative, max)
+- Mock-test each new branch with concrete inputs and assert expected output
+- For lookup tables, test every threshold (e.g. rank 49 vs 50, 69 vs 70)
+
+**Pass 3 — Integration**
+- Verify the change interacts correctly with upstream callers and downstream effects
+- Check execution ORDER (e.g. `_try_stop_loss` must run before `_try_take_profit` — the order matters even when both functions individually work)
+- Test the "no data" / "API down" path — does it fail open or fail closed, and is that what we want?
+
+If any pass finds an issue, fix it and **re-run all three passes from the top**. Don't claim "done" until three clean passes in a row.
+
+This is the SOP that yesterday's "check three times" enforced manually. Doing it by default means the user doesn't have to ask.
+
 This applies to every option discussion — wheel bot's underlying, candidate symbols in a scan, hypothetical alternatives the user asks about.
 
 ## What this repo is
