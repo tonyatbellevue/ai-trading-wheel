@@ -7,6 +7,15 @@ on:
     - cron: "*/5 13-20 * * 1-5"
   workflow_dispatch:
 
+# Serialize all wheel cycle runs — without this a slow cron (>5min) gets
+# overlapped by the next 5-min trigger, both pass the IDLE check, both
+# call select_put + sell_to_open, and we get DUPLICATE orders that bust
+# the 40% / 60% / 90% caps. cancel-in-progress=false means the second
+# run waits politely instead of killing the first one mid-trade.
+concurrency:
+  group: wheel-cycle
+  cancel-in-progress: false
+
 jobs:
   run-wheel:
     runs-on: ubuntu-latest
