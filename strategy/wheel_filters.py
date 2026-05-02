@@ -255,7 +255,7 @@ def kelly_contracts(
     if cash_buffer_pct is None:
         cash_buffer_pct = getattr(settings, "CASH_BUFFER_PCT", 0.10)
     if max_single_position_pct is None:
-        max_single_position_pct = getattr(settings, "MAX_SINGLE_POSITION_PCT", 0.70)
+        max_single_position_pct = getattr(settings, "MAX_SINGLE_POSITION_PCT", 0.40)
     if max_total_exposure_pct is None:
         max_total_exposure_pct = getattr(settings, "MAX_TOTAL_EXPOSURE_PCT", 0.90)
     if max_sector_exposure_pct is None:

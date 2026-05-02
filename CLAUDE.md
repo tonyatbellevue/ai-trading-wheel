@@ -125,7 +125,7 @@ max_contracts = min(
 # then a worst-case assertion: (existing + new_collateral + buffer) <= cash
 ```
 
-Defaults: `CASH_BUFFER_PCT=0.10`, `MAX_SINGLE_POSITION_PCT=0.70`, `MAX_TOTAL_EXPOSURE_PCT=0.90` (in `config/settings.py`). `check_buying_power_sufficient()` is a separate pre-order hard gate in case Kelly returns a non-zero count through a bug.
+Defaults: `CASH_BUFFER_PCT=0.10`, `MAX_SINGLE_POSITION_PCT=0.40` (v6: tightened from 0.70), `MAX_TOTAL_EXPOSURE_PCT=0.90`, `MAX_SECTOR_EXPOSURE_PCT=0.60` (in `config/settings.py`). `check_buying_power_sufficient()` is a separate pre-order hard gate in case Kelly returns a non-zero count through a bug.
 
 **Do not resurrect Kelly math here** — it doesn't apply to cash-secured short puts.
 
