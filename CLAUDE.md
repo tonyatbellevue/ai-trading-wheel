@@ -136,6 +136,19 @@ Two independent mechanisms must both agree before a swap happens:
 1. **Score comparison**: `_find_better_alternative()` → `wheel_scanner.scan_wheel_alternatives()` (returns a **dict** `{baseline, better, all}`, not a list — a silent bug fix from before). A swap only triggers at +10% improvement when CAUTION, +15% when GO+IDLE.
 2. **"Last cycle was profitable"** gate: `_last_cycle_was_profitable()` checks three sources in order — `metrics/trade_journal.csv` last exit, Alpaca closed orders over 14 days, then daily equity delta. If the last cycle lost money we **stay put** until it recovers; this is intentional, don't "optimize" it out.
 
+**`trigger_date` semantics — the part Claude has misread before:**
+
+```python
+trigger = date.today() if current_phase_is_idle else _next_expiry_friday_plus_one()
+```
+
+- **IDLE** (no open put) → `trigger = today` → swap fires on the SAME cron tick
+- **Holding a put** → `trigger = next Friday + 1` → wait until current cycle expires
+
+So **rotation is not "always delayed by a week"**. The `next Friday + 1` only exists to avoid tearing up an in-progress put. When IDLE there's nothing to protect, so the swap happens immediately and the next IDLE cycle sells on the new symbol. Don't tell the user "we'll switch next week" when they're IDLE — they'll switch in the next 5-min tick.
+
+The wheel-switch skill description ("picks a safe trigger date next Friday + 1 so we don't interrupt an active put") was written for the manual CLI which is typically called mid-position. The auto-evaluator uses the conditional above.
+
 There are **two scoring systems** in the repo (historical accident):
 - `wheel_scanner.py` — original scoring, still used by live `wheel_evaluator`
 - `backtest/rotation_backtest.py` + `metrics/shadow_rotation.py` — "v3" stability-weighted scoring (RV 30% + 30d DD 15% + IV sweet zone 15% + others)
