@@ -1,5 +1,5 @@
 {
-  "active_symbol": "UNH",
+  "active_symbol": "TSLA",
   "plan": null,
   "history": [
     {
@@ -16,6 +16,13 @@
       "to": "UNH",
       "planned_to": "UNH",
       "reason": "CAUTION + better alternative (UNH score +19%)"
+    },
+    {
+      "switched_at": "2026-05-01T15:15:31.546654",
+      "from": "UNH",
+      "to": "TSLA",
+      "planned_to": "TSLA",
+      "reason": "CAUTION + better alternative (TSLA score +100%)"
     }
   ]
 }
