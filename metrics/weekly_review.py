@@ -203,6 +203,16 @@ def build_weekly_review() -> str:
         lines.append(f"- {s}")
     lines.append("")
 
+    # ── Benchmark 对比 (vs SPY / PUTW) ──
+    try:
+        from metrics.benchmark_tracker import build_benchmark_report
+        bench_md = build_benchmark_report()
+        if bench_md:
+            lines.append("")
+            lines.append(bench_md)
+    except Exception as e:
+        lines.append(f"_Benchmark 报告生成失败: {e}_")
+
     # ── Shadow Rotation 对照 ──
     try:
         from metrics.shadow_rotation import format_shadow_report
