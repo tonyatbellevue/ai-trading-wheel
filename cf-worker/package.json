@@ -1,0 +1,17 @@
+{
+  "name": "wheel-cron-trigger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker cron that triggers wheel-summary.yml on GitHub Actions at precise OPEN/CLOSE times.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "typescript": "^5.4.0",
+    "wrangler": "^3.78.0"
+  }
+}
