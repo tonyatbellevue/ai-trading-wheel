@@ -2,28 +2,26 @@ name: Wheel Daily Email Summary
 
 # Goal: exactly ONE open + ONE close email per US trading day.
 #
-# Architecture (simplified after the 4/30 incident where 3 redundant
-# crons all fired within 3 min of each other and concurrency lock failed
-# to dedupe, sending 2 emails for one event):
+# Triggering: this workflow now runs ONLY via workflow_dispatch. The
+# Cloudflare Worker in cf-worker/ fires the dispatch at the precise
+# OPEN/CLOSE moments (13:31 UTC and 20:05 UTC, ±5s). Reasons the GHA
+# `schedule:` block was removed:
 #
-#   - One cron per event in this workflow (OPEN at 13:31 UTC, CLOSE at
-#     20:05 UTC). Free-tier GHA delays these by 1-2h regularly, but
-#     that's OK because of the backup below.
-#   - The REAL reliability comes from wheel.yml's 5-min cron, which
-#     calls email_summary.py inside an OPEN/CLOSE window check (see
-#     wheel_once.py:_maybe_send_scheduled_email). That cron almost
-#     never gets dropped.
-#   - Idempotency is enforced in email_summary.py via the local
-#     daily_sent_state.json file. As long as the same runner sees a
-#     prior send within the same day, it skips. Cross-runner state
-#     persistence isn't worth the complexity it added.
+#   - Free-tier GHA scheduled cron is delayed 1-2h regularly, so emails
+#     arrived late or were dropped entirely.
+#   - Keeping `schedule:` alongside the CF dispatch caused duplicate
+#     emails: the delayed scheduled run on a different runner couldn't
+#     see the dispatch's `daily_sent_state.json` (per-runner local) and
+#     would re-send.
 #
-# Holiday/weekend skip lives in email_summary.py via Alpaca's calendar.
+# Backup paths if the CF Worker is down:
+#   - Manual: `gh workflow run wheel-summary.yml --ref master`
+#   - CF Worker also exposes /?dispatch=1 as a manual smoke-test endpoint.
+#
+# Holiday/weekend skip lives in email_summary.py via Alpaca's calendar,
+# so a stray dispatch on a market-closed day no-ops cleanly.
 on:
-  schedule:
-    - cron: "31 13 * * 1-5"   # OPEN  — 9:31 ET / 21:31 SGT
-    - cron: "5 20 * * 1-5"    # CLOSE — 16:05 ET / 04:05 SGT (next day)
-  workflow_dispatch:          # manual — bypasses idempotency, always sends
+  workflow_dispatch:          # CF Worker triggers this; bypasses idempotency, always sends
 
 jobs:
   email-summary:

@@ -1,0 +1,32 @@
+# Cloudflare Worker — wheel email cron trigger
+#
+# Crons run in UTC. Schedule mirrors .github/workflows/wheel-summary.yml:
+#   - 13:31 UTC = 09:31 ET = 21:31 SGT (OPEN, weekdays)
+#   - 20:05 UTC = 16:05 ET = 04:05 SGT next day (CLOSE, weekdays)
+#
+# Cloudflare Cron Triggers fire within ~5s of schedule (vs GHA free tier's
+# 1-2h delay), so the email arrives ~2 min after market open instead of
+# 1-2 hours late.
+
+name = "wheel-cron-trigger"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# vars are public — they end up in the deployed Worker binary, visible in
+# the CF dashboard. Safe for owner/repo/branch/file-name; NEVER put the
+# GitHub PAT here. Use `wrangler secret put GH_TOKEN` instead.
+[vars]
+GH_OWNER = "tonyatbellevue"
+GH_REPO = "ai-trading-wheel"
+WORKFLOW_FILE = "wheel-summary.yml"
+GIT_REF = "master"
+
+[triggers]
+crons = [
+  "31 13 * * 1-5",   # OPEN  — 13:31 UTC = 21:31 SGT
+  "5 20 * * 1-5",    # CLOSE — 20:05 UTC = 04:05 SGT (next SGT day)
+]
+
+# Observability — enable Workers Logpush / live tail. Free tier OK.
+[observability]
+enabled = true
