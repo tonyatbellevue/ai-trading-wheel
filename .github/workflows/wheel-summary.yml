@@ -20,10 +20,14 @@ name: Wheel Daily Email Summary
 #
 # Holiday/weekend skip lives in email_summary.py via Alpaca's calendar.
 on:
-  schedule:
-    - cron: "31 13 * * 1-5"   # OPEN  — 9:31 ET / 21:31 SGT
-    - cron: "5 20 * * 1-5"    # CLOSE — 16:05 ET / 04:05 SGT (next day)
-  workflow_dispatch:          # manual — bypasses idempotency, always sends
+  # NOTE: schedule block removed 5/8 — see audit. cron-job.org now fires
+  # the workflow_dispatch precisely at 13:31 / 20:05 UTC (±30s vs GHA
+  # schedule's 1-2h delay). Keeping schedule alongside dispatch caused
+  # duplicate emails: the delayed scheduled run on a different runner
+  # couldn't see the dispatch's daily_sent_state.json (per-runner local)
+  # and would re-send. User received 2 close emails on 5/7 because of
+  # this. Sole trigger now is workflow_dispatch (cron-job.org or manual).
+  workflow_dispatch:          # cron-job.org triggers; manual fallback OK
 
 jobs:
   email-summary:
