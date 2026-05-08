@@ -62,9 +62,20 @@ After any non-trivial code change (new function, parameter change, control-flow 
 - Check execution ORDER (e.g. `_try_stop_loss` must run before `_try_take_profit` — the order matters even when both functions individually work)
 - Test the "no data" / "API down" path — does it fail open or fail closed, and is that what we want?
 
-If any pass finds an issue, fix it and **re-run all three passes from the top**. Don't claim "done" until three clean passes in a row.
+**Pass 4 — Post-merge master verification**
+- After merging, fetch origin/master and verify the change actually landed:
+  ```bash
+  git fetch origin master
+  SHA=$(git rev-parse origin/master)
+  git show $SHA:<changed-file> | grep <distinctive-string>
+  ```
+- A `gh pr merge --squash` on a long-lived branch with many already-merged commits can silently drop diffs. Real example: PRs #31-40 all reported as merged but the actual file content was missing from master because the branch had ~10 prior already-squashed commits and the new diffs got lost in the re-squash. PR #41/42 hit the same pattern.
+- "PR merged" ≠ "change is on master". Always verify. If verification fails, re-apply on a fresh branch from master and PR again.
+- Defensive practice: prefer fresh branches from master per change. Don't accumulate changes on a long-lived feature branch.
 
-This is the SOP that yesterday's "check three times" enforced manually. Doing it by default means the user doesn't have to ask.
+If any pass finds an issue, fix it and **re-run all four passes from the top**. Don't claim "done" until all four clean in a row.
+
+This SOP is non-negotiable after the 5/8 audit revealed 14 silent-loss patterns from PRs that all "merged" but didn't actually deploy.
 
 This applies to every option discussion — wheel bot's underlying, candidate symbols in a scan, hypothetical alternatives the user asks about.
 
