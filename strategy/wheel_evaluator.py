@@ -183,6 +183,56 @@ def evaluate_and_maybe_plan(
                 )
                 return decision
 
+        # ── v8 IV-blocked fallback (5/7 added) ──
+        # If we got here, normal rotation didn't fire — the active stock
+        # is "fine" by score but the alternative isn't decisively better
+        # (< 15%). BUT: if the active itself can't pass the IV-rank gate
+        # (rank < 30), the bot will be stuck IDLE forever — no open on
+        # active, no rotation triggered. Real case: 5/2-5/6 TSLA was
+        # active with IV rank 21-25, alternatives all +0%/-1%/-2%, bot
+        # idled 5 trading days while QCOM (rank 100) sat unused.
+        #
+        # Fallback: if active is IV-blocked, switch to the universe's
+        # highest-IV-rank healthy alternative regardless of score. This
+        # bypasses the +15% threshold but ONLY when stuck — preserves
+        # anti-thrashing in normal cases.
+        try:
+            from strategy.wheel_filters import compute_iv_rank
+            active_rank = compute_iv_rank(current_symbol)
+            if active_rank is not None and active_rank < 30:
+                from wheel_scanner import WHEEL_UNIVERSE
+                cands = []
+                for s in WHEEL_UNIVERSE:
+                    if s == current_symbol:
+                        continue
+                    r = compute_iv_rank(s)
+                    if r is not None and r >= 30:
+                        cands.append((s, r))
+                cands.sort(key=lambda x: -x[1])  # highest IV rank first
+                for cand_sym, cand_rank in cands:
+                    try:
+                        cand_health = run_health_check(cand_sym).get("verdict", "UNKNOWN")
+                    except Exception:
+                        cand_health = "UNKNOWN"
+                    if cand_health == "GO":
+                        trigger = date.today()
+                        reason = (f"IV-blocked fallback: {current_symbol} IV rank "
+                                  f"{active_rank:.0f} < 30, rotate to {cand_sym} "
+                                  f"(IV rank {cand_rank:.0f})")
+                        if not existing_plan or existing_plan.get("to_symbol") != cand_sym:
+                            plan_switch(current_symbol, cand_sym, trigger.isoformat(), reason)
+                            decision["action"] = "plan_switch"
+                            decision["new_symbol"] = cand_sym
+                            decision["reason"] = reason
+                            decision["message"] = (
+                                f"🔓 {current_symbol} IV rank {active_rank:.0f} 失格 → "
+                                f"切到 {cand_sym} (IV rank {cand_rank:.0f}, 最高)"
+                            )
+                            return decision
+                # No GO-healthy candidate found — fall through to keep
+        except Exception as e:
+            logger.warning(f"IV-blocked fallback check failed: {e}")
+
         decision["action"] = "keep"
         if new_sym:
             decision["message"] = (
