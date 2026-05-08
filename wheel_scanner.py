@@ -40,29 +40,60 @@ WHEEL_UNIVERSE = [
     "AAPL", "MSFT", "GOOGL", "META", "AMZN", "NVDA", "TSLA",
     # 其他科技龙头
     "AMD", "AVGO", "TSM", "NFLX", "ORCL", "CRM", "ADBE",
-    # 半导体
-    "MU", "QCOM", "INTC", "AMAT", "ARM",
-    # 高活跃科技相关
-    "PLTR", "HOOD", "COIN", "MSTR",
+    # CPU / 通信芯片
+    "QCOM", "INTC", "ARM",
+    # PLTR 留作软件 (crypto/retail HOOD/COIN/MSTR 已删除 - 5/7)
+    "PLTR",
     # 用户指定防御股
     "COST", "UNH",
-    # 内存/AI 芯片主题 ETF（2026-04 新上市）
+    # Memory / 存储
+    # NOTE: WDC/STX/SNDK at 2026 prices ($480/$790/$1410) exceed the 40%
+    # single-position cap on a $101k account. ASML ($1545) / KLAC ($1816)
+    # also exceed. Scanner evaluates but kelly_contracts returns 0 until
+    # account scales > $200k-300k. Kept for sector signal tracking and
+    # future use.
+    "MU",
     "DRAM",
-    # AI 下一波：光子计算 + CXL 内存扩展
+    "WDC",   # Western Digital — HDD + NAND
+    "STX",   # Seagate — HDD/storage
+    "SNDK",  # SanDisk — NAND, re-spun-off from WDC 2025
+    # 半导体设备 (semi_equipment sector — 5/7 added)
+    "AMAT",  # Applied Materials — 沉积/刻蚀
+    "LRCX",  # Lam Research — 刻蚀/沉积
+    "TER",   # Teradyne — 测试设备
+    "ASML",  # ASML — EUV 唯一供应商 (太贵但留)
+    "KLAC",  # KLA — 工艺控制 (太贵但留)
+    # 模拟/汽车/IoT 芯片 (analog sector — 5/7 added)
+    "NXPI",  # NXP — 汽车 + IoT
+    "ADI",   # Analog Devices — 模拟/混合信号
+    "MCHP",  # Microchip — 嵌入式微控制器
+    "ON",    # onsemi — 汽车/电源
+    # 光通讯 / Photonics — 光模块 + 硅光子 + 工业激光 + 光网络设备
     "MRVL",  # CPO + CXL 双受益
     "LITE",  # 硅光子纯玩（Lumentum）
-    # 光模块龙头
     "COHR",  # Coherent — 800G/1.6T 光模块龙头
     "IPGP",  # IPG Photonics — 工业激光器/光引擎
-    # CPU / 服务器系统（AI 算力整机）
-    "SMCI",  # Super Micro — AI 服务器整机龙头（CPU+GPU 系统）
+    "CIEN",  # Ciena — 光网络长距设备 (太贵但留 - 5/7 added)
+    "FN",    # Fabrinet — 光学 EMS, NVDA/LITE/COHR 供应链 (太贵但留)
+    # 数据中心网络 (networking sector — 5/7 added)
+    "ANET",  # Arista — 数据中心交换机龙头
+    "CSCO",  # Cisco — 老牌网络 + 安全
+    # AI 服务器系统 / AI 视觉芯片
+    "SMCI",  # Super Micro — AI 服务器整机
+    "AMBA",  # Ambarella — AI 视觉处理器 (AI inference at edge)
     # 水 / 数据中心冷却基础设施
     "XYL",   # Xylem — 数据中心水冷/水处理龙头
+    # 大盘 ETF (5/7 added — provides systematic 'buy the index' alternative)
+    # NOTE: SPY ($734) and QQQ ($696) at 2026 prices = 64-68% equity per
+    # contract, exceed 40% single-position cap on $101k account. Scanner
+    # evaluates but kelly returns 0 until account scales > $200k.
+    "SPY",   # S&P 500 ETF
+    "QQQ",   # NASDAQ-100 ETF
 ]
 
-# CSP 池 = Wheel 池 + 主流科技 ETF（相同范围，仅增加 ETF 作为备选）
+# CSP 池 = Wheel 池 + 行业 ETF (SPY/QQQ 已在 WHEEL_UNIVERSE)
 CSP_UNIVERSE = WHEEL_UNIVERSE + [
-    "QQQ", "SPY", "SMH", "XLK",   # 科技 ETF
+    "SMH", "XLK",   # 半导体 ETF + 科技板块 ETF
 ]
 
 
