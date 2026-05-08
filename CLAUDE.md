@@ -62,9 +62,19 @@ After any non-trivial code change (new function, parameter change, control-flow 
 - Check execution ORDER (e.g. `_try_stop_loss` must run before `_try_take_profit` — the order matters even when both functions individually work)
 - Test the "no data" / "API down" path — does it fail open or fail closed, and is that what we want?
 
-If any pass finds an issue, fix it and **re-run all three passes from the top**. Don't claim "done" until three clean passes in a row.
+**Pass 4 — Post-merge master verification (added 5/7 after PR #41 silent loss)**
+- After merging, fetch origin/master and verify the change actually landed:
+  ```bash
+  git fetch origin master
+  SHA=$(git rev-parse origin/master)
+  git show $SHA:<changed-file> | grep <distinctive-string>
+  ```
+- A `gh pr merge --squash` on a long-lived branch with many already-merged commits can silently drop diffs (this happened to PR #41: branch had ~10 prior commits already in master, the squash combined them but the actual file diffs from the last commit got lost).
+- "PR merged" ≠ "change is on master". Always verify. If verification fails, re-apply the change on a fresh branch from master and PR again.
 
-This is the SOP that yesterday's "check three times" enforced manually. Doing it by default means the user doesn't have to ask.
+If any pass finds an issue, fix it and **re-run all four passes from the top**. Don't claim "done" until all four clean in a row.
+
+This is the SOP that yesterday's "check three times" enforced manually, plus the post-merge check enforced after PR #41's silent loss. Doing it by default means the user doesn't have to ask.
 
 This applies to every option discussion — wheel bot's underlying, candidate symbols in a scan, hypothetical alternatives the user asks about.
 
