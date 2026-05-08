@@ -64,7 +64,51 @@ def main():
 
     if new_orders:
         logger.info(f"检测到 {len(new_orders)} 个新下单 → 生成交易通知")
-        # 生成 summary 供工作流使用
+
+        # 1. Send a SIMPLE alert email immediately. Idempotency is implicit:
+        #    set-difference (after - before) only fires on the SAME run that
+        #    placed the order. Subsequent cycles see the order in `before`
+        #    and `after`, so new_orders is empty for them. No cross-run
+        #    state needed.
+        try:
+            from utils.emailer import send_email
+            sgt = ZoneInfo("Asia/Singapore")
+            now_et = datetime.now(ET).strftime("%H:%M ET")
+            now_sgt = datetime.now(sgt).strftime("%H:%M SGT")
+
+            # Pull the actual order objects to show details (side, qty, limit).
+            order_lookup = {
+                o.id: o for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)
+            }
+            order_lines = []
+            for oid in new_orders:
+                o = order_lookup.get(oid)
+                if not o:
+                    order_lines.append(f"  - order id {oid} (details unavailable)")
+                    continue
+                side = str(o.side).split(".")[-1]
+                limit = float(o.limit_price) if o.limit_price else 0
+                order_lines.append(
+                    f"  • {side} {o.symbol} qty={o.qty} @ limit ${limit:.2f}"
+                )
+
+            subject = (f"[{settings.WHEEL_SYMBOL} Wheel] Trade alert "
+                       f"— {now_et} (= {now_sgt})")
+            body = (
+                f"Bot placed {len(new_orders)} new option order(s):\n\n"
+                + "\n".join(order_lines)
+                + "\n\nFull summary will follow at next OPEN/CLOSE email."
+            )
+            ok = send_email(subject=subject, body_text=body)
+            if ok:
+                logger.info(f"📧 trade alert email sent: {subject}")
+            else:
+                logger.warning("trade alert email send returned False")
+        except Exception as e:
+            logger.warning(f"trade alert email failed: {e}")
+
+        # 2. Existing path: write trade.flag + summary.md for the GitHub
+        #    Actions workflow to create an Issue.
         try:
             from wheel_summary import build_summary
             md = build_summary("trade")
