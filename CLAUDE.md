@@ -62,19 +62,9 @@ After any non-trivial code change (new function, parameter change, control-flow 
 - Check execution ORDER (e.g. `_try_stop_loss` must run before `_try_take_profit` — the order matters even when both functions individually work)
 - Test the "no data" / "API down" path — does it fail open or fail closed, and is that what we want?
 
-**Pass 4 — Post-merge master verification (added 5/7 after PR #41 silent loss)**
-- After merging, fetch origin/master and verify the change actually landed:
-  ```bash
-  git fetch origin master
-  SHA=$(git rev-parse origin/master)
-  git show $SHA:<changed-file> | grep <distinctive-string>
-  ```
-- A `gh pr merge --squash` on a long-lived branch with many already-merged commits can silently drop diffs (this happened to PR #41: branch had ~10 prior commits already in master, the squash combined them but the actual file diffs from the last commit got lost).
-- "PR merged" ≠ "change is on master". Always verify. If verification fails, re-apply the change on a fresh branch from master and PR again.
+If any pass finds an issue, fix it and **re-run all three passes from the top**. Don't claim "done" until three clean passes in a row.
 
-If any pass finds an issue, fix it and **re-run all four passes from the top**. Don't claim "done" until all four clean in a row.
-
-This is the SOP that yesterday's "check three times" enforced manually, plus the post-merge check enforced after PR #41's silent loss. Doing it by default means the user doesn't have to ask.
+This is the SOP that yesterday's "check three times" enforced manually. Doing it by default means the user doesn't have to ask.
 
 This applies to every option discussion — wheel bot's underlying, candidate symbols in a scan, hypothetical alternatives the user asks about.
 
@@ -196,9 +186,40 @@ Hand-picked 32 tech-heavy tickers (Mag 7, semis, photonics MRVL/LITE/COHR/IPGP, 
 
 ### Execution / automation
 
-- **GitHub Actions (primary cron)** — `.github/workflows/wheel.yml` runs `wheel_once.py` every 5 min on weekdays 13:30–20:00 UTC. `.github/workflows/wheel-summary.yml` sends open/close emails. Secrets: `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, `EMAIL_SMTP_SERVER`, `EMAIL_SMTP_PORT`, `EMAIL_SENDER`, `EMAIL_PASSWORD`, `EMAIL_RECIPIENT`. Cron only fires on the default branch (`master`), so feature-branch workflow changes must be merged to take effect.
-- **Local scheduled-tasks** — Claude Code's MCP scheduler runs `email_summary.py` as a redundant secondary trigger (only fires while Claude Code is running on the user's machine).
-- **Both fire** — expect duplicate emails until one is disabled; GitHub Actions is the authoritative source.
+**Triggering and execution are split.** Triggering is on cron-job.org (free external scheduler); execution stays on GitHub Actions runners. We migrated off GHA `schedule:` because free-tier scheduled cron is unreliable — on 5/5 only 6 of 90 expected fires actually ran.
+
+```
+cron-job.org cron fires
+   │  HTTP POST + Bearer PAT
+   ▼
+GitHub API /actions/workflows/<file>/dispatches
+   │  workflow_dispatch event
+   ▼
+GitHub Actions runner (ubuntu-latest)
+   pip install + python <script>.py
+   │  Alpaca API + Gmail SMTP
+   ▼
+🤖 Bot acts (sell put / BTC / send email)
+```
+
+**Three cron-job.org cronjobs all use the same PAT** (Actions:write + Contents:read on this repo only):
+| Cronjob | Schedule (UTC) | Workflow | Purpose |
+|---------|----------------|----------|---------|
+| Wheel cycle | `*/8 13-20 * * 1-5` | `wheel.yml` | Run `wheel_once.py` every 8 min |
+| OPEN email | `31 13 * * 1-5` | `wheel-summary.yml` | Market-open summary |
+| CLOSE email | `5 20 * * 1-5` | `wheel-summary.yml` | Market-close summary |
+
+Both `wheel.yml` and `wheel-summary.yml` declare `on: workflow_dispatch:` ONLY — no `schedule:` block. Cron only fires on the default branch (`master`), so feature-branch workflow changes must be merged to take effect.
+
+GitHub-side responsibilities (unchanged): code hosting, runner execution, secrets storage (`ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, `EMAIL_SMTP_SERVER`, `EMAIL_SMTP_PORT`, `EMAIL_SENDER`, `EMAIL_PASSWORD`, `EMAIL_RECIPIENT`).
+
+**Failure modes and backups:**
+- cron-job.org down → manual `gh workflow run wheel.yml --ref master` from terminal, or temporarily restore GHA `schedule:` block to wheel.yml and merge
+- GHA Actions down → bot stops entirely; wait for service restoration
+- Alpaca down → workflow runs but API calls fail (no bad orders placed)
+- Gmail SMTP down → email send fails, position is unaffected
+
+**Concurrency lock** on `wheel.yml` (`group: wheel-cycle`, `cancel-in-progress: false`) protects against the rare case of one fire running >8 min and overlapping with the next.
 
 ### Email pipeline
 

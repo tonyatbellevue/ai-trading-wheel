@@ -187,13 +187,18 @@ def build_summary(event: str = "update") -> str:
             )
         lines.append("")
 
-    # ── 历史收益汇总 ──────────────────────────────────────────────────────
-    closed = trading.get_orders(filter=GetOrdersRequest(status=QueryOrderStatus.CLOSED, limit=100))
+    # ── 历史收益汇总 (所有 wheel 标的, 不只当前) ────────────────────────────
+    # OCC option symbol pattern: 6-char ticker (variable) + 6 digit yymmdd +
+    # C/P + 8 digit strike. Detect by the 9th-from-end char being C/P and
+    # last 8 chars being digits — works for any underlying in the universe.
+    closed = trading.get_orders(filter=GetOrdersRequest(status=QueryOrderStatus.CLOSED, limit=200))
     sto_total = 0.0
     btc_total = 0.0
     trades = []
     for o in closed:
-        if not o.symbol.startswith(sym) or len(o.symbol) < 10:
+        if len(o.symbol) < 18:
+            continue
+        if o.symbol[-9] not in ("C", "P") or not o.symbol[-8:].isdigit():
             continue
         if o.filled_qty and float(o.filled_qty) > 0:
             price = float(o.filled_avg_price or 0)
@@ -215,13 +220,13 @@ def build_summary(event: str = "update") -> str:
     lines.append(f"| Option Trades | {len(trades)} |")
     lines.append("")
 
-    # ── 最近交易（最多5笔）────────────────────────────────────────────────
+    # ── 所有 wheel 交易历史 (跨标的) ─────────────────────────────────────
     if trades:
-        lines.append("## Recent Option Trades")
+        lines.append(f"## All Wheel Option Trades ({len(trades)})")
         lines.append("")
         lines.append("| Time (ET) | Contract | Side | Price | Qty |")
         lines.append("|-----------|----------|------|-------|-----|")
-        for o in trades[:5]:
+        for o in trades:
             t = o.filled_at.astimezone(ET).strftime("%m/%d %H:%M") if o.filled_at else "—"
             side = str(o.side).split(".")[-1]
             lines.append(
@@ -286,16 +291,17 @@ def build_summary(event: str = "update") -> str:
             lines.append(f"## Suitability Check\n\n❌ Health check failed: {e}\n")
 
         try:
+            # NOTE: LEAPS Buy Call section was removed — bot doesn't trade
+            # LEAPS, the recommendations were informational noise. Keep the
+            # function importable in case it's wanted back later.
             from wheel_scanner import (
-                scan_wheel_alternatives, scan_csp_candidates, scan_leaps_candidates,
-                format_wheel_alternatives_md, format_csp_md, format_leaps_md,
+                scan_wheel_alternatives, scan_csp_candidates,
+                format_wheel_alternatives_md, format_csp_md,
             )
             alt = scan_wheel_alternatives(exclude=sym, top_n=2)
             lines.append(format_wheel_alternatives_md(alt))
             csp = scan_csp_candidates(top_n=3)
             lines.append(format_csp_md(csp))
-            leaps = scan_leaps_candidates(top_n=3)
-            lines.append(format_leaps_md(leaps))
         except Exception as e:
             lines.append(f"## Candidate Scan\n\n❌ Scan failed: {e}\n")
 

@@ -1,11 +1,19 @@
 name: TSLA Wheel Strategy
 
-# 每5分钟运行一次（周一至周五，美东时间 9:30~16:00）
-# EDT = UTC-4, 13:30~20:00 UTC
+# Triggering: workflow_dispatch only. cron-job.org fires this every 8 min
+# during market hours (`*/8 13-20 * * 1-5` UTC = ET 09-16:00 weekdays).
+# Reasons GHA `schedule:` block was removed:
+#
+#   - Free-tier GHA scheduled cron is wildly unreliable. On 5/5 only 6 of
+#     90 expected fires actually ran (7%) — bot saw ~6 chances to act
+#     instead of 90.
+#   - workflow_dispatch is treated as user-initiated and runs on time.
+#   - Repo is public so GHA Action minutes are unlimited; no quota concern
+#     even at 64 dispatches/day.
+#
+# Backup: `gh workflow run wheel.yml --ref master` for manual single-fire.
 on:
-  schedule:
-    - cron: "*/5 13-20 * * 1-5"
-  workflow_dispatch:
+  workflow_dispatch:           # cron-job.org fires this; same PAT as wheel-summary
 
 # Serialize all wheel cycle runs — without this a slow cron (>5min) gets
 # overlapped by the next 5-min trigger, both pass the IDLE check, both
@@ -44,6 +52,15 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           ALPACA_BASE_URL: "https://paper-api.alpaca.markets/v2"
           PAPER_TRADING: "true"
+          # EMAIL secrets needed for the trade-alert email path in
+          # wheel_once.py — fires only when a NEW order is placed (rare,
+          # so no spam risk). Idempotency is via set-difference within
+          # the single run; cross-runner state is not needed.
+          EMAIL_SMTP_SERVER: ${{ secrets.EMAIL_SMTP_SERVER }}
+          EMAIL_SMTP_PORT: ${{ secrets.EMAIL_SMTP_PORT }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
         run: python wheel_once.py
 
       - name: Check for trade
