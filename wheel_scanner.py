@@ -288,22 +288,27 @@ def scan_csp_candidates(top_n: int = 3) -> list[dict]:
 
 
 def format_wheel_alternatives_md(data: dict) -> str:
-    """格式化 Wheel 替代方案报告"""
-    lines = []
-    lines.append("## Wheel Alternatives (3-day DTE, better than TSLA)")
-    lines.append("")
+    """格式化 Wheel 替代方案报告
 
+    Note (5/9 fix): "TSLA" 曾被硬编码到 4 处 label,即使 baseline 实际是
+    AVGO/QCOM 等其他 symbol —— email 标题与 alternatives 段会自相矛盾。
+    现在 label 改用 baseline['symbol'](与传入 exclude 一致)。
+    """
+    lines = []
     baseline = data["baseline"]
+    base_sym = baseline["symbol"]
     better = data["better"]
 
-    lines.append(f"**TSLA baseline score: {baseline['score']}**")
+    lines.append(f"## Wheel Alternatives (3-day DTE, better than {base_sym})")
+    lines.append("")
+    lines.append(f"**{base_sym} baseline score: {baseline['score']}**")
     lines.append("")
 
     if not better:
-        lines.append("No alternatives scored higher than TSLA today. Top 3 by score:")
+        lines.append(f"No alternatives scored higher than {base_sym} today. Top 3 by score:")
         show = data["all"][:3]
     else:
-        lines.append(f"Top {len(better)} alternatives scoring above TSLA:")
+        lines.append(f"Top {len(better)} alternatives scoring above {base_sym}:")
         show = better
 
     if show:

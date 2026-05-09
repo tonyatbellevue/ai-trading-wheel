@@ -35,7 +35,15 @@ def _read_snapshots() -> list:
 
 
 def _filter_this_week(rows: list, date_key: str) -> list:
-    today = date.today()
+    """Mon..today (ET) inclusive.
+
+    Note (5/9 fix): GHA runners are UTC. Using `date.today()` returned the
+    UTC calendar date, which from 19:00–24:00 ET (DST) was already the next
+    UTC day → Friday close trades got dropped in Friday's review on rare
+    boundary cases. Anchor to ET so the week boundary matches the trading
+    day the user expects.
+    """
+    today = datetime.now(ET).date()
     monday = today - timedelta(days=today.weekday())
     out = []
     for r in rows:

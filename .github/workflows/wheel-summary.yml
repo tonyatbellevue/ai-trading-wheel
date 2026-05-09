@@ -33,6 +33,8 @@ jobs:
   email-summary:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write   # for committing metrics/data/daily_snapshot.csv
 
     steps:
       - name: Checkout code
@@ -80,3 +82,22 @@ jobs:
           path: summary.md
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Commit daily_snapshot.csv if changed
+        # close email path appends a row to metrics/data/daily_snapshot.csv;
+        # without commit, ephemeral runner discards it and benchmark_tracker
+        # always reports "数据不足 (< 2 天)". Pull-rebase to handle the rare
+        # case where wheel.yml pushed wheel_symbol.json since checkout.
+        if: steps.event.outputs.event == 'close'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f metrics/data/daily_snapshot.csv ] && \
+             [ -n "$(git status --porcelain metrics/data/daily_snapshot.csv)" ]; then
+            git add metrics/data/daily_snapshot.csv
+            git commit -m "chore: auto-update daily_snapshot.csv [skip ci]"
+            git pull --rebase origin master || true
+            git push
+          else
+            echo "daily_snapshot.csv unchanged"
+          fi
