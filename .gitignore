@@ -32,6 +32,13 @@ reports/
 
 # 本地运行时数据（账户快照/交易日志/shadow 账户等含敏感信息）
 metrics/data/
+# Exceptions (5/9 fix for "数据不足" + "本周无平仓"):
+#   - daily_snapshot.csv: needed for benchmark_tracker (≥2 rows)
+#   - trade_journal.csv:  needed for weekly_review (本周复盘)
+# GHA runners are ephemeral; without these tracked, both reports silently break.
+# Paper-trading equity is non-sensitive enough to commit.
+!metrics/data/daily_snapshot.csv
+!metrics/data/trade_journal.csv
 test_dashboard.html
 
 # Claude Code 本地设置
