@@ -1,0 +1,1 @@
+event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dte,cash_before,equity_before,filter_earnings,filter_ma_trend,filter_vol,filter_iv_rank,market_vix,market_spy_above_200ma,skip_reason,pnl,exit_reason,notes

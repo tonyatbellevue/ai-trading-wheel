@@ -31,14 +31,23 @@ reports/
 !reports/daily_sent_state.json
 
 # 本地运行时数据（账户快照/交易日志/shadow 账户等含敏感信息）
-metrics/data/
-# Exceptions (5/9 fix for "数据不足" + "本周无平仓"):
-#   - daily_snapshot.csv: needed for benchmark_tracker (≥2 rows)
-#   - trade_journal.csv:  needed for weekly_review (本周复盘)
-# GHA runners are ephemeral; without these tracked, both reports silently break.
-# Paper-trading equity is non-sensitive enough to commit.
+#
+# CRITICAL: Use "metrics/data/*" NOT "metrics/data/" — Git refuses to
+# enter an ignored directory, so any "!metrics/data/foo" negation under
+# a directory-level ignore is silently dead. PR #50 (5/9) used the
+# directory pattern and the negations did nothing for a week — the
+# 5/15 close email still said "本周无平仓" because the runner couldn't
+# `git add` the file Git was pretending didn't exist.
+metrics/data/*
+# Exceptions (need to persist across ephemeral GHA runners):
+#   - daily_snapshot.csv  → benchmark_tracker (≥2 rows for SPY 对比)
+#   - trade_journal.csv   → weekly_review (本周复盘 entry/exit log)
+#   - last_positions.json → position_tracker.reconcile() (detects exits
+#     by diffing today vs last snapshot; without persistence, every
+#     runner starts blind and log_exit is never called)
 !metrics/data/daily_snapshot.csv
 !metrics/data/trade_journal.csv
+!metrics/data/last_positions.json
 test_dashboard.html
 
 # Claude Code 本地设置

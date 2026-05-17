@@ -86,21 +86,23 @@ jobs:
       - name: Commit state files if changed
         # Persists across ephemeral runners:
         #   - wheel_symbol.json: active_symbol (auto-rotation)
-        #   - metrics/data/trade_journal.csv: 24-field per-decision log
-        #     used by metrics/weekly_review.py (本周复盘 was always empty
-        #     pre-5/9 because runner saw a fresh empty CSV every cycle).
-        # Pull --rebase first to avoid push race when 8-min crons overlap.
+        #   - metrics/data/trade_journal.csv: entry/skip/exit log used by
+        #     weekly_review.py 本周复盘
+        #   - metrics/data/last_positions.json: position snapshot used by
+        #     position_tracker.reconcile() to detect exits. Without this
+        #     tracked, every runner sees no prior snapshot, never detects
+        #     an exit, never calls log_exit — and 本周复盘 perpetually
+        #     reports "本周无平仓交易" even when round trips closed.
+        # Pull --rebase to handle the 8-min cron overlap race.
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           CHANGED=""
-          if [ -n "$(git status --porcelain wheel_symbol.json)" ]; then
-            git add wheel_symbol.json && CHANGED="${CHANGED} wheel_symbol.json"
-          fi
-          if [ -f metrics/data/trade_journal.csv ] && \
-             [ -n "$(git status --porcelain metrics/data/trade_journal.csv)" ]; then
-            git add metrics/data/trade_journal.csv && CHANGED="${CHANGED} trade_journal.csv"
-          fi
+          for FILE in wheel_symbol.json metrics/data/trade_journal.csv metrics/data/last_positions.json; do
+            if [ -f "$FILE" ] && [ -n "$(git status --porcelain "$FILE")" ]; then
+              git add "$FILE" && CHANGED="${CHANGED} $(basename "$FILE")"
+            fi
+          done
           if [ -n "$CHANGED" ]; then
             git commit -m "chore: auto-update state [${CHANGED# }] [skip ci]"
             git pull --rebase origin master || true
