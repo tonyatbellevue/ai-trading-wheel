@@ -85,6 +85,32 @@ for path, needle, must_exist, desc in L1_CHECKS:
         record("L1", f"{path} :: {needle}", "FAIL",
                f"{verb} on master — {desc}")
 
+# Behavioral .gitignore check — catches the PR #50 silent loss where
+# `metrics/data/` ignored the whole directory, making `!metrics/data/foo`
+# negations completely dead. Pure text grep would miss this.
+NEGATED_FILES = [
+    "metrics/data/daily_snapshot.csv",
+    "metrics/data/trade_journal.csv",
+    "metrics/data/last_positions.json",
+]
+for path in NEGATED_FILES:
+    out = subprocess.run(["git", "check-ignore", "-v", path],
+                         capture_output=True, text=True, cwd=REPO_ROOT)
+    # check-ignore -v output: "<source>:<linenum>:<pattern>\t<path>"
+    # exit 1 = no matching rule (trackable). exit 0 = some rule matched;
+    # whether it's negation or exclusion is in the pattern field.
+    rule = out.stdout.strip()
+    if out.returncode == 1:
+        record("L1", f"trackable: {path}", "PASS", "no ignore rule")
+    elif ":!" in rule:
+        # Negation rule matched → file IS trackable
+        record("L1", f"trackable: {path}", "PASS", "negated")
+    else:
+        record("L1", f"trackable: {path}", "FAIL",
+               f"still ignored by [{rule}] — workflow auto-commit step "
+               f"will silently no-op. Likely parent-dir exclusion kills "
+               f"negation (use 'metrics/data/*' not 'metrics/data/').")
+
 
 # ============================================================
 # Layer 2 — Configuration integrity
