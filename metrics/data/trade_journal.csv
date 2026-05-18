@@ -1,1 +1,2 @@
 event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dte,cash_before,equity_before,filter_earnings,filter_ma_trend,filter_vol,filter_iv_rank,market_vix,market_spy_above_200ma,skip_reason,pnl,exit_reason,notes
+2026-05-18T13:33:56.873987,entry,AVGO,sell_put,AVGO260522P00397500,397.5,2026-05-22,1,3.08,-0.191,,4,101678.42,101678.42,PASS,PASS,PASS,,VIXY=26.58,1,,,,size=1
