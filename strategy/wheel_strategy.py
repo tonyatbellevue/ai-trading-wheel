@@ -484,9 +484,24 @@ class WheelStrategy:
                                   skip_reason=f"premium_invalid={mid:.2f}")
                     return
 
-                # 动态仓位（资金驱动，5 层防护）
+                # 最低年化收益率门槛：20%
+                # 年化 = (权利金 / 行权价) × (365 / DTE)
+                # 低于门槛说明 IV 不足以补偿风险，资金留着等更好机会
                 info = _parse_symbol(sym)
                 strike = info["strike"] if info else 0
+                dte_days = (info["expiry"] - date.today()).days if info and info.get("expiry") else 0
+                if strike > 0 and dte_days > 0:
+                    annualized = (mid / strike) * (365 / dte_days)
+                    if annualized < settings.MIN_PREMIUM_ANNUALIZED:
+                        logger.warning(
+                            f"⏸️ 跳过卖 Put: 年化收益率 {annualized:.0%} < "
+                            f"{settings.MIN_PREMIUM_ANNUALIZED:.0%} 门槛 "
+                            f"(权利金 ${mid:.2f} / 行权价 ${strike} / DTE {dte_days})"
+                        )
+                        _safe_journal("log_skip", symbol=self.symbol, action="sell_put",
+                                      skip_reason=f"low_premium annualized={annualized:.0%}",
+                                      filter_name="min_premium")
+                        return
                 acct = self._trading.get_account()
                 cash = float(acct.cash)
                 bp = float(acct.buying_power)
@@ -589,6 +604,23 @@ class WheelStrategy:
                     _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
                                   skip_reason=f"premium_invalid={mid:.2f}")
                     return
+
+                # 最低年化收益率门槛（同 Put）
+                cc_info = _parse_symbol(sym)
+                cc_strike = cc_info["strike"] if cc_info else 0
+                cc_dte = (cc_info["expiry"] - date.today()).days if cc_info and cc_info.get("expiry") else 0
+                if cc_strike > 0 and cc_dte > 0:
+                    cc_annualized = (mid / cc_strike) * (365 / cc_dte)
+                    if cc_annualized < settings.MIN_PREMIUM_ANNUALIZED:
+                        logger.warning(
+                            f"⏸️ 跳过卖 CC: 年化收益率 {cc_annualized:.0%} < "
+                            f"{settings.MIN_PREMIUM_ANNUALIZED:.0%} 门槛 "
+                            f"(权利金 ${mid:.2f} / 行权价 ${cc_strike} / DTE {cc_dte})"
+                        )
+                        _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
+                                      skip_reason=f"low_premium annualized={cc_annualized:.0%}",
+                                      filter_name="min_premium")
+                        return
                 # CC 合约数严格由持股数决定（每 100 股支持 1 张 covered call）
                 # 卖 CC 不占现金（股票即抵押），不存在爆仓/平仓风险
                 contracts = int(float(obj.qty) // 100)

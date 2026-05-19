@@ -131,6 +131,12 @@ WHEEL_CONTRACTS      = 2        # 遗留字段：仅供 run_wheel_*.py 启动日
                                 # Sell Put 跟资金走，Sell Call 跟持股走（持 N 股 → 卖 N/100 张）
 WHEEL_CHECK_INTERVAL = 300      # 持续监控检查间隔（秒）
 
+# ── 权利金质量门槛 ──
+# 年化收益率 = (权利金 / 行权价) × (365 / DTE)
+# 低于门槛说明 IV 不足以补偿风险，跳过该笔交易。
+# 专家建议：保守 20%，激进 50%。默认 20% 匹配 Wheel 策略目标收益。
+MIN_PREMIUM_ANNUALIZED   = 0.20     # 最低年化收益率 20%
+
 # ── 资金安全缓冲（防止爆仓/平仓）──
 # 所有新开仓前必须保证：buying_power - 最小现金保留 ≥ strike × 100 × qty
 CASH_BUFFER_PCT          = 0.10     # 权益的 10% 必须保留为现金，应对黑天鹅
