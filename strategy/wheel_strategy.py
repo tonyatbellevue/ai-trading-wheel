@@ -152,26 +152,32 @@ class WheelStrategy:
             logger.warning(f"stop-loss 尝试失败（继续持有）: {e}")
             return False
 
-    def _try_take_profit(self, pos, profit_threshold: float = 0.50) -> bool:
+    def _try_take_profit(self, pos, stock_price: float = None,
+                         profit_threshold: float = 0.50) -> bool:
         """If a short option has decayed to ≤ (1 - threshold) × entry premium,
         buy to close. Standard wheel convention at 50 %.
 
         Returns True if BTC order is in flight (new or already pending),
         False when we decided not to close / not eligible.
 
-        v6 expiry-aware override: if option is near worthless (< $0.10) AND
-        within 1 day of expiry, SKIP the BTC and let it expire OTM. Reason:
-          - Tiny BTC premiums get crushed by bid-ask spread (often 50%+)
-          - Letting it expire = pocket every cent of remaining premium
-          - Saves Alpaca activity fee (~$0.05/contract)
-          - The wheel is in the home stretch — gamma risk is symmetric
-            around strike anyway
+        v7 expiry-aware override: on the last day (DTE ≤ 1), skip BTC based
+        on OTM% distance rather than premium price. OTM% is the true risk
+        measure — a $0.01 premium can still be dangerous if the underlying
+        is only $0.05 above the strike.
+
+        Three-tier logic (DTE ≤ 1):
+          - OTM ≥ safe_otm  → skip BTC, let it expire worthless
+          - OTM 1–safe_otm% AND premium ≤ $0.15 → skip BTC (grey zone)
+          - OTM < 1%        → must BTC (too close to strike)
+
+        safe_otm is vol-adaptive:
+          - Realized vol ≥ 4% daily → safe_otm = 5% (high-vol: LITE/SNDK/SMCI…)
+          - Realized vol < 4% daily → safe_otm = 3% (normal: TSLA/AVGO/MSFT…)
 
         Safety:
+         - stock_price=None → falls back to old premium-based logic (fail-open)
          - Skips if there's already an open BTC order on this contract
-           (idempotent across 5-min cron re-runs).
-         - Uses a limit wide enough to actually fill on cheap options
-           (for < $0.10, anchor at current + $0.02; else 1.05×).
+           (idempotent across 8-min cron re-runs).
          - Does NOT log an exit here — let the next run_cycle that sees
            the position actually gone log the exit uniformly (same path
            as assignment/expiration).
@@ -188,23 +194,55 @@ class WheelStrategy:
             if profit_pct < profit_threshold:
                 return False
 
-            # Expiry-aware override: don't BTC tiny near-expiry options.
-            # Better to let them expire OTM and pocket the last cent.
+            # Expiry-aware override: OTM%-based skip on last day.
             try:
                 info = _parse_symbol(pos.symbol)
                 if info:
                     from datetime import date as _date
-                    # _parse_symbol returns expiry as a date object, NOT a string.
-                    # (Caught this in 3-pass code review — earlier version called
-                    # datetime.strptime which would TypeError silently.)
                     expiry = info["expiry"]
                     dte = (expiry - _date.today()).days
-                    if dte <= 1 and current <= 0.10:
-                        logger.info(
-                            f"⏭️ skip BTC: {pos.symbol} 太便宜 (current ${current:.2f}) "
-                            f"+ DTE {dte} → 让它到期归零比 BTC 划算"
-                        )
-                        return False
+                    if dte <= 1:
+                        strike = info["strike"]
+                        # Determine safe OTM threshold based on realized vol.
+                        # Falls back to 3% if vol unavailable.
+                        safe_otm = 0.03
+                        if stock_price is not None:
+                            try:
+                                from strategy.wheel_filters import compute_realized_vol
+                                rv = compute_realized_vol(self.symbol)
+                                if rv is not None and rv >= 0.04:
+                                    safe_otm = 0.05  # high-vol symbol
+                            except Exception:
+                                pass  # use default 3%
+
+                        if stock_price is not None and strike > 0:
+                            otm_pct = (stock_price - strike) / strike
+                            if otm_pct >= safe_otm:
+                                logger.info(
+                                    f"⏭️ skip BTC: {pos.symbol} OTM {otm_pct:.1%} "
+                                    f"≥ {safe_otm:.0%} 安全线, DTE={dte} → 让它归零"
+                                )
+                                return False
+                            elif otm_pct >= 0.01 and current <= 0.15:
+                                logger.info(
+                                    f"⏭️ skip BTC: {pos.symbol} OTM {otm_pct:.1%} "
+                                    f"灰色地带但权利金 ${current:.2f} ≤ $0.15, DTE={dte} → 让它归零"
+                                )
+                                return False
+                            elif otm_pct < 0.01:
+                                logger.warning(
+                                    f"⚠️ 强制BTC: {pos.symbol} OTM {otm_pct:.1%} "
+                                    f"< 1% 太接近行权价, DTE={dte} → 必须平仓"
+                                )
+                                # fall through to BTC logic below
+                        else:
+                            # No stock price available — fall back to old logic
+                            if current <= 0.10:
+                                logger.info(
+                                    f"⏭️ skip BTC: {pos.symbol} 权利金 ${current:.2f} "
+                                    f"≤ $0.10 (无股价数据降级), DTE={dte} → 让它归零"
+                                )
+                                return False
             except Exception as e:
                 logger.debug(f"expiry check failed: {e}")
                 # fall through — better to BTC than skip on parse failure
@@ -537,7 +575,28 @@ class WheelStrategy:
             if self._try_stop_loss(obj):
                 return
             # 2. TAKE-PROFIT — BTC at 50% profit, industry-standard wheel rule.
-            #    Frees capital and skips the last-week gamma window.
-            if self._try_take_profit(obj):
+            #    Pass stock_price for v7 OTM%-based expiry override.
+            #    Look up from already-fetched positions to avoid extra API call.
+            stock_price = None
+            try:
+                all_pos = self._trading.get_all_positions()
+                for p in all_pos:
+                    if p.symbol == self.symbol:
+                        stock_price = float(p.current_price)
+                        break
+                if stock_price is None:
+                    # symbol not in positions (no stock held) — use market quote
+                    from alpaca.data.historical import StockHistoricalDataClient
+                    from alpaca.data.requests import StockLatestQuoteRequest
+                    dc = StockHistoricalDataClient(
+                        api_key=settings.API_KEY, secret_key=settings.SECRET_KEY
+                    )
+                    q = dc.get_stock_latest_quote(
+                        StockLatestQuoteRequest(symbol_or_symbols=self.symbol)
+                    )
+                    stock_price = float(q[self.symbol].ask_price or q[self.symbol].bid_price)
+            except Exception as e:
+                logger.debug(f"stock_price lookup failed, OTM% check degraded: {e}")
+            if self._try_take_profit(obj, stock_price=stock_price):
                 return
             logger.info("期权已开仓，持仓中，等待到期或行权...")
