@@ -267,6 +267,29 @@ def check_realized_vol(symbol: str, days: int = 20, max_iv: float = 0.90) -> tup
         return True, ""
 
 
+def compute_realized_vol(symbol: str, days: int = 20) -> Optional[float]:
+    """返回年化实现波动率（浮点数），失败返回 None。
+
+    与 check_realized_vol 使用相同计算逻辑，但直接返回 float 供调用方比较，
+    而不是 (bool, str) 元组。
+
+    返回值单位：年化（例如 0.60 = 60% 年化 ≈ 日波动 3.8%）
+    """
+    try:
+        client = _stk_client()
+        bars = client.get_stock_bars(StockBarsRequest(
+            symbol_or_symbols=symbol, timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=days * 2 + 5),
+        ))[symbol]
+        closes = [float(b.close) for b in bars][-days:]
+        if len(closes) < 5:
+            return None
+        rets = [log(closes[i] / closes[i-1]) for i in range(1, len(closes))]
+        return stdev(rets) * sqrt(252)   # annualized
+    except Exception:
+        return None
+
+
 def kelly_contracts(
     cash: float, strike: float, premium: float,
     buying_power: float = None,
