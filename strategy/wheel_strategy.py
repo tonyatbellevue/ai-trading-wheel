@@ -159,13 +159,15 @@ class WheelStrategy:
         Returns True if BTC order is in flight (new or already pending),
         False when we decided not to close / not eligible.
 
-        v6 expiry-aware override: if option is near worthless (< $0.10) AND
-        within 1 day of expiry, SKIP the BTC and let it expire OTM. Reason:
+        v6.1 expiry-aware override: if option is near worthless (<= $0.15) AND
+        within 2 days of expiry, SKIP the BTC and let it expire OTM. Reason:
           - Tiny BTC premiums get crushed by bid-ask spread (often 50%+)
           - Letting it expire = pocket every cent of remaining premium
           - Saves Alpaca activity fee (~$0.05/contract)
           - The wheel is in the home stretch — gamma risk is symmetric
             around strike anyway
+          - v6.1: expanded from DTE<=1/$0.10 to DTE<=2/$0.15 — last 2 days
+            of a 3-5 DTE put are deep theta-decay; reversal risk negligible
 
         Safety:
          - Skips if there's already an open BTC order on this contract
@@ -199,7 +201,7 @@ class WheelStrategy:
                     # datetime.strptime which would TypeError silently.)
                     expiry = info["expiry"]
                     dte = (expiry - _date.today()).days
-                    if dte <= 1 and current <= 0.10:
+                    if dte <= 2 and current <= 0.15:
                         logger.info(
                             f"⏭️ skip BTC: {pos.symbol} 太便宜 (current ${current:.2f}) "
                             f"+ DTE {dte} → 让它到期归零比 BTC 划算"
