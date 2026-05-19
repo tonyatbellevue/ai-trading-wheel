@@ -204,14 +204,17 @@ class WheelStrategy:
                     if dte <= 1:
                         strike = info["strike"]
                         # Determine safe OTM threshold based on realized vol.
-                        # Falls back to 3% if vol unavailable.
+                        # compute_realized_vol returns ANNUALIZED RV (e.g. 0.60 = 60%).
+                        # Threshold 0.60 annualized ≈ 3.8% daily — matches the
+                        # high-vol symbols (LITE/SNDK/SMCI) identified in backtests.
+                        # Falls back to 3% OTM if vol unavailable.
                         safe_otm = 0.03
                         if stock_price is not None:
                             try:
                                 from strategy.wheel_filters import compute_realized_vol
                                 rv = compute_realized_vol(self.symbol)
-                                if rv is not None and rv >= 0.04:
-                                    safe_otm = 0.05  # high-vol symbol
+                                if rv is not None and rv >= 0.60:  # annualized ≥ 60%
+                                    safe_otm = 0.05  # high-vol symbol → wider safety margin
                             except Exception:
                                 pass  # use default 3%
 
@@ -229,6 +232,12 @@ class WheelStrategy:
                                     f"灰色地带但权利金 ${current:.2f} ≤ $0.15, DTE={dte} → 让它归零"
                                 )
                                 return False
+                            elif otm_pct >= 0.01 and current > 0.15:
+                                logger.info(
+                                    f"🔄 BTC: {pos.symbol} OTM {otm_pct:.1%} 灰色地带"
+                                    f"但权利金 ${current:.2f} > $0.15, DTE={dte} → 正常BTC"
+                                )
+                                # fall through to BTC logic below
                             elif otm_pct < 0.01:
                                 logger.warning(
                                     f"⚠️ 强制BTC: {pos.symbol} OTM {otm_pct:.1%} "
