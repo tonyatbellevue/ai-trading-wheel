@@ -531,6 +531,49 @@ class WheelStrategy:
                               notes=f"size={contracts}")
 
         elif phase == WheelPhase.LONG_STOCK:
+            cost_basis = float(obj.avg_entry_price)
+            stock_price = float(obj.current_price)
+            drop_pct = (stock_price - cost_basis) / cost_basis
+
+            # ── 跌幅保护 ──────────────────────────────────────────────────
+            # 专家建议：股价深跌后停止卖 CC，避免锁死反弹空间。
+            # 跌 35%+：直接市价卖出股票止损（标的出问题，不再等待）
+            # 跌 20-35%：暂停 CC，持股等反弹，恢复后继续 Wheel
+            if drop_pct <= -0.35:
+                qty_to_sell = int(float(obj.qty))
+                logger.warning(
+                    f"🔴 止损出局: {self.symbol} 成本 ${cost_basis:.2f} → "
+                    f"现价 ${stock_price:.2f} ({drop_pct:.1%})，超过 -35% 止损线，"
+                    f"市价卖出 {qty_to_sell} 股"
+                )
+                try:
+                    from alpaca.trading.requests import MarketOrderRequest
+                    from alpaca.trading.enums import OrderSide, TimeInForce
+                    req = MarketOrderRequest(
+                        symbol=self.symbol,
+                        qty=qty_to_sell,
+                        side=OrderSide.SELL,
+                        time_in_force=TimeInForce.DAY,
+                    )
+                    self._trading.submit_order(req)
+                    _safe_journal("log_skip", symbol=self.symbol, action="sell_stock",
+                                  skip_reason=f"stop_loss_35pct drop={drop_pct:.1%}")
+                except Exception as e:
+                    logger.error(f"止损卖股失败: {e}")
+                return
+
+            if drop_pct <= -0.20:
+                logger.warning(
+                    f"⏸️ 暂停 CC: {self.symbol} 成本 ${cost_basis:.2f} → "
+                    f"现价 ${stock_price:.2f} ({drop_pct:.1%})，跌幅 > 20%，"
+                    f"等待股价反弹至成本附近再恢复卖 Call"
+                )
+                _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
+                              skip_reason=f"stock_below_cost_basis drop={drop_pct:.1%}",
+                              filter_name="drop_protection")
+                return
+
+            # ── 正常流程：财报检查 → 卖 CC ────────────────────────────────
             # Covered Call 只过滤财报（必须继续卖以回收溢价）
             ok, reason = pre_open_call_checks(self.symbol)
             if not ok:
@@ -538,8 +581,6 @@ class WheelStrategy:
                 _safe_journal("log_skip", symbol=self.symbol, action="sell_call",
                               skip_reason=reason, filter_name="earnings")
                 return
-
-            cost_basis = float(obj.avg_entry_price)
             result = self.select_call(cost_basis)
             if result:
                 sym, mid, delta = result
