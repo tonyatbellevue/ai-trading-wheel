@@ -46,12 +46,18 @@ def _stock_metrics(sym: str, stk_client) -> Optional[dict]:
             StockLatestQuoteRequest(symbol_or_symbols=sym))
         bid = float(quote[sym].bid_price or 0)
         ask = float(quote[sym].ask_price or 0)
-        price = round((bid + ask) / 2, 2) if (bid and ask) else (bid or ask)
+        # 盘后 ask=$0 时单用 bid 会拿到 stale 残留报价；价差过宽也不可信。
+        price = None
+        if bid > 0 and ask > 0 and ask >= bid and (ask - bid) / bid < 0.05:
+            price = round((bid + ask) / 2, 2)
 
         bars = stk_client.get_stock_bars(StockBarsRequest(
             symbol_or_symbols=sym, timeframe=TimeFrame.Day,
             start=date.today() - timedelta(days=80),
         )).data.get(sym, [])
+        # 报价不可信时降级到最近日线收盘价
+        if price is None and bars:
+            price = round(float(bars[-1].close), 2)
         if len(bars) < 50:
             return None
         closes = [float(b.close) for b in bars]
