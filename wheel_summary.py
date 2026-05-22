@@ -102,11 +102,27 @@ def build_summary(event: str = "update") -> str:
     lines.append("")
 
     # ── 股价 ─────────────────────────────────────────────────────────────
+    # 盘后/周末 ask 经常返回 $0，单用 bid 会拿到 stale 残留价导致 ITM 误判。
+    # 三层保护：①两侧报价都>0 ②价差<5% ③不满足时降级到最近日线收盘价。
     try:
         q = stk_data.get_stock_latest_quote(StockLatestQuoteRequest(symbol_or_symbols=sym))
         bid = float(q[sym].bid_price or 0)
         ask = float(q[sym].ask_price or 0)
-        stock_price = round((bid + ask) / 2, 2) if bid and ask else (bid or ask)
+        stock_price = None
+        if bid > 0 and ask > 0 and ask >= bid:
+            if (ask - bid) / bid < 0.05:
+                stock_price = round((bid + ask) / 2, 2)
+        if stock_price is None:
+            # Fallback: most recent daily close (works pre/post market + weekends)
+            from alpaca.data.requests import StockBarsRequest
+            from alpaca.data.timeframe import TimeFrame
+            from datetime import timedelta
+            bars = stk_data.get_stock_bars(StockBarsRequest(
+                symbol_or_symbols=sym, timeframe=TimeFrame.Day,
+                start=datetime.now() - timedelta(days=10),
+            )).df
+            if not bars.empty:
+                stock_price = round(float(bars['close'].iloc[-1]), 2)
     except Exception:
         stock_price = None
 

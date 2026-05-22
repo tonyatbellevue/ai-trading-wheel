@@ -86,17 +86,38 @@ def main() -> int:
             cur = float(p.current_price)
             upl = float(p.unrealized_pl)
             sign = "+" if upl >= 0 else ""
-            # Pull spot for cushion calc
+            # Pull spot for cushion calc.
+            # After-hours quotes can have ask=$0 with a stale bid; using that
+            # bid alone falsely flags positions as ITM. Validate spread first,
+            # fall back to most recent daily close if quote is unreliable.
             try:
                 from alpaca.data.historical import StockHistoricalDataClient
-                from alpaca.data.requests import StockLatestQuoteRequest
+                from alpaca.data.requests import (
+                    StockLatestQuoteRequest, StockBarsRequest
+                )
+                from alpaca.data.timeframe import TimeFrame
+                from datetime import timedelta
                 stk = StockHistoricalDataClient(api_key=settings.API_KEY,
                                                  secret_key=settings.SECRET_KEY)
                 q = stk.get_stock_latest_quote(
                     StockLatestQuoteRequest(symbol_or_symbols=info["underlying"]))[info["underlying"]]
                 bid = float(q.bid_price or 0)
                 ask = float(q.ask_price or 0)
-                spot = (bid + ask) / 2 if (bid and ask) else (bid or ask)
+                # Valid two-sided quote: both > 0 AND spread < 5%
+                spot = None
+                if bid > 0 and ask > 0 and ask >= bid:
+                    spread_pct = (ask - bid) / bid
+                    if spread_pct < 0.05:
+                        spot = (bid + ask) / 2
+                # Fallback: most recent daily close (works pre/post market + weekends)
+                if spot is None:
+                    bars = stk.get_stock_bars(StockBarsRequest(
+                        symbol_or_symbols=info["underlying"],
+                        timeframe=TimeFrame.Day,
+                        start=datetime.now() - timedelta(days=10),
+                    )).df
+                    if not bars.empty:
+                        spot = float(bars['close'].iloc[-1])
             except Exception:
                 spot = None
 
