@@ -40,7 +40,33 @@ from config import settings
 # fresh.
 #
 # To verify: https://finance.yahoo.com/calendar/earnings?symbol=XXX
-EARNINGS_DB = {
+# ── Earnings DB loading ─────────────────────────────────────────────────
+# Hardcoded baseline below. Auto-refreshed JSON cache at data/earnings_cache.json
+# (written by scripts/refresh_earnings_db.py) OVERRIDES the hardcoded values
+# when present and < 14 days old. This prevents the bot from acting on stale
+# hardcoded dates when nobody has updated this file in months.
+#
+# Fail-safe: any error in JSON loading falls back to hardcoded — never blocks
+# the bot from running.
+def _load_earnings_cache() -> dict | None:
+    try:
+        import json
+        from pathlib import Path
+        cache_path = Path(__file__).resolve().parent.parent / "data" / "earnings_cache.json"
+        if not cache_path.exists():
+            return None
+        data = json.loads(cache_path.read_text(encoding="utf-8"))
+        refreshed = date.fromisoformat(data["refreshed_at"][:10])
+        if (date.today() - refreshed).days > 14:
+            logger.warning(f"earnings_cache.json is {(date.today() - refreshed).days}d old — using hardcoded EARNINGS_DB")
+            return None
+        return data.get("earnings")
+    except Exception as e:
+        logger.warning(f"earnings_cache.json load failed: {e} — using hardcoded EARNINGS_DB")
+        return None
+
+
+_HARDCODED_EARNINGS = {
     "TSLA": ["2025-04-22", "2025-07-23", "2025-10-22", "2026-01-28", "2026-04-21", "2026-07-22"],
     "NVDA": ["2025-05-28", "2025-08-27", "2025-11-19", "2026-02-25", "2026-05-27", "2026-08-26"],
     # MSFT Q3 FY2026 财报：2026-04-29 盘后
@@ -106,6 +132,14 @@ EARNINGS_DB = {
     "SPY":  [],
     "QQQ":  [],
 }
+
+# Apply JSON cache override if present and fresh. Cache wins; hardcoded is fallback.
+_cache_db = _load_earnings_cache()
+if _cache_db:
+    EARNINGS_DB = {**_HARDCODED_EARNINGS, **_cache_db}
+    logger.info(f"EARNINGS_DB loaded from cache: {len(_cache_db)} cached, {len(EARNINGS_DB)} total")
+else:
+    EARNINGS_DB = _HARDCODED_EARNINGS
 
 
 def _earnings_db_is_stale() -> bool:
