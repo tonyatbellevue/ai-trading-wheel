@@ -70,8 +70,13 @@ jobs:
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT }}
-          # Manual run forces send; scheduled runs honor idempotency.
-          WHEEL_EMAIL_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+          # DO NOT auto-set WHEEL_EMAIL_FORCE here. cron-job.org fires this
+          # via workflow_dispatch (indistinguishable from a manual click),
+          # so a blanket FORCE=1 bypasses BOTH idempotency AND the holiday
+          # skip — that's why 5/25 Memorial Day got an OPEN email.
+          # If you really need to force-send manually:
+          #   gh workflow run wheel-summary.yml -f force=true
+          # (then add an 'inputs.force' check here that reads inputs.force).
         run: python email_summary.py ${{ steps.event.outputs.event }}
 
       - name: Upload summary artifact (debug)
