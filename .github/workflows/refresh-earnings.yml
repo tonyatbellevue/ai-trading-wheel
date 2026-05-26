@@ -1,0 +1,55 @@
+name: Refresh Earnings DB (weekly)
+
+# Weekly refresh of data/earnings_cache.json from Finnhub.
+# Runs Sunday 22:00 UTC = Monday 06:00 SGT = Sunday 18:00 ET — before the
+# US market opens Monday morning, so the freshest data is ready for the
+# first wheel cycle of the week.
+#
+# Cron-job.org backup: not needed — this only runs once a week, occasional
+# GHA delays of 1-2h are harmless. If a run fails, the next 8-min wheel
+# cron sees stale-but-still-valid cache (14-day TTL in wheel_filters.py).
+on:
+  schedule:
+    - cron: "0 22 * * 0"        # Sunday 22:00 UTC
+  workflow_dispatch:             # manual trigger any time
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write   # to commit data/earnings_cache.json back to master
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Refresh earnings cache
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: python scripts/refresh_earnings_db.py
+
+      - name: Commit cache if changed
+        # Push the updated JSON back. Use pull --rebase to handle the
+        # rare overlap with wheel.yml's auto-commits.
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f data/earnings_cache.json ] && \
+             [ -n "$(git status --porcelain data/earnings_cache.json)" ]; then
+            git add data/earnings_cache.json
+            git commit -m "chore: weekly refresh earnings_cache.json [skip ci]"
+            git pull --rebase origin master || true
+            git push
+          else
+            echo "earnings_cache.json unchanged"
+          fi
