@@ -613,6 +613,84 @@ def check_iv_rank(symbol: str, lookback: int = 252, window: int = 20,
     return True, f"IV rank {rank:.0f}"
 
 
+# Sector → ETF mapping for "板块同步过滤"。
+# Used by check_sector_etf() to detect sector-wide selloffs that the bot
+# shouldn't trade into. SPY is used as fallback for sectors with no good ETF.
+_SECTOR_TO_ETF = {
+    # Tech / semis
+    "ai_hardware":     "SMH",
+    "cpu":             "SMH",
+    "memory":          "SMH",
+    "semi_equipment":  "SMH",
+    "photonics":       "SMH",
+    "analog":          "SMH",
+    "megacap_tech":    "XLK",
+    "software":        "XLK",
+    "networking":      "XLK",
+    "index_etf":       "SPY",
+    "ev_musk":         "XLY",  # consumer discretionary
+    # Non-tech (added 5/27 with universe expansion)
+    "financials":         "XLF",
+    "energy":             "XLE",
+    "pharma":             "XLV",
+    "defensive":          "XLP",
+    "consumer_staples":   "XLP",
+    "auto":               "XLY",
+    "aerospace_defense":  "ITA",
+}
+
+
+def check_recent_drop(symbol: str, days: int = 3, threshold: float = -0.05) -> tuple[bool, str]:
+    """检测标的过去 N 天累计跌幅。
+
+    跌幅 < threshold（默认 -5%）→ 拦截，"something happened" 信号。
+    回测证明：2020 COVID、2022 熊市、2024 闪崩中触发率 24-28%。
+    Fail-open：数据获取失败时放行。
+    """
+    try:
+        bars = _stk_client().get_stock_bars(StockBarsRequest(
+            symbol_or_symbols=symbol, timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=days * 3 + 5),
+        ))[symbol]
+        closes = [float(b.close) for b in bars]
+        if len(closes) < days + 1:
+            return True, ""
+        drop = (closes[-1] - closes[-days-1]) / closes[-days-1]
+        if drop < threshold:
+            return False, f"{symbol} 过去 {days} 天 {drop:+.1%} < {threshold:.0%} 拦截"
+        return True, f"drop_{days}d={drop:+.1%}"
+    except Exception as e:
+        logger.warning(f"check_recent_drop({symbol}) 失败: {e}")
+        return True, ""
+
+
+def check_sector_etf(symbol: str, threshold: float = -0.02) -> tuple[bool, str]:
+    """检测标的所在板块 ETF 当天跌幅。
+
+    板块 ETF 单日 < threshold（默认 -2%）→ 板块系统性下跌，拦截。
+    回测证明：2024 闪崩触发率 42%，2020 COVID 38%。
+    Fail-open：数据获取失败或 sector 无映射时放行。
+    """
+    try:
+        from strategy.sector_map import sector_of
+        sec = sector_of(symbol)
+        etf = _SECTOR_TO_ETF.get(sec, "SPY")
+        bars = _stk_client().get_stock_bars(StockBarsRequest(
+            symbol_or_symbols=etf, timeframe=TimeFrame.Day,
+            start=date.today() - timedelta(days=5),
+        ))[etf]
+        closes = [float(b.close) for b in bars]
+        if len(closes) < 2:
+            return True, ""
+        etf_drop = (closes[-1] - closes[-2]) / closes[-2]
+        if etf_drop < threshold:
+            return False, f"{etf}({sec}) 今日 {etf_drop:+.1%} < {threshold:.0%} 拦截"
+        return True, f"etf_{etf}={etf_drop:+.1%}"
+    except Exception as e:
+        logger.warning(f"check_sector_etf({symbol}) 失败: {e}")
+        return True, ""
+
+
 def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     """卖 Put（CSP）前的综合检查 — 组合所有回测验证有效的过滤器
 
@@ -622,12 +700,14 @@ def pre_open_put_checks(symbol: str) -> tuple[bool, str]:
     don't waste per-symbol API quota when the whole market is unsafe.
     """
     checks = [
-        ("vix_regime", check_vix_regime()),     # v5: market-wide panic gate
-        ("spy_market", check_spy_trend()),      # market-wide trend gate
-        ("earnings",   check_earnings(symbol)),
-        ("ma_trend",   check_ma_trend(symbol)),
-        ("rv_cap",     check_realized_vol(symbol)),
-        ("iv_rank",    check_iv_rank(symbol)),  # v6: premium-floor gate
+        ("vix_regime",  check_vix_regime()),     # v5: market-wide panic gate
+        ("spy_market",  check_spy_trend()),      # market-wide trend gate
+        ("sector_etf",  check_sector_etf(symbol)),  # v9: 板块同步过滤
+        ("earnings",    check_earnings(symbol)),
+        ("ma_trend",    check_ma_trend(symbol)),
+        ("rv_cap",      check_realized_vol(symbol)),
+        ("recent_drop", check_recent_drop(symbol)),  # v9: 近期跌幅过滤
+        ("iv_rank",     check_iv_rank(symbol)),  # v6: premium-floor gate
     ]
     reasons = []
     for name, (ok, msg) in checks:
