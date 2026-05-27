@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import sys, json; data = json.load(sys.stdin); path = data.get('tool_input', {}).get('file_path', ''); blocked = any(p in path.lower() for p in ['.env', 'credentials.json', 'secrets.yaml']); print('BLOCKED: refusing to edit secret file ' + path, file=sys.stderr) if blocked else None; sys.exit(2 if blocked else 0)\""
+          }
+        ]
+      }
+    ]
+  }
+}
