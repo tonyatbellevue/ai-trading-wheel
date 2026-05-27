@@ -140,9 +140,10 @@ MIN_PREMIUM_ANNUALIZED   = 0.20     # 最低年化收益率 20%
 # ── 资金安全缓冲（防止爆仓/平仓）──
 # 所有新开仓前必须保证：buying_power - 最小现金保留 ≥ strike × 100 × qty
 CASH_BUFFER_PCT          = 0.10     # 权益的 10% 必须保留为现金，应对黑天鹅
-MAX_SINGLE_POSITION_PCT  = 0.40     # 单个新仓位不超过权益 40%（v6: 70→40, 真实
-                                     # 盈亏比 Kelly 下推荐 ~6%；wheel 同时只 1-3 个
-                                     # 仓位，40% 是"分散够 + 仍能用满 BP"的甜点）
+MAX_SINGLE_POSITION_PCT  = 0.50     # 单个新仓位不超过权益 50%（v8: 40→50, 提高
+                                     # BP 利用率从 39%→~50% 以接近 25% 年化目标，
+                                     # 11 笔历史交易中多数单子被旧 40% 上限限制为 1 张，
+                                     # 改 50% 后多数单子可开 2 张，预期年化 18%→~22-26%）
 MAX_TOTAL_EXPOSURE_PCT   = 0.90     # 所有 Put 抵押之和不超过权益 90%（防爆仓）
 MAX_SECTOR_EXPOSURE_PCT  = 0.60     # 同一 sector 所有 Put 抵押不超过权益 60%（防 sector beta）
 MAX_CONSECUTIVE_LOSSES   = 3        # 连亏 N 周期 → 强制换标的（stop-loss 逃生）
