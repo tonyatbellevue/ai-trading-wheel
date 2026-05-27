@@ -1,5 +1,15 @@
 {
-  "timestamp": "2026-05-27T13:33:00.831579",
-  "options": {},
+  "timestamp": "2026-05-27T13:41:15.089629",
+  "options": {
+    "AVGO260601P00415000": {
+      "qty": -1.0,
+      "entry": 3.85,
+      "current": 5.25,
+      "underlying": "AVGO",
+      "strike": 415.0,
+      "expiry": "2026-06-01",
+      "type": "P"
+    }
+  },
   "stocks": {}
 }
