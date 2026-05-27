@@ -94,6 +94,13 @@ SECTOR_MAP: dict[str, str] = {
     # QQQ ≈ 70% AI-related. Use is mainly for IV-rank arbitrage when
     # individual stocks are calm but the index has volatility.
     "SPY": "index_etf", "QQQ": "index_etf",
+
+    # Aerospace / defense (5/27 added — SpaceX IPO 6/12 concept play)
+    # Sector cap MAX_SECTOR_EXPOSURE_PCT=60% applies to total of these 3
+    # so we don't accidentally over-concentrate on the SpaceX hype trade.
+    "RKLB": "aerospace_defense",  # Rocket Lab — closest SpaceX proxy
+    "LMT":  "aerospace_defense",  # Lockheed Martin — defense+space giant
+    "LHX":  "aerospace_defense",  # L3Harris — space tech + defense
 }
 
 
