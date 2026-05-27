@@ -93,6 +93,16 @@ WHEEL_UNIVERSE = [
     "RKLB",  # Rocket Lab — 最直接 SpaceX 替代品；28M 股/天 $4B 美元成交量
     "LMT",   # Lockheed Martin — 国防+太空巨头；$717M 美元/天，期权 CBOE 活跃
     "LHX",   # L3Harris — 太空+国防技术；空基 ETF 大持仓
+    # 多板块覆盖 (5/27 added — 弥补金融/能源/医药/消费/汽车板块完全缺失)
+    # 当科技板块系统性下跌时，这些非科技板块能保护账户
+    "BAC",   # Bank of America — 银行龙头，$52 友好价 + 巨大期权流动性
+    "JPM",   # JPMorgan — 银行业老大，质量最高
+    "XOM",   # ExxonMobil — 能源龙头 + 通胀对冲 + 高股息
+    "PFE",   # Pfizer — 防御医药 + 高股息 + $25 极便宜可多张
+    "JNJ",   # Johnson & Johnson — 防御医药稳定盘
+    "WMT",   # Walmart — 防御消费 + 期权流动性高
+    "F",     # Ford — $15 单张 → 可开 30+ 张，权利金可观
+    "GM",    # General Motors — 汽车板块多元化
 ]
 
 # CSP 池 = Wheel 池 + 行业 ETF (SPY/QQQ 已在 WHEEL_UNIVERSE)

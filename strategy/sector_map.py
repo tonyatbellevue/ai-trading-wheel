@@ -101,6 +101,25 @@ SECTOR_MAP: dict[str, str] = {
     "RKLB": "aerospace_defense",  # Rocket Lab — closest SpaceX proxy
     "LMT":  "aerospace_defense",  # Lockheed Martin — defense+space giant
     "LHX":  "aerospace_defense",  # L3Harris — space tech + defense
+
+    # Financials (5/27 added — fill gap, hedge tech downturn)
+    "BAC": "financials",   # Bank of America
+    "JPM": "financials",   # JPMorgan
+
+    # Energy (5/27 added — inflation hedge, anti-correlated to tech in down markets)
+    "XOM": "energy",       # ExxonMobil
+
+    # Pharma (5/27 added — defensive, anti-correlated to tech)
+    "PFE": "pharma",       # Pfizer
+    "JNJ": "pharma",       # Johnson & Johnson
+
+    # Consumer staples (5/27 added — defensive)
+    "WMT": "consumer_staples",  # Walmart
+
+    # Auto (5/27 added — keeps TSLA isolated in ev_musk; F/GM together
+    # for traditional auto sector beta)
+    "F":  "auto",          # Ford
+    "GM": "auto",          # General Motors
 }
 
 
