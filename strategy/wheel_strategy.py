@@ -285,7 +285,7 @@ class WheelStrategy:
             limit = max(round(current * 1.05, 2), current + 0.02)
             limit = max(limit, 0.01)
             logger.info(
-                f"💰 50%-profit BTC 触发: {pos.symbol} 入场 ${entry:.2f} → "
+                f"💰 {profit_threshold:.0%}-profit BTC 触发: {pos.symbol} 入场 ${entry:.2f} → "
                 f"现价 ${current:.2f} ({profit_pct:.0%} 已实现), 挂 BTC @ ${limit:.2f}"
             )
             self._option_mgr.buy_to_close(pos.symbol, close_qty, limit)
