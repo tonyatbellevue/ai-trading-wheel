@@ -407,7 +407,11 @@ def kelly_contracts(
 
     # ── 层 4：最坏情况硬检查 ──
     # 假设开 N 张 + 现有仓位都被行权，现金必须能扛住
-    max_by_effective = int(effective_available // per_contract_cash)
+    # v8.1: 用 4 舍 5 入而非向下取整。比如 1.6 张 → 2 张（多用一点 BP），
+    # 1.27 张 → 1 张（不变）。意图是让 50% 仓位上限是"目标"而非"硬天花板"，
+    # 在比例接近时允许略超以多开 1 张。层 4 worst-case loop 仍兜底，BP/cash
+    # 真不够的话会自动降级。
+    max_by_effective = int(effective_available / per_contract_cash + 0.5)
     for trial in range(max_by_effective, 0, -1):
         worst_case_cash_need = existing_put_collateral + (per_contract_cash * trial)
         if worst_case_cash_need + safety_buffer <= cash:
