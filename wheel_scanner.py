@@ -89,6 +89,10 @@ WHEEL_UNIVERSE = [
     # evaluates but kelly returns 0 until account scales > $200k.
     "SPY",   # S&P 500 ETF
     "QQQ",   # NASDAQ-100 ETF
+    # 航空航天/国防 (5/27 added — SpaceX IPO 6/12 concept play)
+    "RKLB",  # Rocket Lab — 最直接 SpaceX 替代品；28M 股/天 $4B 美元成交量
+    "LMT",   # Lockheed Martin — 国防+太空巨头；$717M 美元/天，期权 CBOE 活跃
+    "LHX",   # L3Harris — 太空+国防技术；空基 ETF 大持仓
 ]
 
 # CSP 池 = Wheel 池 + 行业 ETF (SPY/QQQ 已在 WHEEL_UNIVERSE)

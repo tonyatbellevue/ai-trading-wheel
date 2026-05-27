@@ -134,6 +134,12 @@ _HARDCODED_EARNINGS = {
     "DRAM": [],
     "SPY":  [],
     "QQQ":  [],
+    # === Aerospace / defense (5/27 added with SpaceX IPO concept play) ===
+    # RKLB Finnhub returned no data (Q1 just reported); next ~Aug. LMT/LHX
+    # confirmed via Finnhub.
+    "RKLB": ["2025-05-08", "2025-08-07", "2025-11-10", "2026-02-26", "2026-05-07", "2026-08-13"],
+    "LMT":  ["2025-04-22", "2025-07-22", "2025-10-21", "2026-01-27", "2026-04-21", "2026-07-20"],
+    "LHX":  ["2025-04-24", "2025-07-24", "2025-10-23", "2026-01-29", "2026-04-23", "2026-07-22"],
 }
 
 # Apply JSON cache override if present and fresh. Cache wins; hardcoded is fallback.
