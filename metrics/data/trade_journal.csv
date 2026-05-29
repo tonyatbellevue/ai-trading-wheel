@@ -9,3 +9,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-05-29T13:49:00.464852,exit,AVGO,,AVGO260601P00415000,,,1,,,,,102431.06,102431.06,,,,,,,,285.0,btc_50pct_profit,detected by position_tracker; entry=$3.85
 2026-05-29T13:49:19.720227,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.38,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
 2026-05-29T13:57:20.893221,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.39,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
+2026-05-29T14:01:56.311173,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.37,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
