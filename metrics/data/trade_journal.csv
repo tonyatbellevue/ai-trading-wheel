@@ -46,3 +46,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-05-29T18:17:15.551257,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.08,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
 2026-05-29T18:25:13.325140,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.10,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
 2026-05-29T18:33:19.675224,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.10,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
+2026-05-29T18:41:16.637945,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.06,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
