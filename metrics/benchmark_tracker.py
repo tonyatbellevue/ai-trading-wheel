@@ -268,8 +268,15 @@ def build_benchmark_report() -> str:
     ]
 
     # Bot's own metrics
+    # 5/30: 起始 equity 改用 settings.INITIAL_CAPITAL ($100K) 而非 bot_history[0][1]，
+    # 这样把账户开户至今的全部 wheel 操作都算进去（snapshot CSV 是 4/16 才开始记录的，
+    # 之前 ~$737 早期累积没体现）。用户偏好"全部都算"。
+    from config import settings
+    initial_capital = getattr(settings, "INITIAL_CAPITAL", 100000.0)
+
     bot_returns = _daily_returns(bot_history)
-    bot_total = bot_history[-1][1] / bot_history[0][1] - 1
+    current_equity = bot_history[-1][1]
+    bot_total = (current_equity - initial_capital) / initial_capital
     bot_ann_ret = _annualized_return(bot_returns)
     bot_ann_vol = _annualized_volatility(bot_returns)
     bot_sharpe = _sharpe_ratio(bot_returns)
@@ -278,9 +285,10 @@ def build_benchmark_report() -> str:
     lines += [
         "### 你的 Bot",
         "",
-        f"- 起始 equity: ${bot_history[0][1]:,.2f}",
-        f"- 当前 equity: ${bot_history[-1][1]:,.2f}",
-        f"- 总收益: {_fmt_pct(bot_total)}",
+        f"- 账户起始 equity (开户): ${initial_capital:,.2f}",
+        f"- 快照记录起点: ${bot_history[0][1]:,.2f} ({start})",
+        f"- 当前 equity: ${current_equity:,.2f}",
+        f"- 总收益（从开户算）: {_fmt_pct(bot_total)}",
         f"- 年化收益 (推算): {_fmt_pct(bot_ann_ret)}",
         f"- 年化波动率: {_fmt_pct(bot_ann_vol)}",
         f"- Sharpe 比率: {_fmt_num(bot_sharpe)}",
