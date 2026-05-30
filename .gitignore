@@ -48,6 +48,7 @@ metrics/data/*
 !metrics/data/daily_snapshot.csv
 !metrics/data/trade_journal.csv
 !metrics/data/last_positions.json
+!metrics/data/trade_history_full.csv
 test_dashboard.html
 
 # Claude Code 本地设置
