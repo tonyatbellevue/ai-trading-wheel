@@ -155,15 +155,29 @@ def build_weekly_review() -> str:
         ]
 
     # ── 最佳/最差交易 ──
-    if len(exits) >= 2:
-        best, worst = _best_worst_trades(exits, top_n=2)
-        lines += ["### 最佳交易", ""]
-        for r in best:
-            lines.append(f"- 🏆 {_format_trade(r)}")
-        lines += ["", "### 最差交易", ""]
-        for r in worst:
-            lines.append(f"- ⚠️ {_format_trade(r)}")
-        lines.append("")
+    # 修复 (5/30): 当 exits 笔数 ≤ 4 时，最佳/最差列表会重叠（best=top2,
+    # worst=bottom2，4 笔时已部分重叠，2 笔时完全一样）。改成：
+    #   ≤ 4 笔：合并显示所有交易，按 P&L 降序
+    #   > 4 笔：分别显示 top 2 best + top 2 worst
+    if len(exits) >= 1:
+        sorted_exits = sorted(exits, key=lambda r: float(r.get("pnl") or 0), reverse=True)
+        if len(exits) <= 4:
+            lines += ["### 本周交易（按 P&L 排序）", ""]
+            for r in sorted_exits:
+                pnl = float(r.get("pnl") or 0)
+                icon = "🏆" if pnl > 0 else ("⚠️" if pnl < 0 else "•")
+                lines.append(f"- {icon} {_format_trade(r)}")
+            lines.append("")
+        else:
+            best = sorted_exits[:2]
+            worst = sorted_exits[-2:][::-1]
+            lines += ["### 最佳交易", ""]
+            for r in best:
+                lines.append(f"- 🏆 {_format_trade(r)}")
+            lines += ["", "### 最差交易", ""]
+            for r in worst:
+                lines.append(f"- ⚠️ {_format_trade(r)}")
+            lines.append("")
 
     # ── 过滤器贡献 ──
     try:
