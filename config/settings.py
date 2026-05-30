@@ -147,3 +147,10 @@ MAX_SINGLE_POSITION_PCT  = 0.50     # 单个新仓位不超过权益 50%（v8: 4
 MAX_TOTAL_EXPOSURE_PCT   = 0.90     # 所有 Put 抵押之和不超过权益 90%（防爆仓）
 MAX_SECTOR_EXPOSURE_PCT  = 0.60     # 同一 sector 所有 Put 抵押不超过权益 60%（防 sector beta）
 MAX_CONSECUTIVE_LOSSES   = 3        # 连亏 N 周期 → 强制换标的（stop-loss 逃生）
+
+# ── v12: 并行多 wheel ──
+# 同时运行 N 个独立 wheel（每个不同标的）。每个 wheel 自己管自己的状态机。
+# 跨 wheel 风险控制通过 MAX_TOTAL_EXPOSURE_PCT (90%) + MAX_SECTOR_EXPOSURE_PCT (60%)
+# 自动协调。设 1 = 保持单仓模式（原行为）。设 2 = 并行 2 个独立标的的 wheel。
+# 预期：年化收益 22% → 35-40%，回撤 6% → 10-12%。
+MAX_CONCURRENT_WHEELS    = 2
