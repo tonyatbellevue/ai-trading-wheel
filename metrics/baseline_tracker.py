@@ -22,7 +22,48 @@ METRICS_DIR = Path(settings.BASE_DIR) / "metrics" / "data"
 METRICS_DIR.mkdir(parents=True, exist_ok=True)
 
 DAILY_CSV = METRICS_DIR / "daily_snapshot.csv"
-TRADES_CSV = METRICS_DIR / "closed_trades.csv"
+TRADES_CSV = METRICS_DIR / "closed_trades.csv"   # legacy, may not exist
+TRADE_JOURNAL_CSV = METRICS_DIR / "trade_journal.csv"  # actual source of truth
+
+
+def _load_exits() -> list:
+    """Load closed trades from trade_journal.csv (the real data source).
+
+    Bug fix (5/30): baseline_tracker was reading from closed_trades.csv
+    which never gets written. trade_journal.csv is the actual log used
+    by run_cycle. Schema:
+        event_at, event_type ("exit"/"entry"/"skip"), pnl, ...
+
+    Returns list of dicts with normalized keys:
+        - closed_at: event_at
+        - is_win: 1 if pnl > 0 else 0
+        - pnl: float
+    """
+    exits = []
+    try:
+        for r in _read_csv(TRADE_JOURNAL_CSV):
+            if r.get("event_type") != "exit":
+                continue
+            try:
+                pnl = float(r.get("pnl", 0) or 0)
+            except (ValueError, TypeError):
+                pnl = 0.0
+            exits.append({
+                "closed_at": r.get("event_at", ""),
+                "pnl": pnl,
+                "is_win": 1 if pnl > 0 else 0,
+                "symbol": r.get("symbol", ""),
+                "contract": r.get("contract", ""),
+            })
+    except Exception:
+        pass
+    # Legacy fallback: also include any closed_trades.csv rows if file exists
+    if TRADES_CSV.exists():
+        try:
+            exits.extend(_read_csv(TRADES_CSV))
+        except Exception:
+            pass
+    return exits
 
 
 # ── 每日快照 ────────────────────────────────────────────────────────────
@@ -99,7 +140,7 @@ def _daterange(days_back: int) -> tuple[date, date]:
 def get_weekly_stats() -> dict:
     """本周 vs 上周对比"""
     snapshots = _read_csv(DAILY_CSV)
-    trades = _read_csv(TRADES_CSV)
+    trades = _load_exits()
 
     today = date.today()
     this_week_start = today - timedelta(days=today.weekday())  # 本周一
@@ -183,7 +224,7 @@ def get_weekly_stats() -> dict:
 def get_monthly_stats() -> dict:
     """最近 30 天累计"""
     snapshots = _read_csv(DAILY_CSV)
-    trades = _read_csv(TRADES_CSV)
+    trades = _load_exits()
     if not snapshots:
         return {"total_trades": 0, "win_rate": 0, "equity_pct": 0, "realized_pnl": 0}
 
@@ -197,6 +238,9 @@ def get_monthly_stats() -> dict:
 
     month_snaps = [s for s in snapshots if in_range(s, "date")]
     month_trades = [t for t in trades if in_range(t, "closed_at")]
+    # also support legacy "event_at" if any rows lack closed_at
+    if not month_trades:
+        month_trades = [t for t in trades if in_range(t, "event_at")]
 
     if not month_snaps:
         return {"total_trades": len(month_trades), "win_rate": 0, "equity_pct": 0, "realized_pnl": 0}
