@@ -87,15 +87,40 @@ class WheelStrategy:
             all_positions = self._trading.get_all_positions()
             for pos in all_positions:
                 info = _parse_symbol(pos.symbol)
-                if not info or info.get("type") != "P":
+
+                # 期权 short put
+                if info and info.get("type") == "P":
+                    qty = float(pos.qty)
+                    if qty >= 0:  # skip long puts
+                        continue
+                    collateral = info["strike"] * 100 * abs(qty)
+                    sec = sector_of(info["underlying"])
+                    buckets[sec] = buckets.get(sec, 0.0) + collateral
+                    total += collateral
                     continue
-                qty = float(pos.qty)
-                if qty >= 0:  # skip long puts
+
+                # v12 修 C2 (5/30): 被行权后的股票持仓也计入同板块暴露。
+                # 不然 wheel 2 选新标的时会忽略已被行权的同板块股票，
+                # 可能叠加成 sector cap 60% 之上（例：AVGO 股票 $40K
+                # + QCOM 新 put $23K = $63K = 62% ai_hardware，越界）。
+                if not info:  # 非 option symbol = 股票
+                    try:
+                        qty = float(pos.qty)
+                        if qty < 100:
+                            continue  # 不到 100 股不算 wheel 持仓
+                        stock_value = float(pos.market_value or 0)
+                        if stock_value <= 0:
+                            stock_value = float(pos.current_price or 0) * qty
+                        sec = sector_of(pos.symbol)
+                        buckets[sec] = buckets.get(sec, 0.0) + stock_value
+                        total += stock_value
+                        logger.debug(
+                            f"被行权持股计入 sector: {pos.symbol} x{qty} "
+                            f"= ${stock_value:,.0f} ({sec})"
+                        )
+                    except Exception as e:
+                        logger.debug(f"股票 sector 统计失败 {pos.symbol}: {e}")
                     continue
-                collateral = info["strike"] * 100 * abs(qty)
-                sec = sector_of(info["underlying"])
-                buckets[sec] = buckets.get(sec, 0.0) + collateral
-                total += collateral
 
             # ── v12 修 C: 未成交的 SELL Put 限价单也算抵押 ──
             try:
