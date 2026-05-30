@@ -49,14 +49,46 @@ def main():
     opt_mgr = OptionOrderManager()
     before_orders = {o.id for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)}
 
-    try:
-        strategy = WheelStrategy()
-        phase_before, _ = strategy.get_phase()
-        strategy.run_cycle()
-        logger.info("run_cycle() 完成")
-    except Exception as e:
-        logger.error(f"run_cycle() 异常: {e}")
-        sys.exit(1)
+    # ── v12: 并行多 wheel ──
+    # MAX_CONCURRENT_WHEELS = 1 → 原行为（单 wheel）
+    # MAX_CONCURRENT_WHEELS = 2+ → 先跑主 wheel，再跑次 wheel（不同标的）
+    # 跨 wheel 风险已由 MAX_TOTAL_EXPOSURE_PCT (90%) + MAX_SECTOR_EXPOSURE_PCT (60%)
+    # 在 kelly_contracts() 里自动协调，无需手动追加检查。
+    primary_sym = settings.WHEEL_SYMBOL
+    wheel_symbols = [primary_sym]
+
+    max_concurrent = getattr(settings, "MAX_CONCURRENT_WHEELS", 1)
+    if max_concurrent >= 2:
+        try:
+            from strategy.wheel_evaluator import _find_best_alternative
+            from strategy.wheel_strategy import _parse_symbol
+            existing_opt_symbols = set()
+            for p in AlpacaClients.trading().get_all_positions():
+                if len(p.symbol) > 10:  # OCC option symbol
+                    info = _parse_symbol(p.symbol)
+                    if info:
+                        existing_opt_symbols.add(info["underlying"])
+            existing_opt_symbols.add(primary_sym)
+
+            # v12 修 D: 传 set 给 _find_best_alternative，它会跳过已占用的所有标的
+            secondary_sym = _find_best_alternative(exclude=existing_opt_symbols)
+            if secondary_sym:
+                wheel_symbols.append(secondary_sym)
+                logger.info(f"v12: 并行第 2 个 wheel → {secondary_sym}")
+            else:
+                logger.info(f"v12: 未找到合适次 wheel 候选")
+        except Exception as e:
+            logger.warning(f"v12 次 wheel 选择失败（继续单 wheel）: {e}")
+
+    for sym in wheel_symbols:
+        try:
+            logger.info(f"--- 运行 wheel: {sym} ---")
+            strategy = WheelStrategy(symbol=sym)
+            strategy.run_cycle()
+            logger.info(f"--- {sym} run_cycle() 完成 ---")
+        except Exception as e:
+            logger.error(f"{sym} run_cycle() 异常: {e}")
+            # 不 sys.exit — 让其余 wheel 继续
 
     # 检测是否有新下单
     after_orders = {o.id for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)}
