@@ -73,11 +73,17 @@ class WheelStrategy:
     def _calc_put_collateral_by_sector(self) -> dict:
         """Return {sector: collateral_sum} for every short put on the account,
         plus a "__total__" key. Used by the sector-exposure filter.
+
+        v12 修 C: also counts pending SELL Put limit orders. Without this,
+        two parallel wheels in the same cron tick could both think there's
+        full headroom (wheel 1 places limit order → wheel 2 reads positions
+        before fill → underestimates collateral).
         """
         from strategy.sector_map import sector_of
         buckets: dict[str, float] = {}
         total = 0.0
         try:
+            # ── 已成交持仓 ──
             all_positions = self._trading.get_all_positions()
             for pos in all_positions:
                 info = _parse_symbol(pos.symbol)
@@ -90,6 +96,33 @@ class WheelStrategy:
                 sec = sector_of(info["underlying"])
                 buckets[sec] = buckets.get(sec, 0.0) + collateral
                 total += collateral
+
+            # ── v12 修 C: 未成交的 SELL Put 限价单也算抵押 ──
+            try:
+                from alpaca.trading.requests import GetOrdersRequest
+                from alpaca.trading.enums import QueryOrderStatus
+                open_orders = self._trading.get_orders(
+                    filter=GetOrdersRequest(status=QueryOrderStatus.OPEN, limit=100)
+                )
+                for o in open_orders:
+                    if not o.symbol or len(o.symbol) < 10:
+                        continue
+                    info = _parse_symbol(o.symbol)
+                    if not info or info.get("type") != "P":
+                        continue
+                    if "SELL" not in str(o.side).upper():
+                        continue
+                    qty = float(o.qty or 0)
+                    if qty <= 0:
+                        continue
+                    collateral = info["strike"] * 100 * qty
+                    sec = sector_of(info["underlying"])
+                    buckets[sec] = buckets.get(sec, 0.0) + collateral
+                    total += collateral
+                    logger.debug(f"待成交挂单计入抵押: {o.symbol} qty={qty} → ${collateral:,.0f}")
+            except Exception as e:
+                logger.debug(f"未成交挂单抵押统计失败（忽略）: {e}")
+
         except Exception as e:
             logger.warning(f"计算 sector 抵押失败: {e}")
         buckets["__total__"] = total

@@ -382,7 +382,7 @@ def _next_expiry_friday_plus_one() -> date:
     return today + timedelta(days=days_to_sat + 1)
 
 
-def _find_best_alternative(exclude: str) -> Optional[str]:
+def _find_best_alternative(exclude) -> Optional[str]:
     """STOP 时找最佳替代 — 数据驱动（不再硬编码 MSFT 优先）
 
     流程：
@@ -391,18 +391,26 @@ def _find_best_alternative(exclude: str) -> Optional[str]:
       3. 返回第一个 GO 的标的（评分最高 + 健康）
 
     若 Top 5 都不 GO，再 fallback 到防御标的（QQQ/COST/UNH）作为兜底。
+
+    `exclude` 可以是单个 str 或 set/list（v12: 用于多 wheel 排除多个已持标的）。
     """
+    # v12: normalize exclude to set
+    if isinstance(exclude, str):
+        exclude_set = {exclude}
+    else:
+        exclude_set = set(exclude) if exclude else set()
+    primary_exclude = next(iter(exclude_set)) if exclude_set else "TSLA"
     try:
 
         # 按评分扫描全部候选
-        alts = scan_wheel_alternatives(exclude=exclude, top_n=10)
+        alts = scan_wheel_alternatives(exclude=primary_exclude, top_n=20)
 
-        # 取每个候选的 symbol（按评分排序）
+        # 取每个候选的 symbol（按评分排序），排除整个 exclude_set
         ranked = []
         for r in (alts.get("all", []) if isinstance(alts, dict) else alts):
             sym = r.get("symbol")
             score = r.get("score", {}).get("total_score", 0)
-            if sym and sym != exclude:
+            if sym and sym not in exclude_set:
                 ranked.append((sym, score))
 
         # 按评分降序，逐个查健康
@@ -421,7 +429,7 @@ def _find_best_alternative(exclude: str) -> Optional[str]:
     # ── Fallback：扫描失败时用稳健防御标的 ──
     fallback = ["QQQ", "MSFT", "AAPL", "GOOGL", "COST", "UNH", "SPY"]
     for sym in fallback:
-        if sym == exclude:
+        if sym in exclude_set:
             continue
         try:
             h = run_health_check(sym)

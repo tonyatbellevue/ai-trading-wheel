@@ -70,12 +70,13 @@ def main():
                         existing_opt_symbols.add(info["underlying"])
             existing_opt_symbols.add(primary_sym)
 
-            secondary_sym = _find_best_alternative(exclude=primary_sym)
-            if secondary_sym and secondary_sym not in existing_opt_symbols:
+            # v12 修 D: 传 set 给 _find_best_alternative，它会跳过已占用的所有标的
+            secondary_sym = _find_best_alternative(exclude=existing_opt_symbols)
+            if secondary_sym:
                 wheel_symbols.append(secondary_sym)
                 logger.info(f"v12: 并行第 2 个 wheel → {secondary_sym}")
             else:
-                logger.info(f"v12: 未找到合适次 wheel (候选 {secondary_sym} 已被占用)")
+                logger.info(f"v12: 未找到合适次 wheel 候选")
         except Exception as e:
             logger.warning(f"v12 次 wheel 选择失败（继续单 wheel）: {e}")
 
