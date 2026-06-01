@@ -131,7 +131,13 @@ def build_summary(event: str = "update") -> str:
         lines.append("")
 
     # ── 期权持仓 ──────────────────────────────────────────────────────────
-    opt_positions = opt_mgr.get_option_positions(sym)
+    # v12 修 (6/2): 用全账户的 option positions，不只 primary wheel symbol。
+    # 否则邮件会漏报 secondary wheel 的持仓（如 GM wheel 时漏掉 MSFT）。
+    all_account_positions = AlpacaClients.trading().get_all_positions()
+    opt_positions = [
+        p for p in all_account_positions
+        if p.symbol and len(p.symbol) > 10  # OCC option symbol format
+    ]
     if opt_positions:
         lines.append("## Option Positions")
         lines.append("")
