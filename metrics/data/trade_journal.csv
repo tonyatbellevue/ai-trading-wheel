@@ -59,3 +59,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-05-29T19:57:05.348642,skip,AVGO,sell_put,,,,,,,,,102431.06,102431.06,,,,,VIXY=23.21,1,[earnings] 财报日 2026-06-03 在 5d 窗口内,,,filter=earnings
 2026-06-01T13:37:20.567720,entry,GM,sell_put,GM260605P00078000,78.0,2026-06-05,6,0.26,-0.1266,,4,102431.03,102431.03,PASS,PASS,PASS,,VIXY=23.40,1,,,,size=6
 2026-06-01T13:42:09.758734,skip,MSFT,sell_put,,,,,,,,,102431.03,102431.03,,,,,VIXY=23.32,1,insufficient_funds,,,
+2026-06-01T13:49:48.749119,skip,MSFT,sell_put,,,,,,,,,102431.03,102431.03,,,,,VIXY=23.35,1,insufficient_funds,,,
