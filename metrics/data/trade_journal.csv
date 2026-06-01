@@ -83,3 +83,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-01T16:25:31.744538,skip,NFLX,sell_put,,,,,,,,,102723.89,102226.89,,,,,VIXY=23.60,1,[ma_trend] 股价 $86.03 < MA50 $92.92（下跌趋势）,,,filter=ma_trend
 2026-06-01T16:33:36.827998,skip,NFLX,sell_put,,,,,,,,,102723.89,102250.89,,,,,VIXY=23.59,1,[ma_trend] 股价 $86.03 < MA50 $92.92（下跌趋势）,,,filter=ma_trend
 2026-06-01T16:41:33.034345,skip,NFLX,sell_put,,,,,,,,,102723.89,102256.89,,,,,VIXY=23.62,1,[ma_trend] 股价 $86.03 < MA50 $92.92（下跌趋势）,,,filter=ma_trend
+2026-06-01T16:49:14.125922,skip,NFLX,sell_put,,,,,,,,,102723.89,102280.89,,,,,VIXY=23.66,1,[ma_trend] 股价 $86.08 < MA50 $92.93（下跌趋势）,,,filter=ma_trend
