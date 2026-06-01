@@ -71,3 +71,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-01T14:57:18.350906,skip,TSM,sell_put,,,,,,,,,102723.89,102359.89,,,,,VIXY=24.30,1,insufficient_funds,,,
 2026-06-01T15:01:45.162906,skip,TSM,sell_put,,,,,,,,,102723.89,102376.89,,,,,VIXY=23.57,1,insufficient_funds,,,
 2026-06-01T15:09:24.110304,skip,LHX,sell_put,,,,,,,,,102723.89,102326.89,,,,,VIXY=23.57,1,[sector_etf] ITA(aerospace_defense) 今日 -2.7% < -2% 拦截,,,filter=other
+2026-06-01T15:17:07.254850,skip,TSM,sell_put,,,,,,,,,102723.89,102371.89,,,,,VIXY=23.61,1,insufficient_funds,,,
