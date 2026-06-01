@@ -46,8 +46,22 @@ def main():
     logger.info("市场开盘，执行 Wheel 策略检查...")
 
     # 记录执行前的订单数，用于检测是否新下单
+    # v12 修 (5/30): 必须查 ALL 标的的订单，不只是 settings.WHEEL_SYMBOL，
+    # 因为并行多 wheel 会在 GM/MSFT 等非 primary 标的上开仓。
+    # 旧代码只查 AVGO 订单 → 即使开了 GM 仓位 new_orders 也是空集 → 无 trade alert。
     opt_mgr = OptionOrderManager()
-    before_orders = {o.id for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)}
+    def _all_open_option_orders():
+        from alpaca.trading.requests import GetOrdersRequest
+        from alpaca.trading.enums import QueryOrderStatus
+        try:
+            orders = AlpacaClients.trading().get_orders(
+                filter=GetOrdersRequest(status=QueryOrderStatus.OPEN, limit=100)
+            )
+            return [o for o in orders if o.symbol and len(o.symbol) > 10]
+        except Exception as e:
+            logger.warning(f"查全账户 open orders 失败: {e}")
+            return []
+    before_orders = {o.id for o in _all_open_option_orders()}
 
     # ── v12: 并行多 wheel ──
     # MAX_CONCURRENT_WHEELS = 1 → 原行为（单 wheel）
@@ -90,8 +104,9 @@ def main():
             logger.error(f"{sym} run_cycle() 异常: {e}")
             # 不 sys.exit — 让其余 wheel 继续
 
-    # 检测是否有新下单
-    after_orders = {o.id for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)}
+    # 检测是否有新下单（v12 修：检查全账户而非单标的）
+    after_orders_list = _all_open_option_orders()
+    after_orders = {o.id for o in after_orders_list}
     new_orders = after_orders - before_orders
 
     if new_orders:
@@ -109,9 +124,8 @@ def main():
             now_sgt = datetime.now(sgt).strftime("%H:%M SGT")
 
             # Pull the actual order objects to show details (side, qty, limit).
-            order_lookup = {
-                o.id: o for o in opt_mgr.get_open_option_orders(settings.WHEEL_SYMBOL)
-            }
+            # v12 修: 同样需要全账户查询，不限 primary 标的。
+            order_lookup = {o.id: o for o in after_orders_list}
             order_lines = []
             for oid in new_orders:
                 o = order_lookup.get(oid)
