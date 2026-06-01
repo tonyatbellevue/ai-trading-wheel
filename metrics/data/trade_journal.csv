@@ -60,3 +60,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-01T13:37:20.567720,entry,GM,sell_put,GM260605P00078000,78.0,2026-06-05,6,0.26,-0.1266,,4,102431.03,102431.03,PASS,PASS,PASS,,VIXY=23.40,1,,,,size=6
 2026-06-01T13:42:09.758734,skip,MSFT,sell_put,,,,,,,,,102431.03,102431.03,,,,,VIXY=23.32,1,insufficient_funds,,,
 2026-06-01T13:49:48.749119,skip,MSFT,sell_put,,,,,,,,,102431.03,102431.03,,,,,VIXY=23.35,1,insufficient_funds,,,
+2026-06-01T13:57:51.038749,skip,NFLX,sell_put,,,,,,,,,102431.03,102431.03,,,,,VIXY=23.45,1,[ma_trend] 股价 $87.14 < MA50 $92.95（下跌趋势）,,,filter=ma_trend
