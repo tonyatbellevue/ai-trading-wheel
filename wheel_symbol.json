@@ -1,5 +1,5 @@
 {
-  "active_symbol": "AVGO",
+  "active_symbol": "GM",
   "plan": null,
   "history": [
     {
@@ -31,6 +31,13 @@
       "planned_to": "CRM",
       "reason": "IV-blocked fallback: TSLA IV rank 28 < 30, rotate to CRM (IV rank 98)",
       "rescan_note": "触发时重扫: 原计划 CRM 已非 top-1，改用 AVGO (score=91.2)"
+    },
+    {
+      "switched_at": "2026-06-01T13:36:22.546171",
+      "from": "AVGO",
+      "to": "GM",
+      "planned_to": "GM",
+      "reason": "CAUTION + better alternative (GM score +20%)"
     }
   ]
 }
