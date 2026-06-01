@@ -218,7 +218,9 @@ def build_summary(event: str = "update") -> str:
     btc_total = 0.0
     trades = []
     for o in closed:
-        if len(o.symbol) < 18:
+        # OCC option = ticker (1-6 chars) + 6 yymmdd + C/P + 8 strike → min 16 chars.
+        # 6/2 fix: was < 18 which silently excluded GM (17), F (16), BAC (17) etc.
+        if len(o.symbol) < 16:
             continue
         if o.symbol[-9] not in ("C", "P") or not o.symbol[-8:].isdigit():
             continue
