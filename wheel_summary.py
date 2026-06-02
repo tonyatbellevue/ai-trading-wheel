@@ -49,40 +49,76 @@ def build_summary(event: str = "update") -> str:
     lines.append(f"**{now_et}**")
     lines.append("")
 
-    # ── 阶段 ─────────────────────────────────────────────────────────────
-    strategy = WheelStrategy(sym)
-    phase, obj = strategy.get_phase()
+    # ── 阶段 + 评估 (v12: 多 wheel 各自显示) ──────────────────────────────
+    # 6/2 修: 找出所有有持仓的标的，分别显示其 phase + cycle evaluation。
+    # 旧逻辑只看 settings.WHEEL_SYMBOL（主 wheel），漏掉 secondary wheel。
     phase_desc = {
         WheelPhase.IDLE:       "IDLE — waiting to sell new Put",
         WheelPhase.SHORT_PUT:  "SHORT PUT — cash-secured put active",
         WheelPhase.LONG_STOCK: "LONG STOCK — ready to sell Covered Call",
         WheelPhase.SHORT_CALL: "SHORT CALL — covered call active",
     }
-    lines.append(f"## Phase: `{phase.name}`")
-    lines.append(phase_desc[phase])
-    lines.append("")
 
-    # ── 每轮评估决策 ──────────────────────────────────────────────────────
+    # Find all wheel symbols currently active (have positions) + the primary
+    active_wheel_syms = {sym}  # always include primary
     try:
-        from strategy.wheel_evaluator import evaluate_and_maybe_plan
-        from strategy.wheel_switch import load_state
-        decision = evaluate_and_maybe_plan(
-            current_symbol=sym,
-            current_phase_is_idle=(phase == WheelPhase.IDLE),
-        )
-        state = load_state()
-        plan = state.get("plan")
-        lines.append("## Cycle Evaluation")
-        lines.append("")
-        lines.append(f"- Health Verdict: **{decision.get('health_verdict','?')}**")
-        lines.append(f"- Action: `{decision.get('action','keep')}`")
-        lines.append(f"- {decision.get('message','')}")
+        for p in trading.get_all_positions():
+            if p.symbol and len(p.symbol) > 10:  # OCC option
+                # parse underlying from OCC symbol
+                import re
+                m = re.match(r'^([A-Z]+)\d{6}[CP]\d{8}$', p.symbol)
+                if m:
+                    active_wheel_syms.add(m.group(1))
+            elif p.symbol and float(p.qty or 0) >= 100:
+                # stock position (post-assignment)
+                active_wheel_syms.add(p.symbol)
+    except Exception:
+        pass
+
+    # Sort: primary first, then alphabetical
+    sorted_syms = [sym] + sorted(active_wheel_syms - {sym})
+
+    from strategy.wheel_evaluator import evaluate_and_maybe_plan
+    from strategy.wheel_switch import load_state
+
+    primary_phase = None  # remember primary's phase for later sections
+    for ws in sorted_syms:
+        try:
+            strategy = WheelStrategy(ws)
+            phase, obj = strategy.get_phase()
+            if ws == sym:
+                primary_phase = phase
+
+            is_primary = (ws == sym)
+            label = f"{ws} (primary)" if is_primary else f"{ws} (secondary)"
+            lines.append(f"## Phase — {label}: `{phase.name}`")
+            lines.append(phase_desc[phase])
+            lines.append("")
+
+            decision = evaluate_and_maybe_plan(
+                current_symbol=ws,
+                current_phase_is_idle=(phase == WheelPhase.IDLE),
+            )
+            lines.append(f"### Cycle Evaluation — {ws}")
+            lines.append("")
+            lines.append(f"- Health Verdict: **{decision.get('health_verdict','?')}**")
+            lines.append(f"- Action: `{decision.get('action','keep')}`")
+            lines.append(f"- {decision.get('message','')}")
+            lines.append("")
+        except Exception as e:
+            lines.append(f"## Phase — {ws}\n\n⚠️ {e}\n")
+
+    # Pending switch info (account-level, shown once)
+    try:
+        plan = load_state().get("plan")
         if plan:
-            lines.append(f"- 📅 **Pending Switch**: {plan['from_symbol']} → **{plan['to_symbol']}** @ ≥{plan['trigger_date']}")
+            lines.append(f"### 📅 Pending Switch: {plan['from_symbol']} → **{plan['to_symbol']}** @ ≥{plan['trigger_date']}")
             lines.append(f"  - Reason: _{plan.get('reason','')}_")
-        lines.append("")
-    except Exception as e:
-        lines.append(f"## Cycle Evaluation\n\n⚠️ Evaluation failed: {e}\n")
+            lines.append("")
+    except Exception:
+        pass
+
+    phase = primary_phase  # restore for downstream code that expects `phase`
 
     # ── 账户 ─────────────────────────────────────────────────────────────
     acct = trading.get_account()
