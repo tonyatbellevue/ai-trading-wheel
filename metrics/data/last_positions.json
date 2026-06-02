@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-02T15:17:15.499007",
+  "timestamp": "2026-06-02T15:25:25.656813",
   "options": {
     "GM260605P00078000": {
       "qty": -6.0,
       "entry": 0.26,
-      "current": 0.21,
+      "current": 0.17,
       "underlying": "GM",
       "strike": 78.0,
       "expiry": "2026-06-05",
@@ -13,7 +13,7 @@
     "MSFT260603P00442500": {
       "qty": -1.0,
       "entry": 1.37,
-      "current": 6.0,
+      "current": 5.7,
       "underlying": "MSFT",
       "strike": 442.5,
       "expiry": "2026-06-03",
