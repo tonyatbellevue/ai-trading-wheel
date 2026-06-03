@@ -63,36 +63,46 @@ def main():
             return []
     before_orders = {o.id for o in _all_open_option_orders()}
 
-    # ── v12: 并行多 wheel ──
-    # MAX_CONCURRENT_WHEELS = 1 → 原行为（单 wheel）
-    # MAX_CONCURRENT_WHEELS = 2+ → 先跑主 wheel，再跑次 wheel（不同标的）
-    # 跨 wheel 风险已由 MAX_TOTAL_EXPOSURE_PCT (90%) + MAX_SECTOR_EXPOSURE_PCT (60%)
-    # 在 kelly_contracts() 里自动协调，无需手动追加检查。
+    # ── v12 CRITICAL FIX (6/4): 必须管理所有已持仓 wheel 标的 ──
+    # 之前版本只跑 primary + NEW candidate，导致 secondary 持仓（如 MSFT）
+    # 成为"孤儿仓位" — 没有任何风险管理代码触发。
+    # MSFT 6/3 损失 -$1,418 因为 3× stop loss 从未运行。
     primary_sym = settings.WHEEL_SYMBOL
+    from strategy.wheel_strategy import _parse_symbol
+
+    # 1. 收集所有已有持仓 wheel 标的（必须管理）
+    existing_opt_symbols = set()
+    try:
+        for p in AlpacaClients.trading().get_all_positions():
+            if p.symbol and len(p.symbol) > 10:  # OCC option
+                info = _parse_symbol(p.symbol)
+                if info:
+                    existing_opt_symbols.add(info["underlying"])
+            elif p.symbol and float(p.qty or 0) >= 100:
+                # 被行权后的股票仓位 — 也要管 CC
+                existing_opt_symbols.add(p.symbol)
+    except Exception as e:
+        logger.warning(f"收集已有持仓失败: {e}")
+
+    # 2. wheel_symbols = primary + 全部已持仓 + (有空位时) new candidate
     wheel_symbols = [primary_sym]
+    for s in sorted(existing_opt_symbols):
+        if s != primary_sym and s not in wheel_symbols:
+            wheel_symbols.append(s)
+            logger.info(f"v12: 管理已有持仓 wheel → {s}")
 
     max_concurrent = getattr(settings, "MAX_CONCURRENT_WHEELS", 1)
-    if max_concurrent >= 2:
+    if max_concurrent >= 2 and len(wheel_symbols) < max_concurrent:
         try:
             from strategy.wheel_evaluator import _find_best_alternative
-            from strategy.wheel_strategy import _parse_symbol
-            existing_opt_symbols = set()
-            for p in AlpacaClients.trading().get_all_positions():
-                if len(p.symbol) > 10:  # OCC option symbol
-                    info = _parse_symbol(p.symbol)
-                    if info:
-                        existing_opt_symbols.add(info["underlying"])
-            existing_opt_symbols.add(primary_sym)
-
-            # v12 修 D: 传 set 给 _find_best_alternative，它会跳过已占用的所有标的
-            secondary_sym = _find_best_alternative(exclude=existing_opt_symbols)
-            if secondary_sym:
+            secondary_sym = _find_best_alternative(exclude=existing_opt_symbols | {primary_sym})
+            if secondary_sym and secondary_sym not in wheel_symbols:
                 wheel_symbols.append(secondary_sym)
-                logger.info(f"v12: 并行第 2 个 wheel → {secondary_sym}")
+                logger.info(f"v12: 添加新 wheel 候选 → {secondary_sym}")
             else:
-                logger.info(f"v12: 未找到合适次 wheel 候选")
+                logger.info(f"v12: 未找到合适新 wheel 候选")
         except Exception as e:
-            logger.warning(f"v12 次 wheel 选择失败（继续单 wheel）: {e}")
+            logger.warning(f"v12 新 wheel 选择失败: {e}")
 
     for sym in wheel_symbols:
         try:
