@@ -181,6 +181,29 @@ class HealthCheck:
         except Exception as e:
             self.add("postmortem", "WARN", f"复盘生成失败: {e}")
 
+    def run_multi_wheel_simulator(self):
+        """跑 scripts/simulate_multi_wheel.py 的 16 个回归场景。
+        任何 FAIL 说明 wheel_once / wheel_strategy 改动破坏了多 wheel 管理。
+        见 PR #99 (MSFT 孤儿 bug) 和 PR #100 (回归测试 harness)。
+        """
+        try:
+            import subprocess
+            script = Path(__file__).parent / "simulate_multi_wheel.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=120,
+                                encoding="utf-8", errors="replace")
+            stdout = r.stdout or ""
+            if r.returncode == 0:
+                passes = stdout.count("[PASS]")
+                self.add("multi_wheel_sim", "PASS", f"{passes} 场景全过")
+            else:
+                fails = [l for l in stdout.splitlines() if "[FAIL]" in l or "    -" in l]
+                detail = " | ".join(fails[:5]) or "(see logs)"
+                self.add("multi_wheel_sim", "FAIL",
+                         f"模拟器有场景失败 → 多 wheel 逻辑可能回归. {detail}")
+        except Exception as e:
+            self.add("multi_wheel_sim", "WARN", f"模拟器跑失败: {e}")
+
     def run_all(self):
         self.check_env()
         self.check_alpaca_api()
@@ -189,6 +212,7 @@ class HealthCheck:
         self.check_disk()
         self.check_failed_email_queue()
         self.check_wheel_state()
+        self.run_multi_wheel_simulator()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()
 

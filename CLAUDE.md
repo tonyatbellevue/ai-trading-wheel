@@ -71,7 +71,9 @@ After any non-trivial code change (new function, parameter change, control-flow 
   ```
 - A `gh pr merge --squash` on a long-lived branch with many already-merged commits can silently drop diffs. Real example: PRs #31-40 all reported as merged but the actual file content was missing from master because the branch had ~10 prior already-squashed commits and the new diffs got lost in the re-squash. PR #41/42 hit the same pattern.
 - "PR merged" ≠ "change is on master". Always verify. If verification fails, re-apply on a fresh branch from master and PR again.
+- **Worktree gotcha (6/4)**: when working inside `.claude/worktrees/*`, your local `master` ref can lag the remote by many commits. `Read tool` may show old file content even though `gh pr view` says merged. Mandatory step before any "PR landed" claim: `git fetch origin master && git show origin/master:<file> | grep <distinctive-string>`. Real example: PR #99 reported MERGED on 6/3; my worktree's local master was the 130-line pre-fix version while origin/master had the 186-line fixed version. Local `git log` and `Read` both lied. Only `git show origin/master:wheel_once.py` told the truth.
 - Defensive practice: prefer fresh branches from master per change. Don't accumulate changes on a long-lived feature branch.
+- **Regression harness**: `scripts/simulate_multi_wheel.py` covers 16 multi-wheel + post-assignment scenarios (orphan management, stop-loss, take-profit, CC sale with cost-basis floor, partial assignment, underwater skip, etc.). Wired into `scripts/health_check.py` as `multi_wheel_sim` check. Any FAIL in the daily health-check email means the wheel_once / wheel_strategy code path is broken — investigate before next cron tick.
 
 If any pass finds an issue, fix it and **re-run all four passes from the top**. Don't claim "done" until all four clean in a row.
 
