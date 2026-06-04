@@ -1,24 +1,20 @@
 {
-  "timestamp": "2026-06-03T19:57:00.591238",
+  "timestamp": "2026-06-04T13:32:56.529761",
   "options": {
     "GM260605P00078000": {
       "qty": -6.0,
       "entry": 0.26,
-      "current": 0.17,
+      "current": 0.36,
       "underlying": "GM",
       "strike": 78.0,
       "expiry": "2026-06-05",
       "type": "P"
-    },
-    "MSFT260603P00442500": {
-      "qty": -1.0,
-      "entry": 1.37,
-      "current": 14.85,
-      "underlying": "MSFT",
-      "strike": 442.5,
-      "expiry": "2026-06-03",
-      "type": "P"
     }
   },
-  "stocks": {}
+  "stocks": {
+    "MSFT": {
+      "qty": 100.0,
+      "avg_entry": 441.13
+    }
+  }
 }
