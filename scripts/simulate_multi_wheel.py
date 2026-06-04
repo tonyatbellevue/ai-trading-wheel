@@ -463,6 +463,38 @@ def scenario_Q_current_account_shape():
     }
 
 
+def scenario_R_pending_switch_triggers():
+    """R: PENDING-SWITCH PLAN consumption (Monday 6/8 morning).
+       Models the situation after GM puts expire Friday and trigger_date
+       6/7 has passed. GM is IDLE, MSFT still has CC active.
+
+       Critical: the active plan in wheel_symbol.json (planned 6/4) says
+       MSFT → GM @ 6/7. But maybe_switch() does NOT check from_symbol —
+       it uses active_symbol as old_symbol. So when GM (active) is IDLE
+       and date >= trigger, the plan fires and rescan picks top-1
+       (currently NVDA score 92.8).
+
+       Expected: primary rotates GM → NVDA, MSFT continues as secondary.
+       The bot must still manage MSFT (orphan-management — PR #99).
+    """
+    msft_cc = _occ("MSFT", today + timedelta(days=4), 442.5, "C")
+    positions = [
+        # GM puts gone (expired Friday OTM) — no GM option position
+        # MSFT CC still active
+        FakePosition(msft_cc, qty=-1, avg_entry_price=1.99, current_price=2.20),
+        FakePosition("MSFT", qty=100, avg_entry_price=441.13, current_price=431.74),
+    ]
+    return positions, [], "GM", {
+        # Must manage both — even if primary GM has no position, MSFT
+        # secondary must still run (PR #99 orphan-management fix).
+        "wheels_managed": {"GM", "MSFT"},
+        # MSFT CC unchanged — no spurious new CC since SHORT_CALL active
+        "must_not_sell_cc": "MSFT",
+        # MSFT CC mildly underwater but not at 3× stop-loss
+        "must_not_stop_loss": {msft_cc},
+    }
+
+
 def scenario_P_cc_expired_back_to_long_stock():
     """P: CC expired worthless overnight, only stock remains — must re-enter
        LONG_STOCK and sell a NEW CC. Tests the wheel actually rotates."""
@@ -500,6 +532,8 @@ SCENARIOS = {
           scenario_P_cc_expired_back_to_long_stock),
     "Q": ("REAL ACCOUNT (6/4): GM -6 puts + MSFT 100sh + MSFT -1 CC → no spurious orders",
           scenario_Q_current_account_shape),
+    "R": ("Mon 6/8 path: GM puts expired + plan triggers + MSFT CC still active",
+          scenario_R_pending_switch_triggers),
 }
 
 
