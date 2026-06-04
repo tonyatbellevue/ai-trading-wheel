@@ -439,6 +439,30 @@ def scenario_O_cc_take_profit():
     }
 
 
+def scenario_Q_current_account_shape():
+    """Q: REAL CURRENT ACCOUNT SHAPE (2026-06-04 SGT 22:00).
+       GM: -6 puts (multi-contract, not just 1!)
+       MSFT: 100 shares LONG + 1 CC already sold (SHORT_CALL phase)
+       Verifies bot manages BOTH wheels correctly with no spurious new orders.
+
+       Expected: both wheels enter monitor-only mode. No new STO, no BTC.
+       (GM puts profitable but not at 65% TP, MSFT CC slightly underwater
+        but well within stop-loss threshold.)
+    """
+    gm_put = _occ("GM", today + timedelta(days=1), 78.0, "P")
+    msft_cc = _occ("MSFT", today + timedelta(days=4), 442.5, "C")
+    positions = [
+        FakePosition(gm_put, qty=-6, avg_entry_price=0.26, current_price=0.17),
+        FakePosition(msft_cc, qty=-1, avg_entry_price=1.99, current_price=2.20),
+        FakePosition("MSFT", qty=100, avg_entry_price=441.13, current_price=431.74),
+    ]
+    return positions, [], "GM", {
+        "wheels_managed": {"GM", "MSFT"},
+        "must_not_stop_loss": {gm_put, msft_cc},
+        "must_not_sell_cc": "MSFT",
+    }
+
+
 def scenario_P_cc_expired_back_to_long_stock():
     """P: CC expired worthless overnight, only stock remains — must re-enter
        LONG_STOCK and sell a NEW CC. Tests the wheel actually rotates."""
@@ -474,6 +498,8 @@ SCENARIOS = {
     "O": ("post-asn: CC decayed 75% → take-profit BTC", scenario_O_cc_take_profit),
     "P": ("post-asn: CC expired, back to LONG_STOCK, sells new CC",
           scenario_P_cc_expired_back_to_long_stock),
+    "Q": ("REAL ACCOUNT (6/4): GM -6 puts + MSFT 100sh + MSFT -1 CC → no spurious orders",
+          scenario_Q_current_account_shape),
 }
 
 
