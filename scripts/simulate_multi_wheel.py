@@ -463,23 +463,25 @@ def scenario_Q_current_account_shape():
     }
 
 
-def scenario_S_ask_skew_protection():
-    """S: ASK-SKEW protection fallback verification.
-       When _get_option_fair_price returns None (quote unavailable / wide
-       spread), bot must fall back to pos.current_price exactly as before.
-       This proves the new helper doesn't break stop-loss in API-down
-       situations. Real bug context: GM 6/5 $78P showed mark $0.52 with
-       real bid/ask 0.01/0.10 — fair_price patched-to-None here forces
-       reliance on mark, just like pre-fix behavior.
+def scenario_T_phase1_skip_on_bad_quote():
+    """T: Phase 1 GM-loss prevention.
+       Position would trigger SL by mark ($0.78 = 3x entry $0.26), but
+       fair_price returns None (simulating bid=0, stale quote, or NBBO
+       unhealthy). Bot must SKIP, not fall back to mark.
+
+       This is the exact GM 6/5 scenario in reverse: with the Phase 1
+       fix, the $1,122 loss would have been $0.
     """
     gm_put = _occ("GM", today + timedelta(days=1), 78.0, "P")
     positions = [
-        # mark = $0.78 = exactly 3x entry → must trigger stop-loss via fallback
         FakePosition(gm_put, qty=-6, avg_entry_price=0.26, current_price=0.78),
     ]
     return positions, [], "GM", {
         "wheels_managed": {"GM"},
-        "must_stop_loss": {gm_put},
+        # CRITICAL: even though mark = 3x entry, fair_price=None → SKIP
+        "must_not_stop_loss": {gm_put},
+        # Override the default fair_price mock for THIS scenario only
+        "_force_fair_price_none": True,
     }
 
 
@@ -554,8 +556,8 @@ SCENARIOS = {
           scenario_Q_current_account_shape),
     "R": ("Mon 6/8 path: GM puts expired + plan triggers + MSFT CC still active",
           scenario_R_pending_switch_triggers),
-    "S": ("ASK-skew fallback: fair_price=None → mark used → SL fires correctly",
-          scenario_S_ask_skew_protection),
+    "T": ("Phase 1: bad quote (fair=None) → SKIP SL even if mark=3x — saves GM",
+          scenario_T_phase1_skip_on_bad_quote),
 }
 
 
@@ -565,7 +567,7 @@ SCENARIOS = {
 
 def _install_mocks(positions, orders, primary, max_concurrent_override=None,
                     select_call_returns=None, earnings_pass=True,
-                    earnings_reason="OK"):
+                    earnings_reason="OK", force_fair_price_none=False):
     """Patch the modules wheel_once depends on. Returns context managers."""
     from core import alpaca_client
     from execution import option_order_manager as oom_mod
@@ -601,12 +603,19 @@ def _install_mocks(positions, orders, primary, max_concurrent_override=None,
                       lambda exclude=None: "NEWCAND")
     # 4. WheelStrategy.run_cycle → recorder shim
     p4 = patch.object(wheel_strategy.WheelStrategy, "run_cycle", _fake_run_cycle)
-    # 4b. _get_option_fair_price → None so tests fall back to mocked
-    # current_price. Without this, the live Alpaca quote leaks into
-    # decision logic for any fake OCC symbol that happens to be a real
-    # expired contract.
+    # 4b. _get_option_fair_price → return mocked position's current_price.
+    # Phase 1 fix changed semantics: returning None now means SKIP SL/TP,
+    # so old "return None" patch broke SL tests. Now return current_price
+    # from the matching FakePosition (treat mock as "reliable fair value").
+    def _fake_fair_price(self, sym):
+        if force_fair_price_none:
+            return None   # scenario T: simulate bad-quote conditions
+        for p in positions:
+            if p.symbol == sym:
+                return float(p.current_price)
+        return None
     p4b = patch.object(wheel_strategy.WheelStrategy, "_get_option_fair_price",
-                        lambda self, sym: None)
+                        _fake_fair_price)
 
     # 5. settings.WHEEL_SYMBOL
     p5 = patch.object(settings, "WHEEL_SYMBOL", primary)
@@ -642,6 +651,7 @@ def run_scenario(label, desc, builder):
         select_call_returns=expect.get("select_call_returns"),
         earnings_pass=expect.get("earnings_pass", True),
         earnings_reason=expect.get("earnings_reason", "OK"),
+        force_fair_price_none=expect.get("_force_fair_price_none", False),
     )
 
     for p in patches:

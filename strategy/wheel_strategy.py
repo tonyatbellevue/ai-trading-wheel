@@ -154,29 +154,63 @@ class WheelStrategy:
         return buckets
 
     def _get_option_fair_price(self, symbol: str) -> Optional[float]:
-        """Return option mid-quote ((bid+ask)/2) when both sides positive,
-        else None. Prefer this over pos.current_price for stop-loss /
-        take-profit decisions because Alpaca's mark is often skewed to
-        the ASK on illiquid 0DTE strikes (real example 6/5: GM $78P
-        ask $0.52 vs last trade $0.07 → mark $0.52 falsely showed -$156).
+        """Return best-available fair price for an option, in priority order:
+          1. Last trade if < 5 min old           (95% accuracy)
+          2. Mid (bid+ask)/2 if NBBO healthy     (85% accuracy)
+          3. None — caller MUST skip decision    (don't fall back to mark!)
 
-        Mid is conservative for both directions:
-          - stop-loss: mid << ask → won't false-trigger on stale ask
-          - take-profit: mid > bid → won't aggressively close at unreal price
+        Phase 1 fix (6/5 incident): Previous version returned None when bid=0
+        and let caller fall back to ASK-skewed mark, causing GM $78P false
+        stop-loss BTC at $2.13 vs real value $0.01 → -$1,122 loss.
+
+        NBBO health: bid=0 or spread/mid > 50% → unreliable, reject.
         """
         try:
             from alpaca.data.requests import OptionSnapshotRequest
+            from datetime import datetime, timezone
             snap = self._data.get_option_snapshot(
                 OptionSnapshotRequest(symbol_or_symbols=symbol)
             )
             s = snap.get(symbol) if isinstance(snap, dict) else snap[symbol]
-            if not s or not s.latest_quote:
+            if not s:
                 return None
-            bid = float(s.latest_quote.bid_price or 0)
-            ask = float(s.latest_quote.ask_price or 0)
-            if bid <= 0 or ask <= 0:
-                return None
-            return (bid + ask) / 2
+
+            # ── Priority 1: Last trade within 5 minutes (with fat-finger clamp) ──
+            if s.latest_trade and s.latest_trade.price and s.latest_trade.timestamp:
+                age = (datetime.now(timezone.utc) - s.latest_trade.timestamp).total_seconds()
+                price = float(s.latest_trade.price)
+                if age < 300 and price > 0:
+                    # Fat-finger sanity: last trade must be within reason vs ask.
+                    # Prevents trusting a one-off anomalous print (e.g. someone
+                    # market-bought at stale ask, printing 100x mid).
+                    if s.latest_quote:
+                        ask = float(s.latest_quote.ask_price or 0)
+                        if ask > 0 and price > ask * 2:
+                            logger.warning(
+                                f"fair_price({symbol}): last ${price} > ask ${ask}*2, "
+                                f"fat-finger suspected, falling through to mid"
+                            )
+                        else:
+                            logger.debug(f"fair_price({symbol}) = last ${price} (age {age:.0f}s)")
+                            return price
+                    else:
+                        logger.debug(f"fair_price({symbol}) = last ${price} (age {age:.0f}s, no quote)")
+                        return price
+
+            # ── Priority 2: Mid quote if NBBO healthy ──
+            if s.latest_quote:
+                bid = float(s.latest_quote.bid_price or 0)
+                ask = float(s.latest_quote.ask_price or 0)
+                if bid > 0 and ask > 0:
+                    mid = (bid + ask) / 2
+                    # NBBO health: spread/mid > 50% = unreliable
+                    if (ask - bid) / mid <= 0.50:
+                        logger.debug(f"fair_price({symbol}) = mid ${mid:.3f}")
+                        return mid
+
+            # ── Priority 3: nothing reliable — caller must SKIP ──
+            logger.warning(f"fair_price({symbol}): no reliable quote — skip SL/TP decision")
+            return None
         except Exception as e:
             logger.debug(f"_get_option_fair_price({symbol}) failed: {e}")
             return None
@@ -201,11 +235,14 @@ class WheelStrategy:
             if qty >= 0:
                 return False
             entry = float(pos.avg_entry_price)
-            mark = float(pos.current_price)
-            # Prefer fresh mid quote over Alpaca's mark (mark is often
-            # ASK-skewed on illiquid 0DTE strikes — see _get_option_fair_price).
+            # Phase 1 fix (6/5): NEVER fall back to mark for SL decision.
+            # mark is ASK-skewed on illiquid 0DTE strikes — caused $1,122
+            # GM false-SL loss. If fair_price unavailable, SKIP this cycle.
             fair = self._get_option_fair_price(pos.symbol)
-            current = fair if fair is not None else mark
+            if fair is None:
+                logger.info(f"⏸ skip SL: {pos.symbol} 无可靠 quote, 等下个 tick")
+                return False
+            current = fair
             if entry <= 0:
                 return False
             # We sold at `entry`, current price is what we'd pay to close.
@@ -285,13 +322,12 @@ class WheelStrategy:
             if qty >= 0:
                 return False    # not a short position
             entry = float(pos.avg_entry_price)
-            mark = float(pos.current_price)
-            # Prefer fresh mid quote (see _get_option_fair_price). Without
-            # this, ASK-skewed mark could either (a) prematurely fire TP
-            # when ask is artificially low or (b) hide a real TP opportunity
-            # when ask is artificially high.
+            # Phase 1 fix: same NEVER-fall-back-to-mark policy as SL.
             fair = self._get_option_fair_price(pos.symbol)
-            current = fair if fair is not None else mark
+            if fair is None:
+                logger.info(f"⏸ skip TP: {pos.symbol} 无可靠 quote, 等下个 tick")
+                return False
+            current = fair
             if entry <= 0:
                 return False
             profit_pct = (entry - current) / entry
