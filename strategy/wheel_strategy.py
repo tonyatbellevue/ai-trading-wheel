@@ -153,6 +153,34 @@ class WheelStrategy:
         buckets["__total__"] = total
         return buckets
 
+    def _get_option_fair_price(self, symbol: str) -> Optional[float]:
+        """Return option mid-quote ((bid+ask)/2) when both sides positive,
+        else None. Prefer this over pos.current_price for stop-loss /
+        take-profit decisions because Alpaca's mark is often skewed to
+        the ASK on illiquid 0DTE strikes (real example 6/5: GM $78P
+        ask $0.52 vs last trade $0.07 → mark $0.52 falsely showed -$156).
+
+        Mid is conservative for both directions:
+          - stop-loss: mid << ask → won't false-trigger on stale ask
+          - take-profit: mid > bid → won't aggressively close at unreal price
+        """
+        try:
+            from alpaca.data.requests import OptionSnapshotRequest
+            snap = self._data.get_option_snapshot(
+                OptionSnapshotRequest(symbol_or_symbols=symbol)
+            )
+            s = snap.get(symbol) if isinstance(snap, dict) else snap[symbol]
+            if not s or not s.latest_quote:
+                return None
+            bid = float(s.latest_quote.bid_price or 0)
+            ask = float(s.latest_quote.ask_price or 0)
+            if bid <= 0 or ask <= 0:
+                return None
+            return (bid + ask) / 2
+        except Exception as e:
+            logger.debug(f"_get_option_fair_price({symbol}) failed: {e}")
+            return None
+
     def _try_stop_loss(self, pos, loss_multiple: float = 3.0) -> bool:
         """Tail-risk killer: BTC at market when a short option's price has
         risen to `loss_multiple` × entry premium.
@@ -173,7 +201,11 @@ class WheelStrategy:
             if qty >= 0:
                 return False
             entry = float(pos.avg_entry_price)
-            current = float(pos.current_price)
+            mark = float(pos.current_price)
+            # Prefer fresh mid quote over Alpaca's mark (mark is often
+            # ASK-skewed on illiquid 0DTE strikes — see _get_option_fair_price).
+            fair = self._get_option_fair_price(pos.symbol)
+            current = fair if fair is not None else mark
             if entry <= 0:
                 return False
             # We sold at `entry`, current price is what we'd pay to close.
@@ -253,7 +285,13 @@ class WheelStrategy:
             if qty >= 0:
                 return False    # not a short position
             entry = float(pos.avg_entry_price)
-            current = float(pos.current_price)
+            mark = float(pos.current_price)
+            # Prefer fresh mid quote (see _get_option_fair_price). Without
+            # this, ASK-skewed mark could either (a) prematurely fire TP
+            # when ask is artificially low or (b) hide a real TP opportunity
+            # when ask is artificially high.
+            fair = self._get_option_fair_price(pos.symbol)
+            current = fair if fair is not None else mark
             if entry <= 0:
                 return False
             profit_pct = (entry - current) / entry

@@ -463,6 +463,26 @@ def scenario_Q_current_account_shape():
     }
 
 
+def scenario_S_ask_skew_protection():
+    """S: ASK-SKEW protection fallback verification.
+       When _get_option_fair_price returns None (quote unavailable / wide
+       spread), bot must fall back to pos.current_price exactly as before.
+       This proves the new helper doesn't break stop-loss in API-down
+       situations. Real bug context: GM 6/5 $78P showed mark $0.52 with
+       real bid/ask 0.01/0.10 — fair_price patched-to-None here forces
+       reliance on mark, just like pre-fix behavior.
+    """
+    gm_put = _occ("GM", today + timedelta(days=1), 78.0, "P")
+    positions = [
+        # mark = $0.78 = exactly 3x entry → must trigger stop-loss via fallback
+        FakePosition(gm_put, qty=-6, avg_entry_price=0.26, current_price=0.78),
+    ]
+    return positions, [], "GM", {
+        "wheels_managed": {"GM"},
+        "must_stop_loss": {gm_put},
+    }
+
+
 def scenario_R_pending_switch_triggers():
     """R: PENDING-SWITCH PLAN consumption (Monday 6/8 morning).
        Models the situation after GM puts expire Friday and trigger_date
@@ -534,6 +554,8 @@ SCENARIOS = {
           scenario_Q_current_account_shape),
     "R": ("Mon 6/8 path: GM puts expired + plan triggers + MSFT CC still active",
           scenario_R_pending_switch_triggers),
+    "S": ("ASK-skew fallback: fair_price=None → mark used → SL fires correctly",
+          scenario_S_ask_skew_protection),
 }
 
 
@@ -579,11 +601,17 @@ def _install_mocks(positions, orders, primary, max_concurrent_override=None,
                       lambda exclude=None: "NEWCAND")
     # 4. WheelStrategy.run_cycle → recorder shim
     p4 = patch.object(wheel_strategy.WheelStrategy, "run_cycle", _fake_run_cycle)
+    # 4b. _get_option_fair_price → None so tests fall back to mocked
+    # current_price. Without this, the live Alpaca quote leaks into
+    # decision logic for any fake OCC symbol that happens to be a real
+    # expired contract.
+    p4b = patch.object(wheel_strategy.WheelStrategy, "_get_option_fair_price",
+                        lambda self, sym: None)
 
     # 5. settings.WHEEL_SYMBOL
     p5 = patch.object(settings, "WHEEL_SYMBOL", primary)
 
-    patches = [p1, p2, p2b, p3, p4, p5]
+    patches = [p1, p2, p2b, p3, p4, p4b, p5]
     if max_concurrent_override is not None:
         patches.append(patch.object(settings, "MAX_CONCURRENT_WHEELS",
                                      max_concurrent_override))
