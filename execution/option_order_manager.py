@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from datetime import date
 
 from alpaca.trading.requests import LimitOrderRequest, GetOrdersRequest
@@ -81,22 +82,39 @@ class OptionOrderManager:
 
     # ── 查询 ─────────────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _underlying_of(occ_symbol: str) -> str | None:
+        """解析 OCC 期权代码的 underlying. e.g. FN260620P00045000 → 'FN'.
+        Bug #1 fix: 之前用 startswith(underlying) 匹配, 'F' 会误匹配 'FN...'
+        期权 (F 和 FN 都在 universe). 正则精确解析 underlying 字母段。"""
+        m = re.match(r'^([A-Z]+)\d{6}[CP]\d{8}$', occ_symbol or "")
+        if m:
+            return m.group(1)
+        # Surface adjusted/mini options (e.g. post-split 'AAPL1...') that
+        # don't match the standard root pattern — these would be silently
+        # dropped from position management. Rare, but log so it's visible.
+        if occ_symbol and re.search(r'[CP]\d{8}$', occ_symbol):
+            logger.warning(
+                f"⚠️ 非标准期权代码无法解析 underlying: {occ_symbol} "
+                f"(可能是拆股调整/mini 合约, 该仓位不会被纳入风控管理!)"
+            )
+        return None
+
     def get_open_option_orders(self, underlying: str) -> list:
-        """获取指定标的的所有未成交期权订单"""
+        """获取指定标的的所有未成交期权订单 (精确 underlying 匹配)"""
         try:
             req = GetOrdersRequest(status=QueryOrderStatus.OPEN)
             orders = self._client.get_orders(req)
-            # 期权代码比股票代码长（含日期+执行价）
-            return [o for o in orders if o.symbol.startswith(underlying) and len(o.symbol) > 6]
+            return [o for o in orders if self._underlying_of(o.symbol) == underlying]
         except Exception as e:
             logger.error(f"获取未成交期权订单失败: {e}")
             return []
 
     def get_option_positions(self, underlying: str) -> list:
-        """获取指定标的的所有期权持仓"""
+        """获取指定标的的所有期权持仓 (精确 underlying 匹配)"""
         try:
             positions = self._client.get_all_positions()
-            return [p for p in positions if p.symbol.startswith(underlying) and len(p.symbol) > 6]
+            return [p for p in positions if self._underlying_of(p.symbol) == underlying]
         except Exception as e:
             logger.error(f"获取期权持仓失败: {e}")
             return []

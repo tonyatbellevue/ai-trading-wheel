@@ -571,6 +571,11 @@ class WheelStrategy:
                 continue
             if not snap.latest_quote:
                 continue
+            # Bug #4 fix: gate out one-sided quotes (bid=0 or ask=0).
+            # Scanner already does this; select_put didn't → bid=0 made
+            # mid=ask/2 (underpriced sell). Match scanner's behavior.
+            if (snap.latest_quote.bid_price or 0) <= 0 or (snap.latest_quote.ask_price or 0) <= 0:
+                continue
             diff = abs(snap.greeks.delta - target)
             if diff < best_diff:
                 best_diff = diff
@@ -602,6 +607,9 @@ class WheelStrategy:
             if not snap.greeks or snap.greeks.delta is None:
                 continue
             if not snap.latest_quote:
+                continue
+            # Bug #4 fix: gate one-sided quotes (bid=0 or ask=0).
+            if (snap.latest_quote.bid_price or 0) <= 0 or (snap.latest_quote.ask_price or 0) <= 0:
                 continue
             info = _parse_symbol(sym)
             if not info or info["strike"] < cost_basis:
@@ -876,7 +884,14 @@ class WheelStrategy:
                     q = dc.get_stock_latest_quote(
                         StockLatestQuoteRequest(symbol_or_symbols=self.symbol)
                     )
-                    stock_price = float(q[self.symbol].ask_price or q[self.symbol].bid_price)
+                    # Bug #5 fix: use mid, not raw ask. Raw ask is ASK-skewed
+                    # (same class as the GM mark bug). Mid is symmetric.
+                    qa = float(q[self.symbol].ask_price or 0)
+                    qb = float(q[self.symbol].bid_price or 0)
+                    if qa > 0 and qb > 0:
+                        stock_price = (qa + qb) / 2
+                    else:
+                        stock_price = qa or qb or None
             except Exception as e:
                 logger.debug(f"stock_price lookup failed, OTM% check degraded: {e}")
             if self._try_take_profit(obj, stock_price=stock_price):
