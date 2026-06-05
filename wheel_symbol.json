@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "GM",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-06-07",
-    "reason": "health STOP: 现金不足 (需 $84,500, 有 $58,474)",
-    "planned_at": "2026-06-04T13:34:18.555998"
+    "reason": "health STOP: 现金不足 (需 $83,500, 有 $58,673)",
+    "planned_at": "2026-06-05T13:34:34.872402"
   },
   "history": [
     {
