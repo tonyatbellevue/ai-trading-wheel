@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-05T14:25:01.046071",
+  "timestamp": "2026-06-05T14:33:01.655898",
   "options": {
     "GM260605P00078000": {
       "qty": -6.0,
       "entry": 0.26,
-      "current": 0.01,
+      "current": 0.02,
       "underlying": "GM",
       "strike": 78.0,
       "expiry": "2026-06-05",
