@@ -60,3 +60,4 @@ test_dashboard.html
 
 # macOS
 .DS_Store
+cf-worker/

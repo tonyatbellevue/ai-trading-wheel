@@ -154,3 +154,15 @@ MAX_CONSECUTIVE_LOSSES   = 3        # 连亏 N 周期 → 强制换标的（stop
 # 自动协调。设 1 = 保持单仓模式（原行为）。设 2 = 并行 2 个独立标的的 wheel。
 # 预期：年化收益 22% → 35-40%，回撤 6% → 10-12%。
 MAX_CONCURRENT_WHEELS    = 2
+
+# ── 报价新鲜度阈值 (Phase 2 P2.3) ──
+# Alpaca 免费/paper 期权数据是 15 分钟延迟的 OPRA feed, 所以 latest_quote /
+# latest_trade 的 timestamp 永远 ~900s 旧。如果用实时 feed 的 15s 阈值,
+# mid/last 路径会永远失效 → 全部跳过风控。这里默认按延迟 feed 放宽到 20 分钟。
+# 升级到实时数据 feed 后, 设 ALPACA_OPTION_DATA_DELAYED=False 收紧到 15s/300s。
+ALPACA_OPTION_DATA_DELAYED = True
+QUOTE_MAX_AGE_S      = 1200 if ALPACA_OPTION_DATA_DELAYED else 15      # mid quote 最大年龄
+LAST_TRADE_MAX_AGE_S = 1200 if ALPACA_OPTION_DATA_DELAYED else 300     # last trade 最大年龄
+
+# 财报数据缺失时是否放行 (Phase 2 P2.2). 默认 fail-closed (False = 跳过交易)。
+EARNINGS_FAIL_OPEN = False

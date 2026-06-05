@@ -263,12 +263,22 @@ def check_earnings(symbol: str, dte_max: int = None) -> tuple[bool, str]:
     # symbol isn't acknowledged in the DB at all.
     if not all_dates:
         if not in_db:
+            # Phase 2 (P2.2): FAIL-CLOSED on missing earnings data.
+            # Previously failed OPEN (returned True) — that sold CRM into
+            # earnings on 5/26 and ate an IV-crush loss. All 58 universe
+            # symbols are in EARNINGS_DB + FINNHUB key is set, so NO_DATA
+            # now means "untracked symbol" → safest to SKIP, not trade.
+            # Override with EARNINGS_FAIL_OPEN=True in settings if needed.
+            fail_open = getattr(settings, "EARNINGS_FAIL_OPEN", False)
             logger.warning(
                 f"⚠️ {symbol} not in EARNINGS_DB and no Finnhub data — "
-                f"earnings risk unchecked. Add to wheel_filters.py:EARNINGS_DB "
-                f"or set FINNHUB_API_KEY."
+                f"earnings risk unchecked. "
+                f"{'放行 (FAIL_OPEN)' if fail_open else 'SKIP (fail-closed)'}. "
+                f"Add to wheel_filters.py:EARNINGS_DB or set FINNHUB_API_KEY."
             )
-            return True, "earnings:NO_DATA"
+            if fail_open:
+                return True, "earnings:NO_DATA (fail-open)"
+            return False, "earnings:NO_DATA → 安全跳过 (fail-closed)"
         # Explicit [] = ETF or no-earnings symbol, silently pass
         return True, "earnings:N/A (ETF or no earnings)"
 
@@ -281,7 +291,17 @@ def check_earnings(symbol: str, dte_max: int = None) -> tuple[bool, str]:
     if future:
         days_to = (future[0] - today).days
         return True, f"earnings T+{days_to}d ({future[0]})"
-    return True, ""
+    # Phase 2 (P2.2): all dates are in the PAST → DB is stale, not "safe".
+    # Previously returned True (trade) silently — a fail-open hole. Treat
+    # stale-only data same as NO_DATA: skip unless EARNINGS_FAIL_OPEN.
+    fail_open = getattr(settings, "EARNINGS_FAIL_OPEN", False)
+    logger.warning(
+        f"⚠️ {symbol} EARNINGS_DB 仅有过期日期 (最新 {all_dates[-1]}) — "
+        f"数据陈旧, {'放行' if fail_open else 'SKIP'}. 请更新 EARNINGS_DB。"
+    )
+    if fail_open:
+        return True, f"earnings:STALE_DB (last {all_dates[-1]}, fail-open)"
+    return False, f"earnings:STALE_DB → 安全跳过 (last {all_dates[-1]})"
 
 
 def check_ma_trend(symbol: str, window: int = 50) -> tuple[bool, str]:

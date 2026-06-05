@@ -153,6 +153,22 @@ class WheelStrategy:
         buckets["__total__"] = total
         return buckets
 
+    def _record_quote_ok(self, symbol: str) -> None:
+        """P2.4: reset consecutive-skip counter on a good quote."""
+        try:
+            from metrics.skip_monitor import record_ok
+            record_ok(symbol)
+        except Exception:
+            pass
+
+    def _record_quote_skip(self, symbol: str) -> None:
+        """P2.4: increment consecutive-skip counter, alert at threshold."""
+        try:
+            from metrics.skip_monitor import record_skip
+            record_skip(symbol)
+        except Exception:
+            pass
+
     def _get_option_fair_price(self, symbol: str) -> Optional[float]:
         """Return best-available fair price for an option, in priority order:
           1. Last trade if < 5 min old           (95% accuracy)
@@ -175,11 +191,18 @@ class WheelStrategy:
             if not s:
                 return None
 
-            # ── Priority 1: Last trade within 5 minutes (with fat-finger clamp) ──
+            # Feed-aware freshness thresholds. Alpaca paper/free option data
+            # is 15-min delayed → timestamps are always ~900s old. With a
+            # real-time 15s/300s threshold the mid/last paths would NEVER pass
+            # on paper, disabling all SL/TP. settings auto-relaxes for delayed.
+            last_max_age = getattr(settings, "LAST_TRADE_MAX_AGE_S", 1200)
+            quote_max_age = getattr(settings, "QUOTE_MAX_AGE_S", 1200)
+
+            # ── Priority 1: Last trade within freshness window (fat-finger clamp) ──
             if s.latest_trade and s.latest_trade.price and s.latest_trade.timestamp:
                 age = (datetime.now(timezone.utc) - s.latest_trade.timestamp).total_seconds()
                 price = float(s.latest_trade.price)
-                if age < 300 and price > 0:
+                if age < last_max_age and price > 0:
                     # Fat-finger sanity: last trade must be within reason vs ask.
                     # Prevents trusting a one-off anomalous print (e.g. someone
                     # market-bought at stale ask, printing 100x mid).
@@ -192,24 +215,40 @@ class WheelStrategy:
                             )
                         else:
                             logger.debug(f"fair_price({symbol}) = last ${price} (age {age:.0f}s)")
+                            self._record_quote_ok(symbol)
                             return price
                     else:
                         logger.debug(f"fair_price({symbol}) = last ${price} (age {age:.0f}s, no quote)")
+                        self._record_quote_ok(symbol)
                         return price
 
             # ── Priority 2: Mid quote if NBBO healthy ──
+            # Phase 2 (P2.3): tightened spread gate 50% → 25%.
+            # 50% was too loose — a $0.01/$0.015 quote (spread/mid=40%) passed
+            # but is barely tradeable. 25% matches IBKR/CBOE liquidity norms.
+            # Age threshold is feed-aware (quote_max_age) so paper's 15-min
+            # delay doesn't permanently disable the mid path.
             if s.latest_quote:
                 bid = float(s.latest_quote.bid_price or 0)
                 ask = float(s.latest_quote.ask_price or 0)
                 if bid > 0 and ask > 0:
                     mid = (bid + ask) / 2
-                    # NBBO health: spread/mid > 50% = unreliable
-                    if (ask - bid) / mid <= 0.50:
-                        logger.debug(f"fair_price({symbol}) = mid ${mid:.3f}")
+                    spread_ratio = (ask - bid) / mid
+                    q_age = 9999
+                    if s.latest_quote.timestamp:
+                        q_age = (datetime.now(timezone.utc) - s.latest_quote.timestamp).total_seconds()
+                    if spread_ratio <= 0.25 and q_age < quote_max_age:
+                        logger.debug(f"fair_price({symbol}) = mid ${mid:.3f} (spread {spread_ratio:.0%}, age {q_age:.0f}s)")
+                        self._record_quote_ok(symbol)
                         return mid
+                    logger.debug(
+                        f"fair_price({symbol}): mid rejected — spread {spread_ratio:.0%} "
+                        f"(need ≤25%) or age {q_age:.0f}s (need <{quote_max_age}s)"
+                    )
 
             # ── Priority 3: nothing reliable — caller must SKIP ──
             logger.warning(f"fair_price({symbol}): no reliable quote — skip SL/TP decision")
+            self._record_quote_skip(symbol)
             return None
         except Exception as e:
             logger.debug(f"_get_option_fair_price({symbol}) failed: {e}")
