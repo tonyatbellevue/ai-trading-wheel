@@ -204,6 +204,25 @@ class HealthCheck:
         except Exception as e:
             self.add("multi_wheel_sim", "WARN", f"模拟器跑失败: {e}")
 
+    def run_stock_stop_loss_test(self):
+        """跑 Bug #2 回归测试: -35% 股票止损的数据校验。"""
+        try:
+            import subprocess
+            script = Path(__file__).parent / "test_stock_stop_loss.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=60,
+                                encoding="utf-8", errors="replace")
+            stdout = r.stdout or ""
+            if r.returncode == 0:
+                self.add("stock_stop_loss", "PASS",
+                         f"{stdout.count('[PASS]')} 数据校验用例全过")
+            else:
+                fails = [l for l in stdout.splitlines() if "[FAIL]" in l]
+                self.add("stock_stop_loss", "FAIL",
+                         f"-35% 止损数据校验回归! {' | '.join(fails[:3]) or '(see logs)'}")
+        except Exception as e:
+            self.add("stock_stop_loss", "WARN", f"止损测试跑失败: {e}")
+
     def run_all(self):
         self.check_env()
         self.check_alpaca_api()
@@ -213,6 +232,7 @@ class HealthCheck:
         self.check_failed_email_queue()
         self.check_wheel_state()
         self.run_multi_wheel_simulator()
+        self.run_stock_stop_loss_test()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()
 

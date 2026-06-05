@@ -169,6 +169,70 @@ class WheelStrategy:
         except Exception:
             pass
 
+    def _get_stock_fair_price(self, mark: float) -> Optional[float]:
+        """Bug #2 fix: validated stock price for the -35% stop decision.
+
+        Returns a trustworthy price, or None if data is unreliable.
+
+        Design (risk-review concern D): do NOT cross-check against the
+        position mark — mark LAGS in fast moves, so a real crash (fresh
+        price legitimately far below a stale mark) would be wrongly
+        rejected and the stop skipped exactly when needed. Instead anchor
+        on the LATEST TRADE (a real transaction = ground truth):
+          1. NBBO health: bid>0, ask>0, spread/mid ≤ 5% (a liquid
+             wheel-universe stock never has >5% spread; a momentary bad
+             print widens spread or goes one-sided)
+          2. Cross-check mid vs latest trade ≤ 8% (catches a tight-but-
+             wrong quote that survived the spread test — it won't match
+             the last real trade). A real crash moves BOTH mid and last
+             trade together → passes → stop fires.
+          3. Return mid.
+        `mark` is kept in the signature for logging only.
+        """
+        try:
+            from alpaca.data.historical import StockHistoricalDataClient
+            from alpaca.data.requests import StockLatestQuoteRequest, StockLatestTradeRequest
+            dc = StockHistoricalDataClient(
+                api_key=settings.API_KEY, secret_key=settings.SECRET_KEY
+            )
+            q = dc.get_stock_latest_quote(
+                StockLatestQuoteRequest(symbol_or_symbols=self.symbol)
+            )[self.symbol]
+            bid = float(q.bid_price or 0)
+            ask = float(q.ask_price or 0)
+            if bid <= 0 or ask <= 0:
+                logger.warning(f"_get_stock_fair_price({self.symbol}): one-sided quote, skip stop")
+                return None
+            mid = (bid + ask) / 2
+            # NBBO health: liquid stock shouldn't have >5% spread.
+            if (ask - bid) / mid > 0.05:
+                logger.warning(
+                    f"_get_stock_fair_price({self.symbol}): spread {(ask-bid)/mid:.1%} >5% "
+                    f"— 报价异常, 跳过止损本轮 (mark ${mark:.2f})"
+                )
+                return None
+            # Anchor on latest trade (real transaction), NOT the lagging mark.
+            # A real crash moves mid AND last together → passes. A tight bad
+            # quote won't match the last real trade → rejected.
+            try:
+                t = dc.get_stock_latest_trade(
+                    StockLatestTradeRequest(symbol_or_symbols=self.symbol)
+                )[self.symbol]
+                last = float(t.price or 0)
+                if last > 0 and abs(mid - last) / last > 0.08:
+                    logger.warning(
+                        f"_get_stock_fair_price({self.symbol}): mid ${mid:.2f} vs "
+                        f"last trade ${last:.2f} 偏差 >8% — 报价可疑(非成交价), 跳过止损本轮"
+                    )
+                    return None
+            except Exception as e:
+                logger.debug(f"latest_trade cross-check skipped: {e}")
+                # No trade data → fall back to quote-only (NBBO health passed).
+            return mid
+        except Exception as e:
+            logger.warning(f"_get_stock_fair_price({self.symbol}) failed: {e}")
+            return None
+
     def _get_option_fair_price(self, symbol: str) -> Optional[float]:
         """Return best-available fair price for an option, in priority order:
           1. Last trade if < 5 min old           (95% accuracy)
@@ -516,12 +580,24 @@ class WheelStrategy:
                 logger.info(f"挂单 Short Call: {order.symbol}")
                 return WheelPhase.SHORT_CALL, order
 
-        # 3. 检查股票持仓（被行权后持有 ≥100 股）
+        # 3. 检查股票持仓（被行权后持有股票）
+        # Bug #3 fix: 之前只在 qty>=100 时返回 LONG_STOCK, 部分行权 (1-99 股)
+        # 会落入 IDLE → 持有裸股却又去卖新 Put (风险叠加), 且这些股票无 CC、
+        # 无止损管理。现在任何 ≥1 股都进 LONG_STOCK; CC 逻辑本身已有
+        # contracts<1 守卫 (不足 100 股不卖 CC), 所以部分持仓会被"持有等待",
+        # 不会卖新 put, 也不会乱卖 CC。
         try:
             pos = self._trading.get_open_position(self.symbol)
             qty = float(pos.qty)
             if qty >= 100:
                 logger.info(f"持仓股票: {self.symbol} x{qty:.0f} 股 @ 成本 {pos.avg_entry_price}")
+                return WheelPhase.LONG_STOCK, pos
+            if qty >= 1:
+                logger.warning(
+                    f"⚠️ 部分持仓: {self.symbol} x{qty:.0f} 股 (<100, 部分行权?) "
+                    f"@ 成本 {pos.avg_entry_price} — 持有等待, 不卖新 Put 也不卖 CC。"
+                    f"请人工检查是否需补足/清理。"
+                )
                 return WheelPhase.LONG_STOCK, pos
         except Exception:
             pass  # 无股票持仓
@@ -764,32 +840,51 @@ class WheelStrategy:
 
         elif phase == WheelPhase.LONG_STOCK:
             cost_basis = float(obj.avg_entry_price)
-            stock_price = float(obj.current_price)
+            mark = float(obj.current_price)
+            # Bug #2 fix: validate stock price before any drop decision.
+            # Single ASK-skewed / bad print previously triggered a MARKET
+            # dump of the whole position. Use a cross-checked mid; if data
+            # is unreliable, skip the drop checks this cycle (hold).
+            stock_price = self._get_stock_fair_price(mark)
+            if stock_price is None:
+                logger.info(
+                    f"⏸ {self.symbol} LONG_STOCK: 股价数据不可靠, 跳过跌幅保护本轮 "
+                    f"(等下个 tick)"
+                )
+                return
             drop_pct = (stock_price - cost_basis) / cost_basis
 
             # ── 跌幅保护 ──────────────────────────────────────────────────
             # 专家建议：股价深跌后停止卖 CC，避免锁死反弹空间。
-            # 跌 35%+：直接市价卖出股票止损（标的出问题，不再等待）
+            # 跌 35%+：限价卖出股票止损（标的出问题，不再等待）
             # 跌 20-35%：暂停 CC，持股等反弹，恢复后继续 Wheel
             if drop_pct <= -0.35:
                 qty_to_sell = int(float(obj.qty))
+                # Bug #2 fix: LIMIT order (not MARKET). Even at stop-loss we
+                # bound the sell price — a bad print won't dump the position
+                # at a crazy price. mid × 0.95 (5% below) for fill confidence
+                # in a fast move; if it doesn't fill this cycle, next tick
+                # re-evaluates with fresh data (trailing-stop-like).
+                # TODO Phase 4: escalate to market after N unfilled cycles.
+                limit = round(stock_price * 0.95, 2)
                 logger.warning(
                     f"🔴 止损出局: {self.symbol} 成本 ${cost_basis:.2f} → "
-                    f"现价 ${stock_price:.2f} ({drop_pct:.1%})，超过 -35% 止损线，"
-                    f"市价卖出 {qty_to_sell} 股"
+                    f"验证价 ${stock_price:.2f} ({drop_pct:.1%})，超过 -35% 止损线，"
+                    f"限价卖出 {qty_to_sell} 股 @ ${limit:.2f}"
                 )
                 try:
-                    from alpaca.trading.requests import MarketOrderRequest
+                    from alpaca.trading.requests import LimitOrderRequest
                     from alpaca.trading.enums import OrderSide, TimeInForce
-                    req = MarketOrderRequest(
+                    req = LimitOrderRequest(
                         symbol=self.symbol,
                         qty=qty_to_sell,
                         side=OrderSide.SELL,
                         time_in_force=TimeInForce.DAY,
+                        limit_price=limit,
                     )
                     self._trading.submit_order(req)
                     _safe_journal("log_skip", symbol=self.symbol, action="sell_stock",
-                                  skip_reason=f"stop_loss_35pct drop={drop_pct:.1%}")
+                                  skip_reason=f"stop_loss_35pct drop={drop_pct:.1%} limit={limit}")
                 except Exception as e:
                     logger.error(f"止损卖股失败: {e}")
                 return
