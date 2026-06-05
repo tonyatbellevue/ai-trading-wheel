@@ -215,3 +215,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-03T19:57:01.892086,skip,CSCO,sell_put,,,,,,,,,102723.68,101126.68,,,,,VIXY=23.48,1,insufficient_funds,,,
 2026-06-04T13:32:56.197026,exit,MSFT,,MSFT260603P00442500,,,1,,,,,58473.68,101309.68,,,,,,,,137.0,assigned,detected by position_tracker; entry=$1.37
 2026-06-04T13:34:21.848121,entry,MSFT,sell_call,MSFT260608C00442500,442.5,2026-06-08,1,1.98,0.224,,4,58473.68,101299.68,PASS,,,,VIXY=24.15,1,,,,cost_basis=441.13
+2026-06-05T13:48:53.899399,exit,MSFT,,MSFT260608C00442500,,,1,,,,,58611.59,101015.59,,,,,,,,136.0,btc_50pct_profit,detected by position_tracker; entry=$1.99
+2026-06-05T13:49:01.963585,entry,MSFT,sell_call,MSFT260610C00442500,442.5,2026-06-10,1,1.6,0.1849,,5,58611.59,101017.59,PASS,,,,VIXY=23.20,1,,,,cost_basis=441.13
