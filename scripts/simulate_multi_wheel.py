@@ -362,17 +362,21 @@ def scenario_J_earnings_blocks_cc():
 
 
 def scenario_K_partial_assignment():
-    """K: User has only 80 shares (partial fill or mis-assignment) — < 100,
-       must NOT attempt to sell CC."""
+    """K: Partial assignment — only 80 shares (<100). Bug #3 fix: get_phase
+    now returns LONG_STOCK for ANY ≥1 share (was: fell through to IDLE and
+    sold a NEW PUT on top of naked stock). Must:
+      - be in LONG_STOCK phase (not IDLE)
+      - NOT sell a new put (would_sell_csp False)
+      - NOT sell a CC (contracts = 80//100 = 0)
+    """
     positions = [
         FakePosition("MSFT", qty=80, avg_entry_price=442.5, current_price=445.0),
     ]
     return positions, [], "MSFT", {
-        # 80 shares < 100, get_phase will NOT enter LONG_STOCK (it checks ≥100).
-        # So the loop will treat MSFT as IDLE-on-stock — must not crash and
-        # must not sell a CC.
         "wheels_managed_subset": {"MSFT"},
-        "must_not_sell_cc": "MSFT",
+        "long_stock": {"MSFT"},        # Bug #3: must be LONG_STOCK, not IDLE
+        "must_not_sell_cc": "MSFT",    # <100 shares → no CC
+        "must_not_sell_put": "MSFT",   # Bug #3: must NOT sell put on naked stock
     }
 
 
@@ -746,6 +750,14 @@ def run_scenario(label, desc, builder):
             failures.append(f"{sym} should NOT have sold CC but did")
         if any(s.startswith(sym) and "C" in s[-9:-8] for s in sto_symbols):
             failures.append(f"{sym} CC sell_to_open fired but must_not_sell_cc")
+
+    if "must_not_sell_put" in expect:
+        sym = expect["must_not_sell_put"]
+        act = REC.cycle_actions.get(sym, {})
+        if act.get("would_sell_csp"):
+            failures.append(f"{sym} should NOT have sold a put (naked stock) but did")
+        if any(s.startswith(sym) and "P" in s[-9:-8] for s in sto_symbols):
+            failures.append(f"{sym} put sell_to_open fired but must_not_sell_put")
 
     if "must_cc_strike_ge" in expect:
         sym, min_strike = expect["must_cc_strike_ge"]
