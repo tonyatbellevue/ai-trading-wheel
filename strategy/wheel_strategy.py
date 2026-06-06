@@ -765,6 +765,12 @@ class WheelStrategy:
             qty = float(pos.qty)
             if qty >= 100:
                 logger.info(f"持仓股票: {self.symbol} x{qty:.0f} 股 @ 成本 {pos.avg_entry_price}")
+                # Phase 4.4: full lot → clear any partial-holding alert state.
+                try:
+                    from metrics import partial_alert
+                    partial_alert.reset(self.symbol)
+                except Exception:
+                    pass
                 return WheelPhase.LONG_STOCK, pos
             if qty >= 1:
                 logger.warning(
@@ -772,6 +778,12 @@ class WheelStrategy:
                     f"@ 成本 {pos.avg_entry_price} — 持有等待, 不卖新 Put 也不卖 CC。"
                     f"请人工检查是否需补足/清理。"
                 )
+                # Phase 4.4: alert the operator (throttled 1/day/symbol).
+                try:
+                    from metrics import partial_alert
+                    partial_alert.maybe_alert(self.symbol, qty, float(pos.avg_entry_price))
+                except Exception:
+                    pass
                 return WheelPhase.LONG_STOCK, pos
         except Exception:
             pass  # 无股票持仓
@@ -937,6 +949,12 @@ class WheelStrategy:
                 if stop_state.get_attempts(self.symbol) > 0:
                     logger.info(f"{self.symbol} 已 IDLE(仓位关闭), 重置止损升级状态")
                     stop_state.reset(self.symbol)
+            except Exception:
+                pass
+            # Phase 4.4: IDLE = no stock held → clear partial-holding alert.
+            try:
+                from metrics import partial_alert
+                partial_alert.reset(self.symbol)
             except Exception:
                 pass
             # ── 回测验证的过滤器：财报/MA50趋势/极端波动 ──
