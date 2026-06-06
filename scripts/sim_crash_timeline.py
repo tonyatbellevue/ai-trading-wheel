@@ -129,12 +129,82 @@ def main():
     if not (f1[0] == "LIMIT" and f2[0] == "(无单)" and stop_state.get_attempts(SYM) == 0):
         fails.append("场景4 成交重置")
 
+    # ── 数据异常组: 走完整 _get_stock_fair_price → 止损 链路 ──
+    # 上面 4 个场景传入已验证价格 (绕过数据校验)。这组测真实数据流:
+    # mark(可能坏) → _get_stock_fair_price(bid/ask/last 校验) → 止损决策
+    print("\n" + "=" * 78)
+    print("数据异常组 — 完整链路: mark → _get_stock_fair_price → 止损")
+    print("=" * 78)
+
+    def tick_data(bid, ask, last, mark, label):
+        """模拟 run_cycle LONG_STOCK 完整数据流。"""
+        fake.orders.clear()
+        fake.open_sells.clear()
+        from unittest.mock import patch as _p
+
+        class _Q:  bid_price = bid; ask_price = ask
+        class _T:  price = last
+
+        with _p("alpaca.data.historical.StockHistoricalDataClient.get_stock_latest_quote",
+                return_value={SYM: _Q()}), \
+             _p("alpaca.data.historical.StockHistoricalDataClient.get_stock_latest_trade",
+                return_value={SYM: _T()}), \
+             _p("strategy.wheel_strategy._safe_journal"):
+            fair = w._get_stock_fair_price(mark)
+            if fair is None:
+                action = "跳过(数据不可靠)"
+            else:
+                drop = (fair - COST) / COST
+                if drop <= -0.35:
+                    obj = SimpleNamespace(qty=fake.live_qty, avg_entry_price=COST,
+                                          current_price=fair)
+                    w._try_stock_stop_loss(obj, fair, COST, drop)
+                    action = f"止损 {fake.orders[0][0] if fake.orders else '?'}"
+                else:
+                    action = f"持有(验证价${fair:.2f}, {drop:+.0%} 未到-35%)"
+        fairstr = f"${fair:.2f}" if fair is not None else "None"
+        print(f"  {label:34s} bid={bid} ask={ask} last={last} mark=${mark} "
+              f"→ fair={fairstr} → {action}")
+        return fair, action
+
+    fake.live_qty = 100
+
+    # D1: ASK-skew mark 假崩盘 — mark 低但 bid/ask/last 都正常高 → 识破, 不止损
+    stop_state.reset(SYM)
+    d1 = tick_data(440.0, 440.1, 440.0, 280.0, "D1 mark假崩($280) 真实$440")
+    if d1[0] is None or "持有" not in d1[1]:
+        fails.append("D1 假崩误判")
+
+    # D2: 单边报价 bid=0 → None → 跳过
+    stop_state.reset(SYM)
+    d2 = tick_data(0.0, 280.0, 280.0, 280.0, "D2 单边bid=0")
+    if d2[0] is not None:
+        fails.append("D2 单边未跳过")
+
+    # D3: 宽 spread (>5%) → None → 跳过
+    stop_state.reset(SYM)
+    d3 = tick_data(260.0, 300.0, 280.0, 280.0, "D3 宽spread(14%)")
+    if d3[0] is not None:
+        fails.append("D3 宽spread未跳过")
+
+    # D4: mid 与 last 偏差 >8% (坏报价非成交价) → None → 跳过
+    stop_state.reset(SYM)
+    d4 = tick_data(280.0, 281.0, 440.0, 280.0, "D4 mid$280 vs last$440")
+    if d4[0] is not None:
+        fails.append("D4 mid≠last未跳过")
+
+    # D5: 真崩盘 — mark 滞后高, 但 bid/ask/last 都低 → 触发止损 (concern D)
+    stop_state.reset(SYM)
+    d5 = tick_data(280.0, 280.5, 280.0, 440.0, "D5 真崩(mark滞后$440 真$280)")
+    if d5[0] is None or "止损" not in d5[1]:
+        fails.append("D5 真崩未触发")
+
     stop_state.reset(SYM)
     print("\n" + "=" * 78)
     if fails:
         print(f"❌ 失败场景: {fails}")
         sys.exit(1)
-    print("✅ 全部 4 个崩盘时间线场景通过 — Phase 4.1 升级止损按设计工作")
+    print("✅ 全部 4 崩盘时间线 + 5 数据异常场景通过 — Phase 4.1 端到端验证")
     sys.exit(0)
 
 
