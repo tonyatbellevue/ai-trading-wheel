@@ -233,17 +233,85 @@ class WheelStrategy:
             logger.warning(f"_get_stock_fair_price({self.symbol}) failed: {e}")
             return None
 
+    def _theoretical_max_price(self, option_symbol: str) -> Optional[float]:
+        """Black-Scholes physical upper bound for an option price. Used as a
+        4th-layer sanity check: even a LAST TRADE can be a single anomalous
+        print (verified 6/5: GM $78P had a 1-lot $0.52 print while real
+        value was ~$0.01). last/mid layers can't catch a poisoned last;
+        this physical bound can.
+
+        bound = max(BS(vol=max(rv,100%)) × 3,  intrinsic + max($0.30, K×0.5%))
+        The absolute buffer prevents false-rejecting normal near-expiry
+        residual value (0DTE OTM puts trade at $0.02-0.10 even when BS≈0).
+        Bound is deliberately wide — it only catches grossly impossible
+        prices (~5×+), leaving precise pricing to the last/mid layers.
+        """
+        try:
+            info = _parse_symbol(option_symbol)
+            if not info:
+                return None
+            K = info["strike"]
+            is_call = info["type"] == "C"
+            dte = (info["expiry"] - date.today()).days
+            T = max(dte, 0.5) / 365.0
+            S = self._get_stock_fair_price(K)
+            if S is None or S <= 0:
+                return None
+            from strategy.wheel_filters import compute_realized_vol
+            rv = max(compute_realized_vol(self.symbol) or 0.60, 1.0)
+            from backtest.wheel_pricing import bs_price
+            theo = bs_price(S, K, T, r=0.04, sigma=rv, is_call=is_call)
+            intrinsic = max(S - K, 0) if is_call else max(K - S, 0)
+            abs_buffer = max(0.30, K * 0.005)
+            return max(theo * 3, intrinsic + abs_buffer)
+        except Exception as e:
+            logger.debug(f"_theoretical_max_price({option_symbol}) failed: {e}")
+            return None
+
+    def _finalize_fair(self, symbol: str, price: float, source: str) -> Optional[float]:
+        """Apply the intrinsic-value bound to a candidate price, record stats.
+        Returns the price if it passes the physical bound, else None."""
+        bound = self._theoretical_max_price(symbol)
+        if bound is None:
+            # 4th layer disabled this cycle (stock data unavailable for BS).
+            # Layers 1-3 still applied, so SL/TP not disabled — just no extra
+            # anomaly catch. Log so the silent skip is observable.
+            logger.debug(f"fair_price({symbol}) = {source} ${price:.3f} (bound 不可用, 仅前3层)")
+            self._record_quote_ok(symbol)
+            self._record_quote_stat(source)
+            return price
+        if price > bound:
+            logger.warning(
+                f"fair_price({symbol}): {source} ${price:.2f} > 理论上限 ${bound:.2f} "
+                f"— 物理上不可能(单笔抽风?), 拒绝"
+            )
+            self._record_quote_stat("reject_bound")
+            self._record_quote_skip(symbol)
+            return None
+        logger.debug(f"fair_price({symbol}) = {source} ${price:.3f} (≤ bound ${bound:.2f})")
+        self._record_quote_ok(symbol)
+        self._record_quote_stat(source)
+        return price
+
+    def _record_quote_stat(self, outcome: str) -> None:
+        try:
+            from metrics.quote_stats import record
+            record(outcome)
+        except Exception:
+            pass
+
     def _get_option_fair_price(self, symbol: str) -> Optional[float]:
         """Return best-available fair price for an option, in priority order:
-          1. Last trade if < 5 min old           (95% accuracy)
-          2. Mid (bid+ask)/2 if NBBO healthy     (85% accuracy)
-          3. None — caller MUST skip decision    (don't fall back to mark!)
+          1. Last trade if fresh (+ fat-finger clamp)
+          2. Mid (bid+ask)/2 if NBBO healthy
+          3. ALL candidates pass an intrinsic-value physical bound (layer 4)
+          4. None — caller MUST skip decision (don't fall back to mark!)
 
-        Phase 1 fix (6/5 incident): Previous version returned None when bid=0
-        and let caller fall back to ASK-skewed mark, causing GM $78P false
-        stop-loss BTC at $2.13 vs real value $0.01 → -$1,122 loss.
-
-        NBBO health: bid=0 or spread/mid > 50% → unreliable, reject.
+        Phase 1 fix (6/5 incident): returned None on bid=0 → caller fell
+        back to ASK-skewed mark → GM $78P false stop BTC $2.13 vs $0.01.
+        Phase 3: added intrinsic-value bound — a last trade can ALSO be a
+        single anomalous print (GM had a 1-lot $0.52 print); the bound
+        catches what last/mid can't.
         """
         try:
             from alpaca.data.requests import OptionSnapshotRequest
@@ -278,13 +346,9 @@ class WheelStrategy:
                                 f"fat-finger suspected, falling through to mid"
                             )
                         else:
-                            logger.debug(f"fair_price({symbol}) = last ${price} (age {age:.0f}s)")
-                            self._record_quote_ok(symbol)
-                            return price
+                            return self._finalize_fair(symbol, price, "last")
                     else:
-                        logger.debug(f"fair_price({symbol}) = last ${price} (age {age:.0f}s, no quote)")
-                        self._record_quote_ok(symbol)
-                        return price
+                        return self._finalize_fair(symbol, price, "last")
 
             # ── Priority 2: Mid quote if NBBO healthy ──
             # Phase 2 (P2.3): tightened spread gate 50% → 25%.
@@ -302,9 +366,7 @@ class WheelStrategy:
                     if s.latest_quote.timestamp:
                         q_age = (datetime.now(timezone.utc) - s.latest_quote.timestamp).total_seconds()
                     if spread_ratio <= 0.25 and q_age < quote_max_age:
-                        logger.debug(f"fair_price({symbol}) = mid ${mid:.3f} (spread {spread_ratio:.0%}, age {q_age:.0f}s)")
-                        self._record_quote_ok(symbol)
-                        return mid
+                        return self._finalize_fair(symbol, mid, "mid")
                     logger.debug(
                         f"fair_price({symbol}): mid rejected — spread {spread_ratio:.0%} "
                         f"(need ≤25%) or age {q_age:.0f}s (need <{quote_max_age}s)"
@@ -312,6 +374,7 @@ class WheelStrategy:
 
             # ── Priority 3: nothing reliable — caller must SKIP ──
             logger.warning(f"fair_price({symbol}): no reliable quote — skip SL/TP decision")
+            self._record_quote_stat("reject_none")
             self._record_quote_skip(symbol)
             return None
         except Exception as e:

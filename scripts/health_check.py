@@ -223,6 +223,48 @@ class HealthCheck:
         except Exception as e:
             self.add("stock_stop_loss", "WARN", f"止损测试跑失败: {e}")
 
+    def run_intrinsic_bound_test(self):
+        """Phase 3 内在价值边界回归测试。"""
+        try:
+            import subprocess
+            script = Path(__file__).parent / "test_intrinsic_bound.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=60,
+                                encoding="utf-8", errors="replace")
+            stdout = r.stdout or ""
+            if r.returncode == 0:
+                self.add("intrinsic_bound", "PASS",
+                         f"{stdout.count('[PASS]')} 边界用例全过")
+            else:
+                fails = [l for l in stdout.splitlines() if "[FAIL]" in l]
+                self.add("intrinsic_bound", "FAIL",
+                         f"内在价值边界回归! {' | '.join(fails[:3]) or '(see logs)'}")
+        except Exception as e:
+            self.add("intrinsic_bound", "WARN", f"边界测试跑失败: {e}")
+
+    def report_quote_pass_rate(self):
+        """放行率监控: fair_price 放行率太低 = 过度防护妨碍执行。"""
+        try:
+            from metrics.quote_stats import summary
+            s = summary()
+            total = s["total"]
+            if total == 0:
+                self.add("quote_pass_rate", "PASS", "今日暂无 fair_price 调用")
+                return
+            rate = s["pass_rate"]
+            bd = s["breakdown"]
+            detail = (f"放行 {rate:.0%} ({s['used']}/{total}) | "
+                      f"last={bd.get('last',0)} mid={bd.get('mid',0)} "
+                      f"拒绝-边界={bd.get('reject_bound',0)} 拒绝-无报价={bd.get('reject_none',0)}")
+            # 低放行率 = 过度防护警告
+            if rate < 0.70 and total >= 10:
+                self.add("quote_pass_rate", "WARN",
+                         f"放行率偏低 → 可能过度防护妨碍 SL/TP 执行. {detail}")
+            else:
+                self.add("quote_pass_rate", "PASS", detail)
+        except Exception as e:
+            self.add("quote_pass_rate", "WARN", f"放行率统计失败: {e}")
+
     def run_all(self):
         self.check_env()
         self.check_alpaca_api()
@@ -233,6 +275,8 @@ class HealthCheck:
         self.check_wheel_state()
         self.run_multi_wheel_simulator()
         self.run_stock_stop_loss_test()
+        self.run_intrinsic_bound_test()
+        self.report_quote_pass_rate()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()
 
