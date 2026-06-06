@@ -199,12 +199,89 @@ def main():
     if d5[0] is None or "止损" not in d5[1]:
         fails.append("D5 真崩未触发")
 
+    # ── 数据源异常组 (API 故障) ──
+    # D 组测"数据值错误"(拿到了但值不对)。这组测"数据根本拿不到"(API 故障):
+    # 超时/抛异常/返回空/缺字段。正确行为: fail-safe → 跳过止损, 不在 API
+    # 挂掉时盲目动作 (等下个 tick API 恢复)。
+    print("\n" + "=" * 78)
+    print("数据源异常组 — API 故障 (超时/异常/空/缺字段) 应 fail-safe 跳过")
+    print("=" * 78)
+
+    from unittest.mock import patch as _p
+
+    def src_case(label, quote_side_effect=None, trade_side_effect=None,
+                 quote_return=None, trade_return=None):
+        """模拟 API 故障, 验证 _get_stock_fair_price 安全返回 None。"""
+        qkw = {"side_effect": quote_side_effect} if quote_side_effect else {"return_value": quote_return}
+        tkw = {"side_effect": trade_side_effect} if trade_side_effect else {"return_value": trade_return}
+        with _p("alpaca.data.historical.StockHistoricalDataClient.get_stock_latest_quote", **qkw), \
+             _p("alpaca.data.historical.StockHistoricalDataClient.get_stock_latest_trade", **tkw), \
+             _p("strategy.wheel_strategy._safe_journal"):
+            try:
+                fair = w._get_stock_fair_price(440.0)
+                crashed = False
+            except Exception as e:
+                fair, crashed = "EXC:" + str(e)[:30], True
+        ok = (fair is None and not crashed)
+        print(f"  {label:38s} → fair={fair} {'✓ 安全跳过' if ok else '✗ 未安全处理'}")
+        return ok
+
+    class _Q:  bid_price = 280.0; ask_price = 280.5
+    class _T:  price = 280.0
+
+    # S1: quote API 抛异常 (超时/网络/限流)
+    if not src_case("S1 quote API 抛异常",
+                    quote_side_effect=Exception("timeout"),
+                    trade_return={SYM: _T()}):
+        fails.append("S1 quote异常")
+
+    # S2: quote 返回但 symbol 缺失 (KeyError)
+    if not src_case("S2 quote 返回空dict(缺symbol)",
+                    quote_return={}, trade_return={SYM: _T()}):
+        fails.append("S2 空dict")
+
+    # S3: trade API 故障但 quote 正常 → 降级用 mid (spread 健康时返回 mid)
+    with _p("alpaca.data.historical.StockHistoricalDataClient.get_stock_latest_quote",
+            return_value={SYM: _Q()}), \
+         _p("alpaca.data.historical.StockHistoricalDataClient.get_stock_latest_trade",
+            side_effect=Exception("trade api down")), \
+         _p("strategy.wheel_strategy._safe_journal"):
+        try:
+            fair_s3 = w._get_stock_fair_price(440.0)
+            s3_ok = (fair_s3 is not None and abs(fair_s3 - 280.25) < 0.5)
+        except Exception:
+            s3_ok = False
+    print(f"  {'S3 trade故障但quote正常→降级mid':38s} → fair={fair_s3} "
+          f"{'✓ 降级用mid' if s3_ok else '✗'}")
+    if not s3_ok:
+        fails.append("S3 降级")
+
+    # S4: latest_quote 字段为 None (Alpaca 偶发)
+    class _QNone:  bid_price = None; ask_price = None
+    if not src_case("S4 quote字段为None",
+                    quote_return={SYM: _QNone()}, trade_return={SYM: _T()}):
+        fails.append("S4 None字段")
+
+    # S5: 期权 snapshot API 故障 → _get_option_fair_price 安全 None
+    with _p("alpaca.data.historical.OptionHistoricalDataClient.get_option_snapshot",
+            side_effect=Exception("option api down")), \
+         _p.object(w, "_record_quote_skip"), _p.object(w, "_record_quote_stat"):
+        try:
+            of = w._get_option_fair_price("MSFT260620P00440000")
+            s5_ok = (of is None)
+        except Exception:
+            s5_ok = False
+    print(f"  {'S5 期权snapshot API故障':38s} → fair={of} "
+          f"{'✓ 安全跳过' if s5_ok else '✗'}")
+    if not s5_ok:
+        fails.append("S5 期权API")
+
     stop_state.reset(SYM)
     print("\n" + "=" * 78)
     if fails:
         print(f"❌ 失败场景: {fails}")
         sys.exit(1)
-    print("✅ 全部 4 崩盘时间线 + 5 数据异常场景通过 — Phase 4.1 端到端验证")
+    print("✅ 全部 4 崩盘 + 5 数据值异常 + 5 数据源异常场景通过 — Phase 4.1 端到端验证")
     sys.exit(0)
 
 
