@@ -242,6 +242,25 @@ class HealthCheck:
         except Exception as e:
             self.add("intrinsic_bound", "WARN", f"边界测试跑失败: {e}")
 
+    def run_escalating_stop_test(self):
+        """Phase 4.1 升级止损回归测试。"""
+        try:
+            import subprocess
+            script = Path(__file__).parent / "test_escalating_stop.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=60,
+                                encoding="utf-8", errors="replace")
+            stdout = r.stdout or ""
+            if r.returncode == 0:
+                self.add("escalating_stop", "PASS",
+                         f"{stdout.count('[PASS]')} 升级止损用例全过")
+            else:
+                fails = [l for l in stdout.splitlines() if "[FAIL]" in l]
+                self.add("escalating_stop", "FAIL",
+                         f"升级止损回归! {' | '.join(fails[:3]) or '(see logs)'}")
+        except Exception as e:
+            self.add("escalating_stop", "WARN", f"升级止损测试跑失败: {e}")
+
     def report_quote_pass_rate(self):
         """放行率监控: fair_price 放行率太低 = 过度防护妨碍执行。"""
         try:
@@ -276,6 +295,7 @@ class HealthCheck:
         self.run_multi_wheel_simulator()
         self.run_stock_stop_loss_test()
         self.run_intrinsic_bound_test()
+        self.run_escalating_stop_test()
         self.report_quote_pass_rate()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()
