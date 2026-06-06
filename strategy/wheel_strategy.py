@@ -233,6 +233,117 @@ class WheelStrategy:
             logger.warning(f"_get_stock_fair_price({self.symbol}) failed: {e}")
             return None
 
+    def _open_stock_sells(self, symbol: str) -> list:
+        """Return OPEN sell orders on the underlying STOCK (exact symbol)."""
+        try:
+            from alpaca.trading.requests import GetOrdersRequest
+            from alpaca.trading.enums import QueryOrderStatus
+            orders = self._trading.get_orders(
+                filter=GetOrdersRequest(status=QueryOrderStatus.OPEN, limit=100)
+            )
+            return [o for o in orders
+                    if o.symbol == symbol and str(o.side).upper().endswith("SELL")]
+        except Exception as e:
+            logger.debug(f"查询股票挂单失败: {e}")
+            return []
+
+    def _cancel_open_stock_sells(self, symbol: str) -> bool:
+        """Cancel any OPEN sell order on the underlying STOCK. Returns True if
+        no open stock-sell remains afterward (safe to place a new one).
+        Phase 4.1: re-pricing each cycle; without cancelling the prior unfilled
+        limit, a second order would oversell. Bug-A fix: verify cancellation
+        actually cleared before allowing a new submit."""
+        open_sells = self._open_stock_sells(symbol)
+        for o in open_sells:
+            try:
+                self._trading.cancel_order_by_id(o.id)
+                logger.info(f"撤销旧止损挂单 {symbol} (order={o.id}) 以便重新定价")
+            except Exception as e:
+                logger.debug(f"撤单 {o.id} 失败: {e}")
+        return len(self._open_stock_sells(symbol)) == 0
+
+    def _try_stock_stop_loss(self, obj, stock_price: float, cost_basis: float,
+                             drop_pct: float) -> bool:
+        """Phase 4.1 — escalating stock stop-loss with halt-awareness.
+
+        Three states across cron cycles (state persisted in stop_state.json):
+          - Cycle 1-2: LIMIT @ stock_price × 0.97 (filters bad data, allows
+                        rebound — a transient bad print won't persist 2 cycles)
+          - Cycle 3+ : MARKET sell (≥16 min still below -35% = real crash,
+                        stop chasing, guarantee exit)
+
+        Step 0 halt check: non-tradable (LULD halt — most likely during a
+        crash) → wait; don't queue an order that would jam. Not an attempt.
+        Re-prices each cycle: cancels prior unfilled stop first (oversell guard).
+        Returns True always (caller returns after a stop decision)."""
+        from datetime import datetime, timezone
+        from metrics import stop_state
+
+        # Step 0: LULD / tradability check
+        try:
+            asset = self._trading.get_asset(self.symbol)
+            if not getattr(asset, "tradable", True):
+                logger.warning(
+                    f"⏸ {self.symbol} 当前不可交易(熔断 LULD?), 等待恢复, "
+                    f"不挂止损单 (跌幅 {drop_pct:.1%})"
+                )
+                return True
+        except Exception as e:
+            logger.debug(f"asset 可交易状态检查失败(继续): {e}")
+
+        # Bug-A: cancel prior stop AND verify cleared; else skip (no stacking).
+        if not self._cancel_open_stock_sells(self.symbol):
+            logger.warning(
+                f"⏸ {self.symbol} 旧止损单未能撤销, 本轮跳过(避免重复挂单致超卖), 等下个 tick"
+            )
+            return True
+
+        # Bug-B: re-fetch live qty right before submit (old limit may have filled).
+        try:
+            fresh = self._trading.get_open_position(self.symbol)
+            qty_to_sell = int(float(fresh.qty))
+        except Exception:
+            qty_to_sell = int(float(obj.qty))
+        if qty_to_sell < 1:
+            logger.info(f"{self.symbol} 已无持仓(止损已成交?), 重置止损状态")
+            stop_state.reset(self.symbol)
+            return True
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        attempts = stop_state.record_attempt(self.symbol, now_iso)
+
+        from alpaca.trading.requests import LimitOrderRequest, MarketOrderRequest
+        from alpaca.trading.enums import OrderSide, TimeInForce
+        try:
+            if attempts <= 2:
+                limit = round(stock_price * 0.97, 2)
+                logger.warning(
+                    f"🔴 止损 第{attempts}轮(限价): {self.symbol} 成本 ${cost_basis:.2f} → "
+                    f"验证价 ${stock_price:.2f} ({drop_pct:.1%}), 限价卖 {qty_to_sell} 股 @ ${limit:.2f}"
+                )
+                req = LimitOrderRequest(
+                    symbol=self.symbol, qty=qty_to_sell, side=OrderSide.SELL,
+                    time_in_force=TimeInForce.DAY, limit_price=limit,
+                )
+                reason = f"stop_limit_attempt{attempts} drop={drop_pct:.1%} limit={limit}"
+            else:
+                mins = (attempts - 1) * 8
+                logger.warning(
+                    f"🔴🔴 止损 第{attempts}轮(市价): {self.symbol} 持续崩盘 "
+                    f"({drop_pct:.1%}) 约 {mins} 分钟未出, 市价清仓 {qty_to_sell} 股"
+                )
+                req = MarketOrderRequest(
+                    symbol=self.symbol, qty=qty_to_sell, side=OrderSide.SELL,
+                    time_in_force=TimeInForce.DAY,
+                )
+                reason = f"stop_market_attempt{attempts} drop={drop_pct:.1%}"
+            self._trading.submit_order(req)
+            _safe_journal("log_skip", symbol=self.symbol, action="sell_stock",
+                          skip_reason=reason)
+        except Exception as e:
+            logger.error(f"止损卖股失败: {e}")
+        return True
+
     def _theoretical_max_price(self, option_symbol: str) -> Optional[float]:
         """Black-Scholes physical upper bound for an option price. Used as a
         4th-layer sanity check: even a LAST TRADE can be a single anomalous
@@ -817,6 +928,17 @@ class WheelStrategy:
             return
 
         if phase == WheelPhase.IDLE:
+            # Bug-E fix (Phase 4.1): position is closed (IDLE). Clear any
+            # leftover stop-loss escalation state, else a future re-assignment
+            # of this symbol that dips to -35% would skip the limit grace
+            # cycles and fire MARKET immediately (stale attempts count).
+            try:
+                from metrics import stop_state
+                if stop_state.get_attempts(self.symbol) > 0:
+                    logger.info(f"{self.symbol} 已 IDLE(仓位关闭), 重置止损升级状态")
+                    stop_state.reset(self.symbol)
+            except Exception:
+                pass
             # ── 回测验证的过滤器：财报/MA50趋势/极端波动 ──
             ok, reason = pre_open_put_checks(self.symbol)
             if not ok:
@@ -922,35 +1044,19 @@ class WheelStrategy:
             # 跌 35%+：限价卖出股票止损（标的出问题，不再等待）
             # 跌 20-35%：暂停 CC，持股等反弹，恢复后继续 Wheel
             if drop_pct <= -0.35:
-                qty_to_sell = int(float(obj.qty))
-                # Bug #2 fix: LIMIT order (not MARKET). Even at stop-loss we
-                # bound the sell price — a bad print won't dump the position
-                # at a crazy price. mid × 0.95 (5% below) for fill confidence
-                # in a fast move; if it doesn't fill this cycle, next tick
-                # re-evaluates with fresh data (trailing-stop-like).
-                # TODO Phase 4: escalate to market after N unfilled cycles.
-                limit = round(stock_price * 0.95, 2)
-                logger.warning(
-                    f"🔴 止损出局: {self.symbol} 成本 ${cost_basis:.2f} → "
-                    f"验证价 ${stock_price:.2f} ({drop_pct:.1%})，超过 -35% 止损线，"
-                    f"限价卖出 {qty_to_sell} 股 @ ${limit:.2f}"
-                )
-                try:
-                    from alpaca.trading.requests import LimitOrderRequest
-                    from alpaca.trading.enums import OrderSide, TimeInForce
-                    req = LimitOrderRequest(
-                        symbol=self.symbol,
-                        qty=qty_to_sell,
-                        side=OrderSide.SELL,
-                        time_in_force=TimeInForce.DAY,
-                        limit_price=limit,
-                    )
-                    self._trading.submit_order(req)
-                    _safe_journal("log_skip", symbol=self.symbol, action="sell_stock",
-                                  skip_reason=f"stop_loss_35pct drop={drop_pct:.1%} limit={limit}")
-                except Exception as e:
-                    logger.error(f"止损卖股失败: {e}")
+                # Phase 4.1: escalating stop (limit → limit → market) +
+                # halt-awareness. See _try_stock_stop_loss.
+                self._try_stock_stop_loss(obj, stock_price, cost_basis, drop_pct)
                 return
+            else:
+                # Recovered above -35% line → clear any escalation state.
+                try:
+                    from metrics import stop_state
+                    if stop_state.get_attempts(self.symbol) > 0:
+                        logger.info(f"{self.symbol} 回到 -35% 线上方, 重置止损计数")
+                        stop_state.reset(self.symbol)
+                except Exception:
+                    pass
 
             if drop_pct <= -0.20:
                 logger.warning(
