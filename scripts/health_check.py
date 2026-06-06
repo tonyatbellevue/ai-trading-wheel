@@ -261,6 +261,22 @@ class HealthCheck:
         except Exception as e:
             self.add("escalating_stop", "WARN", f"升级止损测试跑失败: {e}")
 
+    def run_crash_timeline_sim(self):
+        """Phase 4.1 端到端崩盘时间线模拟 (跨 tick 状态机)。"""
+        try:
+            import subprocess
+            script = Path(__file__).parent / "sim_crash_timeline.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=60,
+                                encoding="utf-8", errors="replace")
+            if r.returncode == 0:
+                self.add("crash_timeline_sim", "PASS", "4 个崩盘时间线场景全过")
+            else:
+                self.add("crash_timeline_sim", "FAIL",
+                         "崩盘时间线模拟失败 → 升级止损状态机回归")
+        except Exception as e:
+            self.add("crash_timeline_sim", "WARN", f"崩盘模拟跑失败: {e}")
+
     def report_quote_pass_rate(self):
         """放行率监控: fair_price 放行率太低 = 过度防护妨碍执行。"""
         try:
@@ -296,6 +312,7 @@ class HealthCheck:
         self.run_stock_stop_loss_test()
         self.run_intrinsic_bound_test()
         self.run_escalating_stop_test()
+        self.run_crash_timeline_sim()
         self.report_quote_pass_rate()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()
