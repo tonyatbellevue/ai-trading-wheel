@@ -1,11 +1,11 @@
 {
-  "active_symbol": "GM",
+  "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
-    "trigger_date": "2026-06-07",
-    "reason": "health STOP: 现金不足 (需 $81,500, 有 $58,612)",
-    "planned_at": "2026-06-05T18:17:20.133435"
+    "to_symbol": "GM",
+    "trigger_date": "2026-06-14",
+    "reason": "health STOP: 现金不足 (需 $80,500, 有 $57,333)",
+    "planned_at": "2026-06-08T13:35:26.259167"
   },
   "history": [
     {
@@ -44,6 +44,14 @@
       "to": "GM",
       "planned_to": "GM",
       "reason": "CAUTION + better alternative (GM score +20%)"
+    },
+    {
+      "switched_at": "2026-06-08T13:34:32.300027",
+      "from": "GM",
+      "to": "XOM",
+      "planned_to": "AMZN",
+      "reason": "health STOP: 现金不足 (需 $81,500, 有 $58,612)",
+      "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 XOM (score=97.2)"
     }
   ]
 }
