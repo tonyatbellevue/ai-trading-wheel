@@ -366,3 +366,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-09T16:25:09.525296,skip,MSFT,sell_call,,,,,,,,,57333.27,97486.27,,,,,VIXY=24.98,1,low_premium annualized=3%,,,filter=min_premium
 2026-06-09T16:33:01.402891,skip,XOM,sell_put,,,,,,,,,57333.27,97499.27,,,,,VIXY=25.05,1,[sector_etf] XLE(energy) 今日 -2.3% < -2% 拦截,,,filter=other
 2026-06-09T16:33:13.813338,skip,MSFT,sell_call,,,,,,,,,57333.27,97505.27,,,,,VIXY=25.06,1,low_premium annualized=11%,,,filter=min_premium
+2026-06-09T16:41:15.017179,skip,XOM,sell_put,,,,,,,,,57333.27,97235.77,,,,,VIXY=25.61,1,[ma_trend] 股价 $149.30 < MA50 $153.07（下跌趋势）,,,filter=ma_trend
+2026-06-09T16:41:30.963837,skip,MSFT,sell_call,,,,,,,,,57333.27,97253.27,,,,,VIXY=25.59,1,low_premium annualized=3%,,,filter=min_premium
