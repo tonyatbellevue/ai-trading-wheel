@@ -354,3 +354,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-09T15:41:16.517288,skip,MSFT,sell_call,,,,,,,,,57333.27,97631.27,,,,,VIXY=24.44,1,low_premium annualized=3%,,,filter=min_premium
 2026-06-09T15:49:49.227238,skip,XOM,sell_put,,,,,,,,,57333.27,97640.27,,,,,VIXY=24.42,1,[sector_etf] XLE(energy) 今日 -2.1% < -2% 拦截,,,filter=other
 2026-06-09T15:50:05.592195,skip,MSFT,sell_call,,,,,,,,,57333.27,97631.27,,,,,VIXY=24.42,1,low_premium annualized=4%,,,filter=min_premium
+2026-06-09T15:56:59.465884,skip,XOM,sell_put,,,,,,,,,57333.27,97566.27,,,,,VIXY=24.66,1,[sector_etf] XLE(energy) 今日 -2.3% < -2% 拦截,,,filter=other
+2026-06-09T15:57:05.720667,skip,MSFT,sell_call,,,,,,,,,57333.27,97551.77,,,,,VIXY=24.67,1,low_premium annualized=2%,,,filter=min_premium
