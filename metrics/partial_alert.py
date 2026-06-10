@@ -47,12 +47,50 @@ def reset(symbol: str) -> None:
         _save(state)
 
 
+# Require the partial state to persist this many consecutive cron reads
+# before sending an actionable email. A single read can be a transient
+# Alpaca paper glitch (real 6/9 incident: one read returned 80 sh @ $442.50
+# — the raw strike, a mid-reconciliation snapshot — while the true position
+# was 100 sh @ $441.13). Trusting a single read = the exact bug class this
+# whole effort fixed for prices; apply the same "confirm across reads" rule.
+CONFIRM_READS = 2
+# Minimum seconds between counted confirms (cron is 8 min = 480s; this
+# rejects the multiple get_phase() calls within a single tick, seconds apart).
+MIN_CONFIRM_GAP_S = 240
+
+
 def maybe_alert(symbol: str, qty: float, cost_basis: float) -> None:
-    """Send ONE email per symbol per day about a partial (<100 sh) holding."""
+    """Send ONE email per symbol per day about a partial (<100 sh) holding,
+    but ONLY after the partial state is confirmed on CONFIRM_READS consecutive
+    cron reads (defends against transient bad position reads)."""
     today = date.today().isoformat()
     state = _load()
-    if state.get(symbol, {}).get("last_alert_date") == today:
+    entry = state.get(symbol, {})
+
+    if entry.get("last_alert_date") == today:
         return  # already alerted today
+
+    # ── Confirmation gate: count consecutive partial reads across TICKS ──
+    # get_phase() runs several times per cron tick, so only count a confirm
+    # if the last one was > MIN_GAP_S ago (cron is 8 min; within-tick calls
+    # are seconds apart and must NOT each increment).
+    import time
+    now = time.time()
+    last_ts = float(entry.get("last_confirm_ts", 0))
+    if now - last_ts < MIN_CONFIRM_GAP_S:
+        return  # same cron tick — don't double-count
+    confirms = int(entry.get("confirms", 0)) + 1
+    entry["confirms"] = confirms
+    entry["last_qty"] = int(qty)
+    entry["last_confirm_ts"] = now
+    state[symbol] = entry
+    _save(state)
+    if confirms < CONFIRM_READS:
+        logger.info(
+            f"partial_alert: {symbol} {int(qty)} 股 (<100) 第 {confirms}/{CONFIRM_READS} "
+            f"次确认 (跨 tick), 暂不告警 (防瞬时坏读)"
+        )
+        return
 
     try:
         from utils.emailer import send_email
