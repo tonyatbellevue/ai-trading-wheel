@@ -261,6 +261,22 @@ class HealthCheck:
         except Exception as e:
             self.add("escalating_stop", "WARN", f"升级止损测试跑失败: {e}")
 
+    def run_partial_alert_test(self):
+        """Phase 4.4 零头告警确认门回归测试。"""
+        try:
+            import subprocess
+            script = Path(__file__).parent / "test_partial_alert.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=60,
+                                encoding="utf-8", errors="replace")
+            if r.returncode == 0:
+                self.add("partial_alert_test", "PASS",
+                         f"{(r.stdout or '').count('[PASS]')} 确认门用例全过")
+            else:
+                self.add("partial_alert_test", "FAIL", "零头告警确认门回归 (可能误发假告警)")
+        except Exception as e:
+            self.add("partial_alert_test", "WARN", f"零头告警测试跑失败: {e}")
+
     def run_crash_timeline_sim(self):
         """Phase 4.1 端到端崩盘时间线模拟 (跨 tick 状态机)。"""
         try:
@@ -313,6 +329,7 @@ class HealthCheck:
         self.run_intrinsic_bound_test()
         self.run_escalating_stop_test()
         self.run_crash_timeline_sim()
+        self.run_partial_alert_test()
         self.report_quote_pass_rate()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()
