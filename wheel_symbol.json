@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "BAC",
     "trigger_date": "2026-06-14",
     "reason": "health STOP: 现金不足 (需 $75,500, 有 $57,333)",
-    "planned_at": "2026-06-11T14:25:22.101306"
+    "planned_at": "2026-06-11T14:33:28.373699"
   },
   "history": [
     {
