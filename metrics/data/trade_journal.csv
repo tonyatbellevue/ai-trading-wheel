@@ -536,3 +536,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-11T14:25:22.874083,skip,MSFT,sell_call,,,,,,,,,57333.27,96330.27,,,,,VIXY=25.30,1,low_premium annualized=3%,,,filter=min_premium
 2026-06-11T14:33:09.344357,skip,XOM,sell_put,,,,,,,,,57333.27,96281.27,,,,,VIXY=25.50,1,[ma_trend] 股价 $151.07 < MA50 $152.27（下跌趋势）,,,filter=ma_trend
 2026-06-11T14:33:29.502507,skip,MSFT,sell_call,,,,,,,,,57333.27,96296.77,,,,,VIXY=25.51,1,low_premium annualized=3%,,,filter=min_premium
+2026-06-11T14:41:16.435467,skip,XOM,sell_put,,,,,,,,,57333.27,96372.27,,,,,VIXY=25.38,1,[ma_trend] 股价 $150.78 < MA50 $152.26（下跌趋势）,,,filter=ma_trend
+2026-06-11T14:41:33.528166,skip,MSFT,sell_call,,,,,,,,,57333.27,96402.27,,,,,VIXY=26.29,1,low_premium annualized=1%,,,filter=min_premium
