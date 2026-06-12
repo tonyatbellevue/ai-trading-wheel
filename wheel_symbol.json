@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-06-14",
-    "reason": "health STOP: 现金不足 (需 $75,500, 有 $57,333)",
-    "planned_at": "2026-06-12T16:56:57.798154"
+    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,333)",
+    "planned_at": "2026-06-12T18:57:13.427296"
   },
   "history": [
     {
