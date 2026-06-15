@@ -2,10 +2,10 @@
   "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "NFLX",
     "trigger_date": "2026-06-21",
     "reason": "health STOP: 现金不足 (需 $78,500, 有 $57,333)",
-    "planned_at": "2026-06-15T16:09:55.852909"
+    "planned_at": "2026-06-15T17:33:54.333557"
   },
   "history": [
     {
