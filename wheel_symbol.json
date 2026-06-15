@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NFLX",
+  "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "BAC",
     "trigger_date": "2026-06-21",
     "reason": "health STOP: 现金不足 (需 $77,000, 有 $57,333)",
-    "planned_at": "2026-06-15T13:37:24.946728"
+    "planned_at": "2026-06-15T13:43:18.801148"
   },
   "history": [
     {
@@ -60,6 +60,14 @@
       "planned_to": "AMZN",
       "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,333)",
       "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 NFLX (score=95.7)"
+    },
+    {
+      "switched_at": "2026-06-15T13:42:26.897615",
+      "from": "NFLX",
+      "to": "WMT",
+      "planned_to": "ADBE",
+      "reason": "IV-blocked fallback: NFLX IV rank 17 < 30, rotate to ADBE (IV rank 100)",
+      "rescan_note": "触发时重扫: 原计划 ADBE 已非 top-1，改用 WMT (score=96.7)"
     }
   ]
 }
