@@ -1,11 +1,11 @@
 {
-  "active_symbol": "XOM",
+  "active_symbol": "NFLX",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
-    "trigger_date": "2026-06-14",
-    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,333)",
-    "planned_at": "2026-06-12T18:57:13.427296"
+    "to_symbol": "WMT",
+    "trigger_date": "2026-06-21",
+    "reason": "health STOP: 现金不足 (需 $77,000, 有 $57,333)",
+    "planned_at": "2026-06-15T13:37:24.946728"
   },
   "history": [
     {
@@ -52,6 +52,14 @@
       "planned_to": "AMZN",
       "reason": "health STOP: 现金不足 (需 $81,500, 有 $58,612)",
       "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 XOM (score=97.2)"
+    },
+    {
+      "switched_at": "2026-06-15T13:36:32.088050",
+      "from": "XOM",
+      "to": "NFLX",
+      "planned_to": "AMZN",
+      "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,333)",
+      "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 NFLX (score=95.7)"
     }
   ]
 }
