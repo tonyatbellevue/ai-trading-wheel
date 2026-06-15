@@ -809,3 +809,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-15T18:57:14.180708,entry,BAC,sell_put,BAC260618P00055000,55.0,2026-06-18,1,0.21,-0.2348,,3,57333.27,97194.77,PASS,PASS,PASS,,VIXY=21.96,1,,,,size=1
 2026-06-15T18:57:59.220340,skip,MSFT,sell_call,,,,,,,,,57333.27,97197.78,,,,,VIXY=21.94,1,low_premium annualized=3%,,,filter=min_premium
 2026-06-15T19:02:35.760480,skip,MSFT,sell_call,,,,,,,,,57333.27,97221.28,,,,,VIXY=21.94,1,low_premium annualized=3%,,,filter=min_premium
+2026-06-15T19:09:09.920725,skip,MSFT,sell_call,,,,,,,,,57333.27,97225.77,,,,,VIXY=21.94,1,low_premium annualized=3%,,,filter=min_premium
