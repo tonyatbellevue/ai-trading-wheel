@@ -2,10 +2,10 @@
   "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "BAC",
     "trigger_date": "2026-06-21",
-    "reason": "health STOP: 现金不足 (需 $77,500, 有 $57,333)",
-    "planned_at": "2026-06-15T14:02:39.461188"
+    "reason": "health STOP: 现金不足 (需 $78,000, 有 $57,333)",
+    "planned_at": "2026-06-15T14:25:55.812883"
   },
   "history": [
     {
