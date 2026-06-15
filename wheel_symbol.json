@@ -1,11 +1,11 @@
 {
-  "active_symbol": "WMT",
+  "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NFLX",
     "trigger_date": "2026-06-21",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $78,000, 有 $57,333)",
-    "planned_at": "2026-06-15T18:02:40.700389"
+    "reason": "health STOP: 现金不足 (需 $78,000, 有 $57,333)",
+    "planned_at": "2026-06-15T18:50:45.266944"
   },
   "history": [
     {
@@ -68,6 +68,13 @@
       "planned_to": "ADBE",
       "reason": "IV-blocked fallback: NFLX IV rank 17 < 30, rotate to ADBE (IV rank 100)",
       "rescan_note": "触发时重扫: 原计划 ADBE 已非 top-1，改用 WMT (score=96.7)"
+    },
+    {
+      "switched_at": "2026-06-15T18:49:51.293249",
+      "from": "WMT",
+      "to": "BAC",
+      "planned_to": "BAC",
+      "reason": "CAUTION + better alternative (BAC score +16%)"
     }
   ]
 }
