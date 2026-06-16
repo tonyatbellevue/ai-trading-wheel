@@ -2,10 +2,10 @@
   "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NFLX",
+    "to_symbol": "BAC",
     "trigger_date": "2026-06-21",
-    "reason": "health STOP: 现金不足 (需 $78,000, 有 $57,333)",
-    "planned_at": "2026-06-15T18:50:45.266944"
+    "reason": "health STOP: 现金不足 (需 $77,000, 有 $57,354)",
+    "planned_at": "2026-06-16T13:34:39.764088"
   },
   "history": [
     {
