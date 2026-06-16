@@ -824,3 +824,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-16T14:09:13.478761,skip,MSFT,sell_call,,,,,,,,,57354.2,96745.7,,,,,VIXY=22.40,1,low_premium annualized=11%,,,filter=min_premium
 2026-06-16T14:17:13.539313,skip,MSFT,sell_call,,,,,,,,,57354.2,96627.05,,,,,VIXY=21.67,1,low_premium annualized=3%,,,filter=min_premium
 2026-06-16T14:25:58.991644,skip,MSFT,sell_call,,,,,,,,,57345.18,96563.68,,,,,VIXY=21.83,1,low_premium annualized=3%,,,filter=min_premium
+2026-06-16T14:33:11.171347,exit,BAC,,BAC260618P00055000,,,1,,,,,57345.18,96697.18,,,,,,,,12.0,btc_50pct_profit,detected by position_tracker; entry=$0.21
+2026-06-16T14:33:28.460828,entry,BAC,sell_put,BAC260618P00056000,56.0,2026-06-18,1,0.24,-0.304,,2,57345.18,96704.18,PASS,PASS,PASS,,VIXY=22.40,1,,,,size=1
+2026-06-16T14:34:06.609775,skip,MSFT,sell_call,,,,,,,,,57370.16,96661.66,,,,,VIXY=21.87,1,low_premium annualized=2%,,,filter=min_premium
