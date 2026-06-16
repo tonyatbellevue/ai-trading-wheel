@@ -2,10 +2,10 @@
   "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "BAC",
     "trigger_date": "2026-06-21",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $77,000, 有 $57,370)",
-    "planned_at": "2026-06-16T15:09:30.021532"
+    "planned_at": "2026-06-16T15:25:09.528674"
   },
   "history": [
     {
