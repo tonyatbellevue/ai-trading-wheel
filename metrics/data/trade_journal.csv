@@ -916,3 +916,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-17T18:57:11.997556,skip,MSFT,sell_call,,,,,,,,,57370.08,95615.58,,,,,VIXY=22.03,1,low_premium annualized=2%,,,filter=min_premium
 2026-06-17T19:09:05.103988,skip,MSFT,sell_call,,,,,,,,,57370.08,95501.08,,,,,VIXY=22.20,1,low_premium annualized=2%,,,filter=min_premium
 2026-06-17T19:17:10.474318,skip,MSFT,sell_call,,,,,,,,,57370.08,95464.08,,,,,VIXY=22.28,1,low_premium annualized=2%,,,filter=min_premium
+2026-06-17T19:25:25.448457,skip,MSFT,sell_call,,,,,,,,,57370.08,95342.59,,,,,VIXY=22.68,1,low_premium annualized=2%,,,filter=min_premium
