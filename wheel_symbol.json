@@ -2,10 +2,10 @@
   "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "BAC",
+    "to_symbol": "PFE",
     "trigger_date": "2026-06-21",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $75,500, 有 $57,370)",
-    "planned_at": "2026-06-17T15:57:08.702596"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $75,000, 有 $57,370)",
+    "planned_at": "2026-06-17T17:01:56.863548"
   },
   "history": [
     {
