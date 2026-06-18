@@ -1,11 +1,11 @@
 {
   "active_symbol": "BAC",
   "plan": {
-    "from_symbol": "MSFT",
-    "to_symbol": "BAC",
+    "from_symbol": "BAC",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-06-21",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $75,000, 有 $57,370)",
-    "planned_at": "2026-06-17T18:25:32.866292"
+    "reason": "CAUTION + better alternative (NVDA score +100%)",
+    "planned_at": "2026-06-18T13:35:12.543932"
   },
   "history": [
     {
