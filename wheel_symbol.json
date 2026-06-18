@@ -1,11 +1,11 @@
 {
-  "active_symbol": "BAC",
+  "active_symbol": "AVGO",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NVDA",
     "trigger_date": "2026-06-21",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $73,500, 有 $57,366)",
-    "planned_at": "2026-06-18T16:17:52.126809"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $74,000, 有 $57,366)",
+    "planned_at": "2026-06-18T18:03:25.061273"
   },
   "history": [
     {
@@ -75,6 +75,13 @@
       "to": "BAC",
       "planned_to": "BAC",
       "reason": "CAUTION + better alternative (BAC score +16%)"
+    },
+    {
+      "switched_at": "2026-06-18T18:02:30.071436",
+      "from": "BAC",
+      "to": "AVGO",
+      "planned_to": "AVGO",
+      "reason": "CAUTION + better alternative (AVGO score +100%)"
     }
   ]
 }
