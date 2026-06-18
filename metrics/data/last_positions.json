@@ -1,16 +1,6 @@
 {
-  "timestamp": "2026-06-18T16:02:19.172698",
-  "options": {
-    "BAC260618P00056000": {
-      "qty": -1.0,
-      "entry": 0.25,
-      "current": 0.04,
-      "underlying": "BAC",
-      "strike": 56.0,
-      "expiry": "2026-06-18",
-      "type": "P"
-    }
-  },
+  "timestamp": "2026-06-18T16:09:15.564431",
+  "options": {},
   "stocks": {
     "MSFT": {
       "qty": 100.0,
