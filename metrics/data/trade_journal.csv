@@ -935,3 +935,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-18T15:02:51.931949,skip,MSFT,sell_call,,,,,,,,,57370.08,95027.08,,,,,VIXY=22.11,1,low_premium annualized=1%,,,filter=min_premium
 2026-06-18T16:09:07.778402,exit,BAC,,BAC260618P00056000,,,1,,,,,57366.06,95078.06,,,,,,,,21.0,btc_50pct_profit,detected by position_tracker; entry=$0.25
 2026-06-18T18:09:24.525221,skip,AVGO,sell_put,,,,,,,,,57366.06,95267.06,,,,,VIXY=21.90,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-06-04),,,filter=earnings
+2026-06-18T18:17:25.080089,skip,AVGO,sell_put,,,,,,,,,57366.06,95216.06,,,,,VIXY=21.94,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-06-04),,,filter=earnings
