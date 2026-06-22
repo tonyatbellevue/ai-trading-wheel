@@ -1,11 +1,11 @@
 {
   "active_symbol": "BAC",
   "plan": {
-    "from_symbol": "BAC",
-    "to_symbol": "ANET",
+    "from_symbol": "MSFT",
+    "to_symbol": "WMT",
     "trigger_date": "2026-06-28",
-    "reason": "CAUTION + better alternative (ANET score +29%)",
-    "planned_at": "2026-06-22T14:25:17.541218"
+    "reason": "health STOP: 现金不足 (需 $71,500, 有 $57,393)",
+    "planned_at": "2026-06-22T19:57:46.984137"
   },
   "history": [
     {
