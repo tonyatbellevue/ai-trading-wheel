@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-22T15:09:26.292522",
+  "timestamp": "2026-06-22T15:16:58.108052",
   "options": {
     "BAC260626P00056000": {
       "qty": -1.0,
       "entry": 0.27,
-      "current": 0.22,
+      "current": 0.19,
       "underlying": "BAC",
       "strike": 56.0,
       "expiry": "2026-06-26",
