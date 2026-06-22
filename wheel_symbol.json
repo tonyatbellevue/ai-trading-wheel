@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AVGO",
+  "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
-    "trigger_date": "2026-06-21",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $74,000, 有 $57,366)",
-    "planned_at": "2026-06-18T18:03:25.061273"
+    "to_symbol": "JNJ",
+    "trigger_date": "2026-06-28",
+    "reason": "health STOP: 现金不足 (需 $73,000, 有 $57,366)",
+    "planned_at": "2026-06-22T13:37:13.272240"
   },
   "history": [
     {
@@ -82,6 +82,14 @@
       "to": "AVGO",
       "planned_to": "AVGO",
       "reason": "CAUTION + better alternative (AVGO score +100%)"
+    },
+    {
+      "switched_at": "2026-06-22T13:36:17.941570",
+      "from": "AVGO",
+      "to": "BAC",
+      "planned_to": "JNJ",
+      "reason": "health STOP: 现金不足 (需 $78,500, 有 $57,366)",
+      "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 BAC (score=96.4)"
     }
   ]
 }
