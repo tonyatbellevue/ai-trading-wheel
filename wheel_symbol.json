@@ -2,10 +2,10 @@
   "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "JNJ",
+    "to_symbol": "ANET",
     "trigger_date": "2026-06-28",
-    "reason": "health STOP: 现金不足 (需 $73,000, 有 $57,366)",
-    "planned_at": "2026-06-22T13:37:13.272240"
+    "reason": "health STOP: 现金不足 (需 $74,000, 有 $57,393)",
+    "planned_at": "2026-06-22T13:57:27.787431"
   },
   "history": [
     {
