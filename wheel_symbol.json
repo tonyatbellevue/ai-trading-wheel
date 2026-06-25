@@ -2,10 +2,10 @@
   "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "BAC",
+    "to_symbol": "CSCO",
     "trigger_date": "2026-06-28",
-    "reason": "health STOP: 现金不足 (需 $70,000, 有 $57,399)",
-    "planned_at": "2026-06-25T14:09:09.675344"
+    "reason": "health STOP: 现金不足 (需 $69,500, 有 $57,399)",
+    "planned_at": "2026-06-25T14:25:55.565171"
   },
   "history": [
     {
