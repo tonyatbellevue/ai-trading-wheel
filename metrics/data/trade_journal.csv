@@ -1119,3 +1119,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-06-25T17:17:56.034535,skip,MSFT,sell_call,,,,,,,,,57398.82,92585.99,,,,,VIXY=22.50,1,stock_below_cost_basis drop=-20.3%,,,filter=drop_protection
 2026-06-25T17:26:00.834459,skip,MSFT,sell_call,,,,,,,,,57398.82,92555.81,,,,,VIXY=22.58,1,stock_below_cost_basis drop=-20.4%,,,filter=drop_protection
 2026-06-25T17:34:00.611068,skip,MSFT,sell_call,,,,,,,,,57398.82,92516.82,,,,,VIXY=22.56,1,stock_below_cost_basis drop=-20.4%,,,filter=drop_protection
+2026-06-25T17:42:01.747370,skip,MSFT,sell_call,,,,,,,,,57398.82,92419.82,,,,,VIXY=22.51,1,stock_below_cost_basis drop=-20.6%,,,filter=drop_protection
