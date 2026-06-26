@@ -1,11 +1,11 @@
 {
   "active_symbol": "BAC",
   "plan": {
-    "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
+    "from_symbol": "BAC",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-06-28",
-    "reason": "health STOP: 现金不足 (需 $72,000, 有 $57,399)",
-    "planned_at": "2026-06-26T19:02:21.293776"
+    "reason": "CAUTION + better alternative (NVDA score +100%)",
+    "planned_at": "2026-06-26T19:09:02.794471"
   },
   "history": [
     {
