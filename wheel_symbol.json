@@ -2,10 +2,10 @@
   "active_symbol": "BAC",
   "plan": {
     "from_symbol": "BAC",
-    "to_symbol": "NVDA",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-06-28",
-    "reason": "CAUTION + better alternative (NVDA score +100%)",
-    "planned_at": "2026-06-26T19:09:02.794471"
+    "reason": "CAUTION + better alternative (AMZN score +100%)",
+    "planned_at": "2026-06-26T19:32:57.635368"
   },
   "history": [
     {
