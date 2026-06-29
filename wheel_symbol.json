@@ -1,11 +1,11 @@
 {
-  "active_symbol": "BAC",
+  "active_symbol": "XOM",
   "plan": {
-    "from_symbol": "BAC",
-    "to_symbol": "NVDA",
-    "trigger_date": "2026-06-28",
-    "reason": "CAUTION + better alternative (NVDA score +100%)",
-    "planned_at": "2026-06-26T19:41:29.856095"
+    "from_symbol": "MSFT",
+    "to_symbol": "XOM",
+    "trigger_date": "2026-07-05",
+    "reason": "health STOP: 现金不足 (需 $73,000, 有 $57,399)",
+    "planned_at": "2026-06-29T13:37:26.051525"
   },
   "history": [
     {
@@ -90,6 +90,14 @@
       "planned_to": "JNJ",
       "reason": "health STOP: 现金不足 (需 $78,500, 有 $57,366)",
       "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 BAC (score=96.4)"
+    },
+    {
+      "switched_at": "2026-06-29T13:36:08.106148",
+      "from": "BAC",
+      "to": "XOM",
+      "planned_to": "AAPL",
+      "reason": "IV-blocked fallback: BAC IV rank 18 < 30, rotate to AAPL (IV rank 100)",
+      "rescan_note": "触发时重扫: 原计划 AAPL 已非 top-1，改用 XOM (score=95.8)"
     }
   ]
 }
