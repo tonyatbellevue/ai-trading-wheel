@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "JNJ",
+    "to_symbol": "XOM",
     "trigger_date": "2026-07-05",
-    "reason": "health STOP: 现金不足 (需 $73,500, 有 $57,399)",
-    "planned_at": "2026-06-29T14:02:30.714456"
+    "reason": "health STOP: 现金不足 (需 $73,000, 有 $57,399)",
+    "planned_at": "2026-06-29T14:09:51.193055"
   },
   "history": [
     {
