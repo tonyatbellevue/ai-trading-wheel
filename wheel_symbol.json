@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ADBE",
+    "to_symbol": "F",
     "trigger_date": "2026-07-05",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $76,000, 有 $57,399)",
-    "planned_at": "2026-07-01T17:57:51.978314"
+    "planned_at": "2026-07-01T18:09:51.732413"
   },
   "history": [
     {
