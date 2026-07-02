@@ -2,10 +2,10 @@
   "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-07-05",
     "reason": "health STOP: 现金不足 (需 $75,500, 有 $57,399)",
-    "planned_at": "2026-07-02T15:33:51.517152"
+    "planned_at": "2026-07-02T15:57:41.951113"
   },
   "history": [
     {
