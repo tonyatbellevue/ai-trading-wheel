@@ -1409,3 +1409,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-07-02T16:09:46.405273,skip,MSFT,sell_call,,,,,,,,,57398.82,96262.07,,,,,VIXY=21.48,1,low_premium annualized=1%,,,filter=min_premium
 2026-07-02T16:17:28.594716,skip,NVDA,sell_put,,,,,,,,,57398.82,96457.32,,,,,VIXY=21.39,1,[sector_etf] SMH(ai_hardware) 今日 -3.9% < -2% 拦截,,,filter=other
 2026-07-02T16:17:58.301786,skip,MSFT,sell_call,,,,,,,,,57398.82,96424.82,,,,,VIXY=21.42,1,low_premium annualized=1%,,,filter=min_premium
+2026-07-02T16:25:10.462568,skip,NVDA,sell_put,,,,,,,,,57398.82,96417.32,,,,,VIXY=21.48,1,[sector_etf] SMH(ai_hardware) 今日 -4.6% < -2% 拦截,,,filter=other
+2026-07-02T16:25:50.880805,skip,MSFT,sell_call,,,,,,,,,57398.82,96462.82,,,,,VIXY=21.43,1,low_premium annualized=1%,,,filter=min_premium
