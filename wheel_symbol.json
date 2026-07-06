@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "ADBE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
-    "trigger_date": "2026-07-05",
-    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
-    "planned_at": "2026-07-02T19:42:10.601759"
+    "to_symbol": "ADBE",
+    "trigger_date": "2026-07-12",
+    "reason": "health STOP: 现金不足 (需 $75,000, 有 $57,399)",
+    "planned_at": "2026-07-06T13:35:33.953092"
   },
   "history": [
     {
@@ -105,6 +105,14 @@
       "to": "NVDA",
       "planned_to": "NVDA",
       "reason": "CAUTION + better alternative (NVDA score +100%)"
+    },
+    {
+      "switched_at": "2026-07-06T13:34:37.957969",
+      "from": "NVDA",
+      "to": "ADBE",
+      "planned_to": "AMZN",
+      "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
+      "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 ADBE (score=96.7)"
     }
   ]
 }
