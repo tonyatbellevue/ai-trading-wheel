@@ -1591,3 +1591,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-07-07T15:49:23.861654,skip,NVDA,sell_put,,,,,,,,,57398.82,57398.82,,,,,VIXY=20.99,1,[sector_etf] SMH(ai_hardware) 今日 -4.9% < -2% 拦截,,,filter=other
 2026-07-07T15:57:25.038176,skip,ADBE,sell_put,,,,,,,,,57398.82,57398.82,,,,,VIXY=20.92,1,[sector_etf] XLK(software) 今日 -2.6% < -2% 拦截,,,filter=other
 2026-07-07T15:57:28.591989,skip,NVDA,sell_put,,,,,,,,,57398.82,57398.82,,,,,VIXY=20.92,1,[sector_etf] SMH(ai_hardware) 今日 -4.8% < -2% 拦截,,,filter=other
+2026-07-07T16:02:05.221227,skip,ADBE,sell_put,,,,,,,,,57398.82,57398.82,,,,,VIXY=20.85,1,[sector_etf] XLK(software) 今日 -2.3% < -2% 拦截,,,filter=other
+2026-07-07T16:02:06.140856,skip,NVDA,sell_put,,,,,,,,,57398.82,57398.82,,,,,VIXY=20.85,1,[sector_etf] SMH(ai_hardware) 今日 -4.3% < -2% 拦截,,,filter=other
