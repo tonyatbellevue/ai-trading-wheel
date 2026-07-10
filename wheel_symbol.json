@@ -1,11 +1,11 @@
 {
-  "active_symbol": "ADBE",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ADBE",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-07-12",
-    "reason": "health STOP: 现金不足 (需 $74,500, 有 $57,399)",
-    "planned_at": "2026-07-09T13:49:23.863308"
+    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
+    "planned_at": "2026-07-10T13:37:13.701051"
   },
   "history": [
     {
@@ -113,6 +113,13 @@
       "planned_to": "AMZN",
       "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
       "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 ADBE (score=96.7)"
+    },
+    {
+      "switched_at": "2026-07-10T13:36:18.326507",
+      "from": "ADBE",
+      "to": "AMZN",
+      "planned_to": "AMZN",
+      "reason": "IDLE+profit rotation: AMZN scores +100% above ADBE (账户权益 $96,368 ≥ 上日)"
     }
   ]
 }
