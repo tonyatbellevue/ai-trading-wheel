@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "ADBE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
-    "trigger_date": "2026-07-12",
-    "reason": "health STOP: 现金不足 (需 $74,500, 有 $57,399)",
-    "planned_at": "2026-07-10T18:09:27.269766"
+    "to_symbol": "ADBE",
+    "trigger_date": "2026-07-19",
+    "reason": "health STOP: 现金不足 (需 $75,500, 有 $57,399)",
+    "planned_at": "2026-07-13T13:37:11.637790"
   },
   "history": [
     {
@@ -120,6 +120,14 @@
       "to": "AMZN",
       "planned_to": "AMZN",
       "reason": "IDLE+profit rotation: AMZN scores +100% above ADBE (账户权益 $96,368 ≥ 上日)"
+    },
+    {
+      "switched_at": "2026-07-13T13:35:55.650917",
+      "from": "AMZN",
+      "to": "ADBE",
+      "planned_to": "NVDA",
+      "reason": "health STOP: 现金不足 (需 $74,500, 有 $57,399)",
+      "rescan_note": "触发时重扫: 原计划 NVDA 已非 top-1，改用 ADBE (score=98.5)"
     }
   ]
 }
