@@ -2,10 +2,10 @@
   "active_symbol": "ADBE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "LHX",
+    "to_symbol": "JNJ",
     "trigger_date": "2026-07-19",
-    "reason": "health STOP: 现金不足 (需 $78,000, 有 $57,399)",
-    "planned_at": "2026-07-15T16:17:59.391694"
+    "reason": "health STOP: 现金不足 (需 $77,000, 有 $57,399)",
+    "planned_at": "2026-07-15T16:25:53.382091"
   },
   "history": [
     {
