@@ -2076,3 +2076,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-07-15T15:10:08.416812,skip,MSFT,sell_call,,,,,,,,,57398.82,96945.82,,,,,VIXY=20.42,1,low_premium annualized=4%,,,filter=min_premium
 2026-07-15T15:17:21.130884,skip,ADBE,sell_put,,,,,,,,,57398.82,96997.82,,,,,VIXY=20.53,1,[sector_etf] XLK(software) 今日 -2.0% < -2% 拦截,,,filter=other
 2026-07-15T15:17:54.332170,skip,MSFT,sell_call,,,,,,,,,57398.82,97023.32,,,,,VIXY=20.52,1,low_premium annualized=4%,,,filter=min_premium
+2026-07-15T15:25:05.613847,skip,ADBE,sell_put,,,,,,,,,57398.82,97062.13,,,,,VIXY=20.50,1,[ma_trend] 股价 $226.80 < MA50 $231.36（下跌趋势）,,,filter=ma_trend
+2026-07-15T15:25:49.713023,skip,MSFT,sell_call,,,,,,,,,57398.82,97091.82,,,,,VIXY=20.48,1,low_premium annualized=2%,,,filter=min_premium
