@@ -2,10 +2,10 @@
   "active_symbol": "ADBE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-07-19",
     "reason": "health STOP: 现金不足 (需 $78,000, 有 $57,399)",
-    "planned_at": "2026-07-16T17:42:02.341877"
+    "planned_at": "2026-07-16T17:49:59.076807"
   },
   "history": [
     {
