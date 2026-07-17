@@ -2,10 +2,10 @@
   "active_symbol": "ADBE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-07-19",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $77,500, 有 $57,399)",
-    "planned_at": "2026-07-17T17:09:30.811446"
+    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
+    "planned_at": "2026-07-17T17:49:12.086953"
   },
   "history": [
     {
