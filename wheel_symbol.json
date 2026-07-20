@@ -1,11 +1,11 @@
 {
-  "active_symbol": "F",
+  "active_symbol": "LHX",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "LHX",
+    "to_symbol": "F",
     "trigger_date": "2026-07-26",
     "reason": "health STOP: 现金不足 (需 $76,500, 有 $57,399)",
-    "planned_at": "2026-07-20T14:26:44.827661"
+    "planned_at": "2026-07-20T14:35:16.377309"
   },
   "history": [
     {
@@ -144,6 +144,14 @@
       "planned_to": "LHX",
       "reason": "IDLE+profit rotation: LHX scores +20% above PFE (账户权益 $96,826 ≥ 上日)",
       "rescan_note": "触发时重扫: 原计划 LHX 已非 top-1，改用 F (score=97.9)"
+    },
+    {
+      "switched_at": "2026-07-20T14:34:20.552631",
+      "from": "F",
+      "to": "LHX",
+      "planned_to": "NFLX",
+      "reason": "IV-blocked fallback: F IV rank 24 < 30, rotate to NFLX (IV rank 84)",
+      "rescan_note": "触发时重扫: 原计划 NFLX 已非 top-1，改用 LHX (score=97.6)"
     }
   ]
 }
