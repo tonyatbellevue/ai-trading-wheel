@@ -1,11 +1,11 @@
 {
-  "active_symbol": "ADBE",
+  "active_symbol": "PFE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
-    "trigger_date": "2026-07-19",
-    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
-    "planned_at": "2026-07-17T19:57:00.620259"
+    "to_symbol": "PFE",
+    "trigger_date": "2026-07-26",
+    "reason": "health STOP: 现金不足 (需 $75,500, 有 $57,399)",
+    "planned_at": "2026-07-20T13:35:28.543434"
   },
   "history": [
     {
@@ -128,6 +128,14 @@
       "planned_to": "NVDA",
       "reason": "health STOP: 现金不足 (需 $74,500, 有 $57,399)",
       "rescan_note": "触发时重扫: 原计划 NVDA 已非 top-1，改用 ADBE (score=98.5)"
+    },
+    {
+      "switched_at": "2026-07-20T13:34:21.307350",
+      "from": "ADBE",
+      "to": "PFE",
+      "planned_to": "AMZN",
+      "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
+      "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 PFE (score=98.1)"
     }
   ]
 }
