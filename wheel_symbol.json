@@ -1,11 +1,11 @@
 {
-  "active_symbol": "PFE",
+  "active_symbol": "F",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "LHX",
     "trigger_date": "2026-07-26",
-    "reason": "health STOP: 现金不足 (需 $75,500, 有 $57,399)",
-    "planned_at": "2026-07-20T13:35:28.543434"
+    "reason": "health STOP: 现金不足 (需 $76,500, 有 $57,399)",
+    "planned_at": "2026-07-20T14:26:44.827661"
   },
   "history": [
     {
@@ -136,6 +136,14 @@
       "planned_to": "AMZN",
       "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
       "rescan_note": "触发时重扫: 原计划 AMZN 已非 top-1，改用 PFE (score=98.1)"
+    },
+    {
+      "switched_at": "2026-07-20T14:25:51.915695",
+      "from": "PFE",
+      "to": "F",
+      "planned_to": "LHX",
+      "reason": "IDLE+profit rotation: LHX scores +20% above PFE (账户权益 $96,826 ≥ 上日)",
+      "rescan_note": "触发时重扫: 原计划 LHX 已非 top-1，改用 F (score=97.9)"
     }
   ]
 }
