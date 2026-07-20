@@ -2,10 +2,10 @@
   "active_symbol": "LHX",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "F",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-07-26",
-    "reason": "health STOP: 现金不足 (需 $77,500, 有 $57,399)",
-    "planned_at": "2026-07-20T19:17:46.836014"
+    "reason": "health STOP: 现金不足 (需 $78,000, 有 $57,399)",
+    "planned_at": "2026-07-20T19:25:51.566435"
   },
   "history": [
     {
