@@ -2,10 +2,10 @@
   "active_symbol": "LHX",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "F",
     "trigger_date": "2026-07-26",
-    "reason": "health STOP: 现金不足 (需 $77,500, 有 $57,399)",
-    "planned_at": "2026-07-21T13:34:43.804811"
+    "reason": "health STOP: 现金不足 (需 $78,500, 有 $57,399)",
+    "planned_at": "2026-07-21T13:49:08.121012"
   },
   "history": [
     {
