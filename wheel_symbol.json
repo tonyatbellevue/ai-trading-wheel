@@ -1,11 +1,11 @@
 {
-  "active_symbol": "LHX",
+  "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "XOM",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-07-26",
-    "reason": "health STOP: 现金不足 (需 $76,000, 有 $57,399)",
-    "planned_at": "2026-07-22T16:25:16.588983"
+    "reason": "health STOP: 现金不足 (需 $73,000, 有 $57,399)",
+    "planned_at": "2026-07-24T13:37:12.653460"
   },
   "history": [
     {
@@ -152,6 +152,13 @@
       "planned_to": "NFLX",
       "reason": "IV-blocked fallback: F IV rank 24 < 30, rotate to NFLX (IV rank 84)",
       "rescan_note": "触发时重扫: 原计划 NFLX 已非 top-1，改用 LHX (score=97.6)"
+    },
+    {
+      "switched_at": "2026-07-24T13:36:16.167048",
+      "from": "LHX",
+      "to": "NVDA",
+      "planned_to": "NVDA",
+      "reason": "health STOP: 现金不足 (需 $58,500, 有 $57,399)"
     }
   ]
 }
