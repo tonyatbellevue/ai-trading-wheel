@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
-    "trigger_date": "2026-07-26",
-    "reason": "health STOP: 现金不足 (需 $72,500, 有 $57,399)",
-    "planned_at": "2026-07-24T16:34:10.794336"
+    "to_symbol": "GM",
+    "trigger_date": "2026-08-02",
+    "reason": "health STOP: IV 过高，风险显著; 现金不足 (需 $74,000, 有 $57,399)",
+    "planned_at": "2026-07-27T13:37:15.505316"
   },
   "history": [
     {
@@ -159,6 +159,14 @@
       "to": "NVDA",
       "planned_to": "NVDA",
       "reason": "health STOP: 现金不足 (需 $58,500, 有 $57,399)"
+    },
+    {
+      "switched_at": "2026-07-27T13:36:22.050691",
+      "from": "NVDA",
+      "to": "XOM",
+      "planned_to": "NVDA",
+      "reason": "health STOP: 现金不足 (需 $72,500, 有 $57,399)",
+      "rescan_note": "触发时重扫: 原计划 NVDA 已非 top-1，改用 XOM (score=96.0)"
     }
   ]
 }
