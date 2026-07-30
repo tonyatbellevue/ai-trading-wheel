@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "XOM",
     "trigger_date": "2026-08-02",
-    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $86,500, 有 $57,399)",
-    "planned_at": "2026-07-30T13:35:50.826114"
+    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $87,000, 有 $57,724)",
+    "planned_at": "2026-07-30T13:42:05.932763"
   },
   "history": [
     {
