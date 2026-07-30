@@ -3120,3 +3120,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-07-29T19:49:24.870456,skip,MSFT,sell_call,,,,,,,,,57398.82,96641.64,,,,,VIXY=22.34,1,[earnings] 财报日 2026-07-29 在 5d 窗口内,,,filter=earnings
 2026-07-29T19:57:05.298840,skip,CSCO,sell_put,,,,,,,,,57398.82,96449.82,,,,,VIXY=22.51,1,[sector_etf] XLK(networking) 今日 -2.5% < -2% 拦截,,,filter=other
 2026-07-29T19:57:23.726548,skip,MSFT,sell_call,,,,,,,,,57398.82,96437.32,,,,,VIXY=22.50,1,[earnings] 财报日 2026-07-29 在 5d 窗口内,,,filter=earnings
+2026-07-30T13:34:28.430061,skip,CSCO,sell_put,,,,,,,,,57398.82,101821.82,,,,,VIXY=22.32,1,[ma_trend] 股价 $111.89 < MA50 $117.62（下跌趋势）,,,filter=ma_trend
+2026-07-30T13:35:54.449535,entry,MSFT,sell_call,MSFT260803C00465000,465.0,2026-08-03,1,3.07,0.2396,,4,57398.82,102212.82,PASS,,,,VIXY=22.32,1,,,,cost_basis=441.13
