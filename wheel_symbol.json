@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "GM",
+    "to_symbol": "PFE",
     "trigger_date": "2026-08-09",
     "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $95,500, 有 $55,891)",
-    "planned_at": "2026-08-03T16:09:53.518802"
+    "planned_at": "2026-08-03T16:17:49.345594"
   },
   "history": [
     {
