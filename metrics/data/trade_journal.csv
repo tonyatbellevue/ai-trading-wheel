@@ -3229,3 +3229,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-07-31T19:41:20.659980,skip,CSCO,sell_put,,,,,,,,,57250.65,103371.65,,,,,VIXY=20.58,1,[ma_trend] 股价 $116.33 < MA50 $117.68（下跌趋势）,,,filter=ma_trend
 2026-07-31T19:49:12.533359,skip,CSCO,sell_put,,,,,,,,,57250.65,103366.65,,,,,VIXY=20.52,1,[ma_trend] 股价 $116.70 < MA50 $117.68（下跌趋势）,,,filter=ma_trend
 2026-07-31T19:57:28.466102,skip,CSCO,sell_put,,,,,,,,,57250.65,103606.65,,,,,VIXY=20.44,1,[ma_trend] 股价 $116.17 < MA50 $117.67（下跌趋势）,,,filter=ma_trend
+2026-08-03T13:41:13.897593,exit,MSFT,,MSFT260803C00470000,,,1,,,,,55575.57,104406.57,,,,,,,,-1457.0,btc_50pct_profit,detected by position_tracker; entry=$2.08
+2026-08-03T13:41:22.138984,skip,XOM,sell_put,,,,,,,,,55575.57,104409.05,,,,,VIXY=20.28,1,[sector_etf] XLE(energy) 今日 -2.0% < -2% 拦截,,,filter=other
+2026-08-03T13:42:07.762661,entry,MSFT,sell_call,MSFT260807C00505000,505.0,2026-08-07,1,3.13,0.2426,,4,55575.57,104423.07,PASS,,,,VIXY=20.30,1,,,,cost_basis=441.13

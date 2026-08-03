@@ -1,16 +1,6 @@
 {
-  "timestamp": "2026-08-03T13:36:25.582983",
-  "options": {
-    "MSFT260803C00470000": {
-      "qty": -1.0,
-      "entry": 2.08,
-      "current": 16.65,
-      "underlying": "MSFT",
-      "strike": 470.0,
-      "expiry": "2026-08-03",
-      "type": "C"
-    }
-  },
+  "timestamp": "2026-08-03T13:41:22.139447",
+  "options": {},
   "stocks": {
     "MSFT": {
       "qty": 100.0,
