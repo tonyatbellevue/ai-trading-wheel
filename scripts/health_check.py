@@ -293,6 +293,22 @@ class HealthCheck:
         except Exception as e:
             self.add("crash_timeline_sim", "WARN", f"崩盘模拟跑失败: {e}")
 
+    def run_otm_direction_test(self):
+        """认购/认沽 价内外方向回归测试 (8/5 修复)。"""
+        try:
+            import subprocess
+            script = Path(__file__).parent / "test_otm_direction.py"
+            r = subprocess.run([sys.executable, str(script)],
+                                capture_output=True, text=True, timeout=60,
+                                encoding="utf-8", errors="replace")
+            if r.returncode == 0:
+                self.add("otm_direction", "PASS",
+                         f"{(r.stdout or '').count('[PASS]')} 方向用例全过")
+            else:
+                self.add("otm_direction", "FAIL", "Call/Put 价内外方向回归!")
+        except Exception as e:
+            self.add("otm_direction", "WARN", f"方向测试跑失败: {e}")
+
     def report_quote_pass_rate(self):
         """放行率监控: fair_price 放行率太低 = 过度防护妨碍执行。"""
         try:
@@ -330,6 +346,7 @@ class HealthCheck:
         self.run_escalating_stop_test()
         self.run_crash_timeline_sim()
         self.run_partial_alert_test()
+        self.run_otm_direction_test()
         self.report_quote_pass_rate()
         self.run_shadow_rotation()
         self.run_assignment_postmortem()

@@ -56,6 +56,29 @@ def _parse_symbol(symbol: str) -> dict:
     return {"underlying": underlying, "expiry": expiry, "type": opt_type, "strike": strike}
 
 
+def _otm_pct(stock_price: float, strike: float, opt_type: str) -> float:
+    """How far OUT OF THE MONEY an option is, as a fraction of strike.
+    Positive = OTM (safe), negative = ITM (at risk).
+
+    Direction depends on the contract type — this is the bug this helper
+    fixes. The old inline formula `(stock - strike) / strike` is written
+    for PUTS only:
+      - PUT  is OTM when stock > strike → (stock - strike) / strike
+      - CALL is OTM when stock < strike → (strike - stock) / strike
+
+    Applying the put formula to a covered call made a SAFELY out-of-the-money
+    call (e.g. MSFT $490 vs $505 strike) report -2.85%, so:
+      - v11 "let winners ride" (needs ≥5%) could never fire for calls
+      - v7 expiry-day logic saw it as "<1% → 太接近行权价 → 强制BTC" and
+        bought back a call that was about to expire worthless for free.
+    """
+    if strike <= 0:
+        return 0.0
+    if str(opt_type).upper() == "C":
+        return (strike - stock_price) / strike
+    return (stock_price - strike) / strike
+
+
 class WheelStrategy:
     def __init__(self, symbol: str = None):
         self.symbol = symbol or settings.WHEEL_SYMBOL
@@ -631,7 +654,7 @@ class WheelStrategy:
                     if (2 <= dte <= 5
                             and stock_price is not None
                             and strike > 0):
-                        otm_pct = (stock_price - strike) / strike
+                        otm_pct = _otm_pct(stock_price, strike, info["type"])
                         if otm_pct >= 0.05:
                             logger.info(
                                 f"⏭️ v11 hold: {pos.symbol} profit {profit_pct:.0%} "
@@ -657,7 +680,7 @@ class WheelStrategy:
                                 pass  # use default 3%
 
                         if stock_price is not None and strike > 0:
-                            otm_pct = (stock_price - strike) / strike
+                            otm_pct = _otm_pct(stock_price, strike, info["type"])
                             if otm_pct >= safe_otm:
                                 logger.info(
                                     f"⏭️ skip BTC: {pos.symbol} OTM {otm_pct:.1%} "
