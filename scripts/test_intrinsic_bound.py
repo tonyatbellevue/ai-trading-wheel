@@ -22,6 +22,21 @@ from unittest.mock import patch
 from strategy.wheel_strategy import WheelStrategy
 
 
+def _occ(symbol: str, days_out: int, strike: float, opt_type: str) -> str:
+    """Build an OCC code with expiry RELATIVE to today.
+
+    Test-rot fix (8/5): the original cases hardcoded expiries like
+    AAPL260612P00095000. Once those dates passed, dte went negative, T
+    collapsed to the 0.5-day floor, the BS term shrank, and the bound
+    dropped far below realistic prices — so a legitimate high-IV price
+    was "rejected" and health_check went red daily. Relative dates keep
+    the intended DTE forever.
+    """
+    from datetime import date, timedelta
+    exp = date.today() + timedelta(days=days_out)
+    return f"{symbol}{exp.strftime('%y%m%d')}{opt_type}{int(round(strike*1000)):08d}"
+
+
 def _bound(symbol, stock_price, rv, occ):
     w = WheelStrategy(symbol=symbol)
     with patch.object(w, "_get_stock_fair_price", return_value=stock_price), \
@@ -41,19 +56,19 @@ def _finalize(symbol, stock_price, rv, occ, price):
 def main():
     # (name, symbol, S, rv, occ, price, expect_pass, note)
     cases = [
-        ("GM real $0.07", "GM", 82.0, 0.30, "GM260605P00078000", 0.07, True,
+        ("GM real $0.07", "GM", 82.0, 0.30, _occ("GM", 0, 78.0, "P"), 0.07, True,
          "真实成交残值 → 通过"),
-        ("GM real $0.01", "GM", 82.0, 0.30, "GM260605P00078000", 0.01, True,
+        ("GM real $0.01", "GM", 82.0, 0.30, _occ("GM", 0, 78.0, "P"), 0.01, True,
          "真实归零价 → 通过"),
-        ("GM SPIKE last $0.52", "GM", 82.0, 0.30, "GM260605P00078000", 0.52, False,
+        ("GM SPIKE last $0.52", "GM", 82.0, 0.30, _occ("GM", 0, 78.0, "P"), 0.52, False,
          "单笔抽风成交 → 拒绝 (last层抓不到, bound抓到)"),
-        ("GM mark $2.13", "GM", 82.0, 0.30, "GM260605P00078000", 2.13, False,
+        ("GM mark $2.13", "GM", 82.0, 0.30, _occ("GM", 0, 78.0, "P"), 2.13, False,
          "mark抽风 → 拒绝"),
-        ("MSFT CC normal", "MSFT", 431.0, 0.40, "MSFT260608C00442500", 0.70, True,
+        ("MSFT CC normal", "MSFT", 431.0, 0.40, _occ("MSFT", 4, 442.5, "C"), 0.70, True,
          "正常 CC 价 → 通过"),
-        ("high-IV legit", "AAPL", 100.0, 1.20, "AAPL260612P00095000", 2.18, True,
+        ("high-IV legit", "AAPL", 100.0, 1.20, _occ("AAPL", 6, 95.0, "P"), 2.18, True,
          "财报高IV真实价 → 通过 (不误杀)"),
-        ("ITM put legit", "GM", 70.0, 0.30, "GM260605P00078000", 8.10, True,
+        ("ITM put legit", "GM", 70.0, 0.30, _occ("GM", 0, 78.0, "P"), 8.10, True,
          "价内put内在价值$8 → 通过"),
     ]
     fails = []
