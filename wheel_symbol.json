@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "GM",
     "trigger_date": "2026-08-09",
-    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $97,000, 有 $56,071)",
-    "planned_at": "2026-08-06T14:02:14.948004"
+    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $96,500, 有 $56,071)",
+    "planned_at": "2026-08-06T14:17:40.250756"
   },
   "history": [
     {
