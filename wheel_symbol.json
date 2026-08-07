@@ -1,11 +1,11 @@
 {
-  "active_symbol": "GM",
+  "active_symbol": "INTC",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NVDA",
     "trigger_date": "2026-08-09",
-    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $98,000, 有 $56,071)",
-    "planned_at": "2026-08-07T13:34:36.776889"
+    "reason": "health STOP: 近10日年化波动率过高; IV 过低，权利金收益不足",
+    "planned_at": "2026-08-07T19:18:36.980692"
   },
   "history": [
     {
@@ -189,6 +189,13 @@
       "to": "GM",
       "planned_to": "GM",
       "reason": "IDLE+profit rotation: GM scores +16% above XOM (账户权益 $104,471 ≥ 上日)"
+    },
+    {
+      "switched_at": "2026-08-07T19:17:44.117838",
+      "from": "GM",
+      "to": "INTC",
+      "planned_to": "INTC",
+      "reason": "CAUTION + better alternative (INTC score +100%)"
     }
   ]
 }
