@@ -3447,3 +3447,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-10T17:02:18.753311,skip,XOM,sell_put,,,,,,,,,54951.34,105776.34,,,,,VIXY=19.41,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
 2026-08-10T17:09:01.920532,skip,XOM,sell_put,,,,,,,,,54951.34,105680.34,,,,,VIXY=19.41,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
 2026-08-10T17:17:20.259150,skip,XOM,sell_put,,,,,,,,,54951.34,105745.4,,,,,VIXY=19.38,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
+2026-08-10T17:24:58.199338,skip,XOM,sell_put,,,,,,,,,54951.34,105768.84,,,,,VIXY=19.40,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
