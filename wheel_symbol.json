@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ORCL",
+    "to_symbol": "XOM",
     "trigger_date": "2026-08-16",
     "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $100,000, 有 $54,951)",
-    "planned_at": "2026-08-10T16:09:51.125845"
+    "planned_at": "2026-08-10T16:17:49.708840"
   },
   "history": [
     {
