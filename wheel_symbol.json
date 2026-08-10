@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NFLX",
+    "to_symbol": "XOM",
     "trigger_date": "2026-08-16",
-    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $99,000, 有 $56,071)",
-    "planned_at": "2026-08-10T13:42:09.981953"
+    "reason": "health STOP: 近10日年化波动率过高; 现金不足 (需 $98,500, 有 $56,071)",
+    "planned_at": "2026-08-10T13:57:56.593263"
   },
   "history": [
     {
