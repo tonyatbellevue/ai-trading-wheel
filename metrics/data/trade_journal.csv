@@ -3426,3 +3426,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-10T14:33:27.534461,skip,XOM,sell_put,,,,,,,,,54951.34,106320.45,,,,,VIXY=19.35,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
 2026-08-10T14:33:52.000514,entry,MSFT,sell_call,MSFT260814C00527500,527.5,2026-08-14,1,2.53,0.2343,,4,54951.34,106266.84,PASS,,,,VIXY=19.36,1,,,,cost_basis=441.13
 2026-08-10T14:41:28.798215,skip,XOM,sell_put,,,,,,,,,54951.34,106054.34,,,,,VIXY=19.34,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
+2026-08-10T14:49:26.571681,skip,XOM,sell_put,,,,,,,,,54951.34,105984.84,,,,,VIXY=19.36,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
