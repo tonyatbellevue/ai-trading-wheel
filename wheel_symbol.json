@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "XOM",
+    "to_symbol": "NFLX",
     "trigger_date": "2026-08-16",
     "reason": "health STOP: 近10日年化波动率过高; IV 过低，权利金收益不足",
-    "planned_at": "2026-08-11T13:49:28.148017"
+    "planned_at": "2026-08-11T15:09:19.660400"
   },
   "history": [
     {
