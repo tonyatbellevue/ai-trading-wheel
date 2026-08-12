@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "XOM",
+    "to_symbol": "NFLX",
     "trigger_date": "2026-08-16",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,000, 有 $54,951)",
-    "planned_at": "2026-08-12T16:57:30.131964"
+    "planned_at": "2026-08-12T17:17:51.740087"
   },
   "history": [
     {
