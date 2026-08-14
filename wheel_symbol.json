@@ -1,11 +1,11 @@
 {
-  "active_symbol": "XOM",
+  "active_symbol": "INTC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
+    "to_symbol": "INTC",
     "trigger_date": "2026-08-16",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,500, 有 $55,210)",
-    "planned_at": "2026-08-14T14:49:46.127577"
+    "planned_at": "2026-08-14T14:58:32.444828"
   },
   "history": [
     {
@@ -203,6 +203,13 @@
       "to": "XOM",
       "planned_to": "XOM",
       "reason": "CAUTION + better alternative (XOM score +20%)"
+    },
+    {
+      "switched_at": "2026-08-14T14:57:40.187903",
+      "from": "XOM",
+      "to": "INTC",
+      "planned_to": "INTC",
+      "reason": "CAUTION + better alternative (INTC score +100%)"
     }
   ]
 }
