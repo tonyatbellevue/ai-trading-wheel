@@ -3638,3 +3638,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-14T14:33:36.723654,skip,XOM,sell_put,,,,,,,,,55210.14,104905.14,,,,,VIXY=18.75,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
 2026-08-14T14:41:26.145941,skip,XOM,sell_put,,,,,,,,,55210.14,104900.14,,,,,VIXY=18.70,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
 2026-08-14T14:49:18.237103,skip,XOM,sell_put,,,,,,,,,55210.14,104914.14,,,,,VIXY=18.70,1,[earnings] earnings:STALE_DB → 安全跳过 (last 2026-07-30),,,filter=earnings
+2026-08-14T15:02:00.154295,skip,INTC,sell_put,,,,,,,,,55210.14,104887.14,,,,,VIXY=18.75,1,[ma_trend] 股价 $104.94 < MA50 $109.45（下跌趋势）,,,filter=ma_trend
