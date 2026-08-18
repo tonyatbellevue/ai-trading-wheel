@@ -1,11 +1,11 @@
 {
-  "active_symbol": "WMT",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "WMT",
     "trigger_date": "2026-08-23",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $96,000, 有 $55,210)",
-    "planned_at": "2026-08-17T13:35:31.201970"
+    "reason": "health STOP: 现金不足 (需 $95,000, 有 $55,420)",
+    "planned_at": "2026-08-18T13:40:14.338346"
   },
   "history": [
     {
@@ -218,6 +218,14 @@
       "planned_to": "INTC",
       "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,500, 有 $55,210)",
       "rescan_note": "触发时重扫: 原计划 INTC 已非 top-1，改用 WMT (score=99.2)"
+    },
+    {
+      "switched_at": "2026-08-18T13:35:56.550740",
+      "from": "WMT",
+      "to": "AMZN",
+      "planned_to": "PLTR",
+      "reason": "IV-blocked fallback: WMT IV rank 17 < 30, rotate to PLTR (IV rank 99)",
+      "rescan_note": "触发时重扫: 原计划 PLTR 已非 top-1，改用 AMZN (score=95.8)"
     }
   ]
 }
