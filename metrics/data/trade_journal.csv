@@ -3721,3 +3721,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-17T19:56:59.419209,skip,WMT,sell_put,,,,,,,,,55210.14,103247.14,,,,,VIXY=18.78,1,[earnings] 财报日 2026-08-20 在 5d 窗口内,,,filter=earnings
 2026-08-18T13:32:52.591051,exit,MSFT,,MSFT260817C00502500,,,1,,,,,55210.14,103068.24,,,,,,,,162.0,expired_otm,detected by position_tracker; entry=$1.62
 2026-08-18T13:37:25.626260,entry,MSFT,sell_call,MSFT260821C00490000,490.0,2026-08-21,1,2.07,0.2561,,3,55210.14,103274.14,PASS,,,,VIXY=18.92,1,,,,cost_basis=441.13
+2026-08-18T13:49:28.851738,skip,AMZN,sell_put,,,,,,,,,55420.12,103405.12,,,,,VIXY=18.90,1,[sector_etf] XLK(megacap_tech) 今日 -2.2% < -2% 拦截,,,filter=other
