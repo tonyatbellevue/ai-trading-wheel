@@ -3766,3 +3766,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-18T19:02:06.463607,skip,AMZN,sell_put,,,,,,,,,55420.12,103493.13,,,,,VIXY=18.86,1,[sector_etf] XLK(megacap_tech) 今日 -2.6% < -2% 拦截,,,filter=other
 2026-08-18T19:09:26.470261,skip,AMZN,sell_put,,,,,,,,,55420.12,103534.62,,,,,VIXY=18.86,1,[sector_etf] XLK(megacap_tech) 今日 -2.6% < -2% 拦截,,,filter=other
 2026-08-18T19:17:37.292812,skip,AMZN,sell_put,,,,,,,,,55420.12,103547.62,,,,,VIXY=18.84,1,[sector_etf] XLK(megacap_tech) 今日 -2.6% < -2% 拦截,,,filter=other
+2026-08-18T19:24:58.035947,skip,AMZN,sell_put,,,,,,,,,55420.12,103560.62,,,,,VIXY=18.84,1,[sector_etf] XLK(megacap_tech) 今日 -2.6% < -2% 拦截,,,filter=other
