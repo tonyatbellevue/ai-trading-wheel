@@ -2,10 +2,10 @@
   "active_symbol": "JNJ",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "NXPI",
     "trigger_date": "2026-08-23",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $95,000, 有 $55,420)",
-    "planned_at": "2026-08-19T16:42:05.938425"
+    "reason": "health STOP: 现金不足 (需 $95,500, 有 $55,420)",
+    "planned_at": "2026-08-19T16:49:48.728044"
   },
   "history": [
     {
