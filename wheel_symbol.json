@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "JNJ",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "JNJ",
     "trigger_date": "2026-08-23",
-    "reason": "health STOP: 现金不足 (需 $95,000, 有 $55,420)",
-    "planned_at": "2026-08-18T19:25:41.689113"
+    "reason": "health STOP: 现金不足 (需 $94,000, 有 $55,420)",
+    "planned_at": "2026-08-19T13:37:13.829451"
   },
   "history": [
     {
@@ -226,6 +226,14 @@
       "planned_to": "PLTR",
       "reason": "IV-blocked fallback: WMT IV rank 17 < 30, rotate to PLTR (IV rank 99)",
       "rescan_note": "触发时重扫: 原计划 PLTR 已非 top-1，改用 AMZN (score=95.8)"
+    },
+    {
+      "switched_at": "2026-08-19T13:36:14.700932",
+      "from": "AMZN",
+      "to": "JNJ",
+      "planned_to": "XOM",
+      "reason": "CAUTION + better alternative (XOM score +17%)",
+      "rescan_note": "触发时重扫: 原计划 XOM 已非 top-1，改用 JNJ (score=98.2)"
     }
   ]
 }
