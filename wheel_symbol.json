@@ -1,11 +1,11 @@
 {
-  "active_symbol": "JNJ",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NXPI",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-08-23",
     "reason": "health STOP: 现金不足 (需 $95,500, 有 $55,420)",
-    "planned_at": "2026-08-19T16:49:48.728044"
+    "planned_at": "2026-08-19T16:58:42.316639"
   },
   "history": [
     {
@@ -234,6 +234,14 @@
       "planned_to": "XOM",
       "reason": "CAUTION + better alternative (XOM score +17%)",
       "rescan_note": "触发时重扫: 原计划 XOM 已非 top-1，改用 JNJ (score=98.2)"
+    },
+    {
+      "switched_at": "2026-08-19T16:57:49.750164",
+      "from": "JNJ",
+      "to": "AMZN",
+      "planned_to": "XOM",
+      "reason": "CAUTION + better alternative (XOM score +22%)",
+      "rescan_note": "触发时重扫: 原计划 XOM 已非 top-1，改用 AMZN (score=95.8)"
     }
   ]
 }
