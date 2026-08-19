@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "F",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "XOM",
     "trigger_date": "2026-08-23",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $95,000, 有 $55,420)",
-    "planned_at": "2026-08-19T18:58:02.999743"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $94,500, 有 $55,420)",
+    "planned_at": "2026-08-19T19:18:41.279397"
   },
   "history": [
     {
@@ -242,6 +242,13 @@
       "planned_to": "XOM",
       "reason": "CAUTION + better alternative (XOM score +22%)",
       "rescan_note": "触发时重扫: 原计划 XOM 已非 top-1，改用 AMZN (score=95.8)"
+    },
+    {
+      "switched_at": "2026-08-19T19:17:48.663337",
+      "from": "AMZN",
+      "to": "F",
+      "planned_to": "F",
+      "reason": "CAUTION + better alternative (F score +21%)"
     }
   ]
 }
