@@ -3824,3 +3824,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-20T13:41:10.452271,skip,F,sell_put,,,,,,,,,55420.06,103441.06,,,,,VIXY=18.42,1,[ma_trend] 股价 $14.15 < MA50 $14.16（下跌趋势）,,,filter=ma_trend
 2026-08-20T13:48:59.157997,skip,F,sell_put,,,,,,,,,55420.06,103586.12,,,,,VIXY=18.43,1,[ma_trend] 股价 $14.03 < MA50 $14.16（下跌趋势）,,,filter=ma_trend
 2026-08-20T13:57:08.684938,skip,F,sell_put,,,,,,,,,55420.06,103471.06,,,,,VIXY=18.49,1,[ma_trend] 股价 $14.03 < MA50 $14.16（下跌趋势）,,,filter=ma_trend
+2026-08-20T14:01:35.053371,exit,MSFT,,MSFT260821C00490000,,,1,,,,,55344.03,103556.53,,,,,,,,131.0,btc_50pct_profit,detected by position_tracker; entry=$2.10
+2026-08-20T14:01:38.847632,skip,F,sell_put,,,,,,,,,55344.03,103559.03,,,,,VIXY=18.46,1,[ma_trend] 股价 $14.05 < MA50 $14.16（下跌趋势）,,,filter=ma_trend
+2026-08-20T14:02:03.594836,entry,MSFT,sell_call,MSFT260824C00490000,490.0,2026-08-24,1,1.7,0.2504,,4,55344.03,103529.03,PASS,,,,VIXY=18.47,1,,,,cost_basis=441.13
