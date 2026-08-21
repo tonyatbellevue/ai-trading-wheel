@@ -1,11 +1,11 @@
 {
-  "active_symbol": "F",
+  "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "XOM",
+    "to_symbol": "INTC",
     "trigger_date": "2026-08-23",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $94,500, 有 $55,420)",
-    "planned_at": "2026-08-19T19:18:41.279397"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $95,500, 有 $55,515)",
+    "planned_at": "2026-08-21T13:36:15.036787"
   },
   "history": [
     {
@@ -249,6 +249,13 @@
       "to": "F",
       "planned_to": "F",
       "reason": "CAUTION + better alternative (F score +21%)"
+    },
+    {
+      "switched_at": "2026-08-21T13:35:22.751072",
+      "from": "F",
+      "to": "NVDA",
+      "planned_to": "NVDA",
+      "reason": "IDLE+profit rotation: NVDA scores +100% above F (账户权益 $103,623 ≥ 上日)"
     }
   ]
 }
