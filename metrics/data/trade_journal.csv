@@ -3882,3 +3882,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-21T14:17:24.575800,skip,NVDA,sell_put,,,,,,,,,55514.94,103777.94,,,,,VIXY=18.26,1,[earnings] 财报日 2026-08-26 在 5d 窗口内,,,filter=earnings
 2026-08-21T14:25:25.675371,skip,NVDA,sell_put,,,,,,,,,55514.94,103753.94,,,,,VIXY=18.25,1,[earnings] 财报日 2026-08-26 在 5d 窗口内,,,filter=earnings
 2026-08-21T14:33:26.157179,skip,NVDA,sell_put,,,,,,,,,55514.94,103706.54,,,,,VIXY=18.23,1,[earnings] 财报日 2026-08-26 在 5d 窗口内,,,filter=earnings
+2026-08-21T14:41:27.405680,skip,NVDA,sell_put,,,,,,,,,55514.94,103717.94,,,,,VIXY=18.25,1,[earnings] 财报日 2026-08-26 在 5d 窗口内,,,filter=earnings
