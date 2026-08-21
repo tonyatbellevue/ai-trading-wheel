@@ -2,10 +2,10 @@
   "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "INTC",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-08-23",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $95,500, 有 $55,515)",
-    "planned_at": "2026-08-21T13:36:15.036787"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $94,000, 有 $55,515)",
+    "planned_at": "2026-08-21T13:42:07.826986"
   },
   "history": [
     {
