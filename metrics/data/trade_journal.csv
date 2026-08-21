@@ -3914,3 +3914,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-21T18:16:55.661051,exit,MSFT,,MSFT260824C00490000,,,1,,,,,55461.91,103600.81,,,,,,,,118.0,btc_50pct_profit,detected by position_tracker; entry=$1.71
 2026-08-21T18:17:27.993400,skip,NVDA,sell_put,,,,,,,,,55461.91,103588.91,,,,,VIXY=18.26,1,[earnings] 财报日 2026-08-26 在 5d 窗口内,,,filter=earnings
 2026-08-21T18:18:00.684162,entry,MSFT,sell_call,MSFT260826C00490000,490.0,2026-08-26,1,2.11,0.2673,,5,55461.91,103596.91,PASS,,,,VIXY=18.26,1,,,,cost_basis=441.13
+2026-08-21T18:25:12.646270,skip,NVDA,sell_put,,,,,,,,,55461.91,103576.91,,,,,VIXY=18.26,1,[earnings] 财报日 2026-08-26 在 5d 窗口内,,,filter=earnings
