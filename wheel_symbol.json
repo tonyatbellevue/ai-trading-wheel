@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
-    "trigger_date": "2026-08-23",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $94,500, 有 $55,677)",
-    "planned_at": "2026-08-21T19:57:58.762428"
+    "to_symbol": "AMZN",
+    "trigger_date": "2026-08-30",
+    "reason": "health STOP: 现金不足 (需 $94,500, 有 $55,677)",
+    "planned_at": "2026-08-24T13:35:23.691416"
   },
   "history": [
     {
@@ -256,6 +256,14 @@
       "to": "NVDA",
       "planned_to": "NVDA",
       "reason": "IDLE+profit rotation: NVDA scores +100% above F (账户权益 $103,623 ≥ 上日)"
+    },
+    {
+      "switched_at": "2026-08-24T13:34:27.640314",
+      "from": "NVDA",
+      "to": "AMZN",
+      "planned_to": "NVDA",
+      "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $94,500, 有 $55,677)",
+      "rescan_note": "触发时重扫: 原计划 NVDA 已非 top-1，改用 AMZN (score=95.7)"
     }
   ]
 }
