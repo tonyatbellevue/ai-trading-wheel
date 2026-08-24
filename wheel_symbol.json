@@ -2,10 +2,10 @@
   "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "QCOM",
+    "to_symbol": "XOM",
     "trigger_date": "2026-08-30",
-    "reason": "health STOP: 现金不足 (需 $95,500, 有 $55,677)",
-    "planned_at": "2026-08-24T14:41:57.244069"
+    "reason": "health STOP: 现金不足 (需 $96,000, 有 $55,677)",
+    "planned_at": "2026-08-24T14:49:45.997809"
   },
   "history": [
     {
