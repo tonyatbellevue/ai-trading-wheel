@@ -4137,3 +4137,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-28T13:49:15.897508,skip,NVDA,sell_put,,,,,,,,,54682.49,105208.49,,,,,VIXY=17.66,1,insufficient_funds,,,
 2026-08-28T13:56:50.854878,exit,MSFT,,MSFT260831C00507500,,,1,,,,,53932.46,104964.96,,,,,,,,-596.0,btc_50pct_profit,detected by position_tracker; entry=$1.74
 2026-08-28T13:57:10.396744,skip,NVDA,sell_put,,,,,,,,,53932.46,104972.46,,,,,VIXY=17.65,1,insufficient_funds,,,
+2026-08-28T14:02:05.972378,skip,NVDA,sell_put,,,,,,,,,53932.46,104912.46,,,,,VIXY=17.62,1,insufficient_funds,,,
+2026-08-28T14:02:35.740176,entry,MSFT,sell_call,MSFT260902C00520000,520.0,2026-09-02,1,1.88,0.2361,,5,53932.46,104887.96,PASS,,,,VIXY=18.10,1,,,,cost_basis=441.13
