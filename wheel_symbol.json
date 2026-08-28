@@ -1,11 +1,11 @@
 {
-  "active_symbol": "CSCO",
+  "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "CSCO",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-08-30",
-    "reason": "health STOP: 现金不足 (需 $97,000, 有 $55,677)",
-    "planned_at": "2026-08-26T13:37:07.257822"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $54,682)",
+    "planned_at": "2026-08-28T13:37:04.822326"
   },
   "history": [
     {
@@ -271,6 +271,13 @@
       "to": "CSCO",
       "planned_to": "CSCO",
       "reason": "CAUTION + better alternative (CSCO score +17%)"
+    },
+    {
+      "switched_at": "2026-08-28T13:36:11.900831",
+      "from": "CSCO",
+      "to": "NVDA",
+      "planned_to": "NVDA",
+      "reason": "CAUTION + better alternative (NVDA score +100%)"
     }
   ]
 }
