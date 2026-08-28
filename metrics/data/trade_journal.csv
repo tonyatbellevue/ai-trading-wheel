@@ -4148,3 +4148,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-28T14:57:13.977399,skip,NVDA,sell_put,,,,,,,,,54121.44,105267.44,,,,,VIXY=17.55,1,insufficient_funds,,,
 2026-08-28T15:01:46.417801,skip,NVDA,sell_put,,,,,,,,,54121.44,105262.94,,,,,VIXY=17.66,1,insufficient_funds,,,
 2026-08-28T15:09:15.328683,skip,NVDA,sell_put,,,,,,,,,54121.44,105254.94,,,,,VIXY=17.61,1,insufficient_funds,,,
+2026-08-28T15:17:02.229557,skip,NVDA,sell_put,,,,,,,,,54121.44,105291.44,,,,,VIXY=17.60,1,insufficient_funds,,,
