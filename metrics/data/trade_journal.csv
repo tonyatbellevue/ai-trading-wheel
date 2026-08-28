@@ -4140,3 +4140,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-28T14:02:05.972378,skip,NVDA,sell_put,,,,,,,,,53932.46,104912.46,,,,,VIXY=17.62,1,insufficient_funds,,,
 2026-08-28T14:02:35.740176,entry,MSFT,sell_call,MSFT260902C00520000,520.0,2026-09-02,1,1.88,0.2361,,5,53932.46,104887.96,PASS,,,,VIXY=18.10,1,,,,cost_basis=441.13
 2026-08-28T14:09:00.948710,skip,NVDA,sell_put,,,,,,,,,54121.44,104907.44,,,,,VIXY=17.69,1,insufficient_funds,,,
+2026-08-28T14:16:55.576431,skip,NVDA,sell_put,,,,,,,,,54121.44,104865.94,,,,,VIXY=17.60,1,insufficient_funds,,,
