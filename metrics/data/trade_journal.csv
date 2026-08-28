@@ -4176,3 +4176,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-28T18:25:13.092672,skip,NVDA,sell_put,,,,,,,,,54121.44,105259.94,,,,,VIXY=17.67,1,[sector_etf] SMH(ai_hardware) 今日 -3.2% < -2% 拦截,,,filter=other
 2026-08-28T18:33:23.644408,skip,NVDA,sell_put,,,,,,,,,54121.44,105238.44,,,,,VIXY=17.65,1,[sector_etf] SMH(ai_hardware) 今日 -3.3% < -2% 拦截,,,filter=other
 2026-08-28T18:41:21.305934,skip,NVDA,sell_put,,,,,,,,,54121.44,105256.94,,,,,VIXY=17.60,1,[sector_etf] SMH(ai_hardware) 今日 -3.2% < -2% 拦截,,,filter=other
+2026-08-28T18:49:15.026340,skip,NVDA,sell_put,,,,,,,,,54121.44,105236.44,,,,,VIXY=17.61,1,[sector_etf] SMH(ai_hardware) 今日 -3.4% < -2% 拦截,,,filter=other
