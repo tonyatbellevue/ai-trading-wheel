@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "QCOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "INTC",
-    "trigger_date": "2026-08-30",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,000, 有 $54,121)",
-    "planned_at": "2026-08-28T19:57:44.152990"
+    "to_symbol": "GM",
+    "trigger_date": "2026-09-06",
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $100,000, 有 $54,121)",
+    "planned_at": "2026-08-31T13:35:22.356267"
   },
   "history": [
     {
@@ -278,6 +278,14 @@
       "to": "NVDA",
       "planned_to": "NVDA",
       "reason": "CAUTION + better alternative (NVDA score +100%)"
+    },
+    {
+      "switched_at": "2026-08-31T13:34:29.626303",
+      "from": "NVDA",
+      "to": "QCOM",
+      "planned_to": "INTC",
+      "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,000, 有 $54,121)",
+      "rescan_note": "触发时重扫: 原计划 INTC 已非 top-1，改用 QCOM (score=97.2)"
     }
   ]
 }
