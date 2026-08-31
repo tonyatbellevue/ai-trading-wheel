@@ -4188,3 +4188,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-08-28T19:57:01.735871,skip,NVDA,sell_put,,,,,,,,,54121.44,105230.32,,,,,VIXY=17.64,1,[sector_etf] SMH(ai_hardware) 今日 -3.4% < -2% 拦截,,,filter=other
 2026-08-31T13:41:11.073760,skip,QCOM,sell_put,,,,,,,,,54121.37,104966.12,,,,,VIXY=17.74,1,[ma_trend] 股价 $166.24 < MA50 $172.32（下跌趋势）,,,filter=ma_trend
 2026-08-31T13:48:54.060739,skip,QCOM,sell_put,,,,,,,,,54121.37,104959.72,,,,,VIXY=17.71,1,[ma_trend] 股价 $169.07 < MA50 $172.37（下跌趋势）,,,filter=ma_trend
+2026-08-31T13:56:46.438869,skip,QCOM,sell_put,,,,,,,,,54121.37,104994.88,,,,,VIXY=17.67,1,[ma_trend] 股价 $169.57 < MA50 $172.38（下跌趋势）,,,filter=ma_trend
