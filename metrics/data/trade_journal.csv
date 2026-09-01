@@ -4242,3 +4242,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-01T13:34:34.913303,entry,MSFT,sell_call,MSFT260904C00510000,510.0,2026-09-04,1,1.88,0.2318,,3,54076.31,103996.31,PASS,,,,VIXY=17.60,1,,,,cost_basis=441.13
 2026-09-01T13:41:09.061628,skip,QCOM,sell_put,,,,,,,,,54265.29,104194.01,,,,,VIXY=17.65,1,[sector_etf] SMH(cpu) 今日 -2.5% < -2% 拦截,,,filter=other
 2026-09-01T13:48:51.329753,skip,QCOM,sell_put,,,,,,,,,54265.29,104372.92,,,,,VIXY=17.67,1,[sector_etf] SMH(cpu) 今日 -2.5% < -2% 拦截,,,filter=other
+2026-09-01T13:56:51.555845,skip,QCOM,sell_put,,,,,,,,,54265.29,104234.79,,,,,VIXY=17.67,1,[sector_etf] SMH(cpu) 今日 -2.3% < -2% 拦截,,,filter=other
