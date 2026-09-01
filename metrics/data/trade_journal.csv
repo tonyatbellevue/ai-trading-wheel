@@ -4254,3 +4254,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-01T15:01:36.626827,skip,QCOM,sell_put,,,,,,,,,54265.29,104235.79,,,,,VIXY=17.51,1,[ma_trend] 股价 $165.41 < MA50 $171.27（下跌趋势）,,,filter=ma_trend
 2026-09-01T15:08:56.992237,skip,QCOM,sell_put,,,,,,,,,54265.29,104119.29,,,,,VIXY=17.52,1,[ma_trend] 股价 $164.63 < MA50 $171.26（下跌趋势）,,,filter=ma_trend
 2026-09-01T15:17:08.920066,skip,QCOM,sell_put,,,,,,,,,54265.29,104151.29,,,,,VIXY=17.50,1,[sector_etf] SMH(cpu) 今日 -2.1% < -2% 拦截,,,filter=other
+2026-09-01T15:24:53.455734,skip,QCOM,sell_put,,,,,,,,,54265.29,104215.29,,,,,VIXY=17.50,1,[ma_trend] 股价 $165.64 < MA50 $171.28（下跌趋势）,,,filter=ma_trend
