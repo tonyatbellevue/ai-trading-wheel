@@ -4244,3 +4244,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-01T13:48:51.329753,skip,QCOM,sell_put,,,,,,,,,54265.29,104372.92,,,,,VIXY=17.67,1,[sector_etf] SMH(cpu) 今日 -2.5% < -2% 拦截,,,filter=other
 2026-09-01T13:56:51.555845,skip,QCOM,sell_put,,,,,,,,,54265.29,104234.79,,,,,VIXY=17.67,1,[sector_etf] SMH(cpu) 今日 -2.3% < -2% 拦截,,,filter=other
 2026-09-01T14:01:42.693022,skip,QCOM,sell_put,,,,,,,,,54265.29,104274.29,,,,,VIXY=17.61,1,[sector_etf] SMH(cpu) 今日 -2.5% < -2% 拦截,,,filter=other
+2026-09-01T14:08:58.270491,skip,QCOM,sell_put,,,,,,,,,54265.29,104346.29,,,,,VIXY=17.54,1,[sector_etf] SMH(cpu) 今日 -2.3% < -2% 拦截,,,filter=other
