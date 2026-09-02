@@ -2,10 +2,10 @@
   "active_symbol": "QCOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "LHX",
+    "to_symbol": "GM",
     "trigger_date": "2026-09-06",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,000, 有 $54,351)",
-    "planned_at": "2026-09-02T16:41:29.466542"
+    "planned_at": "2026-09-02T16:49:11.436693"
   },
   "history": [
     {
