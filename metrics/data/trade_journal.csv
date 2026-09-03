@@ -4349,3 +4349,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-03T13:41:06.485067,exit,MSFT,,MSFT260904C00502500,,,1,,,,,53441.08,104493.08,,,,,,,,-698.0,btc_50pct_profit,detected by position_tracker; entry=$1.52
 2026-09-03T13:41:12.675777,skip,QCOM,sell_put,,,,,,,,,53441.08,104470.08,,,,,VIXY=17.23,1,[ma_trend] 股价 $166.81 < MA50 $170.00（下跌趋势）,,,filter=ma_trend
 2026-09-03T13:42:00.541721,entry,MSFT,sell_call,MSFT260904C00517500,517.5,2026-09-04,1,1.7,0.2636,,1,53441.08,104491.08,PASS,,,,VIXY=17.23,1,,,,cost_basis=441.13
+2026-09-03T13:49:22.260501,skip,QCOM,sell_put,,,,,,,,,53613.06,104621.06,,,,,VIXY=17.26,1,[ma_trend] 股价 $165.72 < MA50 $169.98（下跌趋势）,,,filter=ma_trend
