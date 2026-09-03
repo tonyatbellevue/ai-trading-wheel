@@ -2,10 +2,10 @@
   "active_symbol": "QCOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "GM",
+    "to_symbol": "PFE",
     "trigger_date": "2026-09-06",
-    "reason": "health STOP: 现金不足 (需 $101,000, 有 $53,613)",
-    "planned_at": "2026-09-03T14:09:49.119536"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $100,000, 有 $53,613)",
+    "planned_at": "2026-09-03T14:49:49.481800"
   },
   "history": [
     {
