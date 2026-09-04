@@ -4449,3 +4449,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-04T19:24:51.962192,skip,QCOM,sell_put,,,,,,,,,53612.99,103621.49,,,,,VIXY=16.93,1,[ma_trend] 股价 $167.51 < MA50 $169.29（下跌趋势）,,,filter=ma_trend
 2026-09-04T19:33:01.617692,skip,QCOM,sell_put,,,,,,,,,53612.99,103590.99,,,,,VIXY=16.92,1,[ma_trend] 股价 $167.27 < MA50 $169.28（下跌趋势）,,,filter=ma_trend
 2026-09-04T19:41:05.322756,skip,QCOM,sell_put,,,,,,,,,53612.99,103567.49,,,,,VIXY=16.93,1,[ma_trend] 股价 $167.67 < MA50 $169.29（下跌趋势）,,,filter=ma_trend
+2026-09-04T19:48:52.744984,skip,QCOM,sell_put,,,,,,,,,53612.99,103615.24,,,,,VIXY=16.99,1,[ma_trend] 股价 $167.99 < MA50 $169.30（下跌趋势）,,,filter=ma_trend
