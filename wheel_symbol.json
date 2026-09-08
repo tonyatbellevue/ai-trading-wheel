@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "CSCO",
+    "to_symbol": "XOM",
     "trigger_date": "2026-09-13",
-    "reason": "health STOP: 现金不足 (需 $97,000, 有 $53,613)",
-    "planned_at": "2026-09-08T14:32:55.545227"
+    "reason": "health STOP: 现金不足 (需 $96,500, 有 $53,613)",
+    "planned_at": "2026-09-08T14:41:10.596145"
   },
   "history": [
     {
