@@ -4453,3 +4453,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-04T19:57:04.561313,skip,QCOM,sell_put,,,,,,,,,53612.99,103613.99,,,,,VIXY=16.97,1,[ma_trend] 股价 $168.72 < MA50 $169.31（下跌趋势）,,,filter=ma_trend
 2026-09-08T13:32:47.364627,exit,MSFT,,MSFT260904C00517500,,,1,,,,,53612.99,103122.99,,,,,,,,172.0,expired_otm,detected by position_tracker; entry=$1.72
 2026-09-08T13:35:28.294971,entry,MSFT,sell_call,MSFT260911C00505000,505.0,2026-09-11,1,2.03,0.2409,,3,53612.99,103047.99,PASS,,,,VIXY=17.07,1,,,,cost_basis=441.13
+2026-09-08T13:41:01.153315,skip,GM,sell_put,,,,,,,,,53612.99,102921.99,,,,,VIXY=17.14,1,[iv_rank] IV rank 19 < 30 (premium too thin),,,filter=other

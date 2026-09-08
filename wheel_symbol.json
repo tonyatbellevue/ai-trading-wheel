@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "F",
+    "to_symbol": "GM",
     "trigger_date": "2026-09-13",
-    "reason": "health STOP: 现金不足 (需 $97,000, 有 $53,613)",
-    "planned_at": "2026-09-08T13:35:27.348764"
+    "reason": "health STOP: 现金不足 (需 $97,500, 有 $53,613)",
+    "planned_at": "2026-09-08T13:41:11.046107"
   },
   "history": [
     {
