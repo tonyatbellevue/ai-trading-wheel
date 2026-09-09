@@ -4526,3 +4526,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-09T15:56:49.399857,skip,GM,sell_put,,,,,,,,,53781.97,102830.97,,,,,VIXY=17.51,1,[iv_rank] IV rank 22 < 30 (premium too thin),,,filter=other
 2026-09-09T16:01:42.586584,skip,GM,sell_put,,,,,,,,,53781.97,102870.47,,,,,VIXY=17.51,1,[iv_rank] IV rank 22 < 30 (premium too thin),,,filter=other
 2026-09-09T16:08:56.999749,skip,GM,sell_put,,,,,,,,,53781.97,102820.97,,,,,VIXY=17.58,1,[iv_rank] IV rank 22 < 30 (premium too thin),,,filter=other
+2026-09-09T16:16:58.459689,skip,GM,sell_put,,,,,,,,,53781.97,102790.97,,,,,VIXY=17.60,1,[iv_rank] IV rank 22 < 30 (premium too thin),,,filter=other
