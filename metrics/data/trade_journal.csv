@@ -4507,3 +4507,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-09T13:34:37.396059,entry,MSFT,sell_call,MSFT260911C00502500,502.5,2026-09-11,1,1.69,0.2337,,2,53612.99,102919.99,PASS,,,,VIXY=17.38,1,,,,cost_basis=441.13
 2026-09-09T13:40:59.968096,skip,GM,sell_put,,,,,,,,,53781.97,102906.47,,,,,VIXY=17.46,1,[iv_rank] IV rank 22 < 30 (premium too thin),,,filter=other
 2026-09-09T13:48:48.973713,skip,GM,sell_put,,,,,,,,,53781.97,102938.97,,,,,VIXY=17.48,1,[iv_rank] IV rank 23 < 30 (premium too thin),,,filter=other
+2026-09-09T13:56:53.419940,skip,GM,sell_put,,,,,,,,,53781.97,102850.43,,,,,VIXY=17.49,1,[iv_rank] IV rank 23 < 30 (premium too thin),,,filter=other
