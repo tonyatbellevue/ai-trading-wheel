@@ -4556,3 +4556,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-09T19:41:12.531202,skip,GM,sell_put,,,,,,,,,53781.97,102823.97,,,,,VIXY=17.54,1,[iv_rank] IV rank 24 < 30 (premium too thin),,,filter=other
 2026-09-09T19:48:48.888172,skip,GM,sell_put,,,,,,,,,53781.97,102804.47,,,,,VIXY=17.55,1,[iv_rank] IV rank 24 < 30 (premium too thin),,,filter=other
 2026-09-09T19:56:55.320147,skip,GM,sell_put,,,,,,,,,53781.97,102831.97,,,,,VIXY=17.57,1,[iv_rank] IV rank 25 < 30 (premium too thin),,,filter=other
+2026-09-10T13:32:55.099265,skip,GM,sell_put,,,,,,,,,53781.91,102452.91,,,,,VIXY=17.94,1,[ma_trend] 股价 $83.52 < MA50 $83.73（下跌趋势）,,,filter=ma_trend
