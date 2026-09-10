@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "BAC",
+    "to_symbol": "WMT",
     "trigger_date": "2026-09-13",
-    "reason": "health STOP: 现金不足 (需 $96,000, 有 $53,782)",
-    "planned_at": "2026-09-10T13:34:26.909373"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $96,500, 有 $53,931)",
+    "planned_at": "2026-09-10T15:01:48.935727"
   },
   "history": [
     {
