@@ -4697,3 +4697,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-14T18:57:08.056523,skip,AMZN,sell_put,,,,,,,,,53930.79,103857.79,,,,,VIXY=17.39,1,[ma_trend] 股价 $254.34 < MA50 $255.49（下跌趋势）,,,filter=ma_trend
 2026-09-14T19:01:34.584802,exit,MSFT,,MSFT260914C00500000,,,1,,,,,53290.76,103885.76,,,,,,,,-503.0,btc_50pct_profit,detected by position_tracker; entry=$1.92
 2026-09-14T19:03:38.399605,entry,MSFT,sell_call,MSFT260916C00512500,512.5,2026-09-16,1,1.72,0.2727,,2,53290.76,103887.76,PASS,,,,VIXY=17.42,1,,,,cost_basis=441.13
+2026-09-14T19:24:54.290419,skip,QCOM,sell_put,,,,,,,,,53467.74,103958.74,,,,,VIXY=17.40,1,[sector_etf] SMH(cpu) 今日 -4.2% < -2% 拦截,,,filter=other
