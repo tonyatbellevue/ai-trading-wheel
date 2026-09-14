@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "QCOM",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "AMZN",
     "trigger_date": "2026-09-20",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $53,468)",
-    "planned_at": "2026-09-14T19:10:55.043640"
+    "planned_at": "2026-09-14T19:18:52.482929"
   },
   "history": [
     {
@@ -341,6 +341,14 @@
       "planned_to": "CRM",
       "reason": "IV-blocked fallback: CSCO IV rank 29 < 30, rotate to CRM (IV rank 98)",
       "rescan_note": "触发时重扫: 原计划 CRM 已非 top-1，改用 AMZN (score=96.3)"
+    },
+    {
+      "switched_at": "2026-09-14T19:18:00.489288",
+      "from": "AMZN",
+      "to": "QCOM",
+      "planned_to": "CRM",
+      "reason": "IV-blocked fallback: AMZN IV rank 26 < 30, rotate to CRM (IV rank 98)",
+      "rescan_note": "触发时重扫: 原计划 CRM 已非 top-1，改用 QCOM (score=95.5)"
     }
   ]
 }
