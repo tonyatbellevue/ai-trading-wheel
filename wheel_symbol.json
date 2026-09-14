@@ -2,10 +2,10 @@
   "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "CSCO",
+    "to_symbol": "XOM",
     "trigger_date": "2026-09-20",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $53,931)",
-    "planned_at": "2026-09-14T16:57:46.926655"
+    "planned_at": "2026-09-14T17:09:46.059194"
   },
   "history": [
     {
