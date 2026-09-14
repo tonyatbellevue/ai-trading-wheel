@@ -1,11 +1,11 @@
 {
-  "active_symbol": "CSCO",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "CSCO",
     "trigger_date": "2026-09-20",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $53,931)",
-    "planned_at": "2026-09-14T18:42:48.400704"
+    "planned_at": "2026-09-14T18:50:46.330924"
   },
   "history": [
     {
@@ -317,6 +317,14 @@
       "to": "CSCO",
       "planned_to": "CSCO",
       "reason": "IDLE+profit rotation: CSCO scores +15% above XOM (账户权益 $103,879 ≥ 上日)"
+    },
+    {
+      "switched_at": "2026-09-14T18:49:54.407938",
+      "from": "CSCO",
+      "to": "AMZN",
+      "planned_to": "CRM",
+      "reason": "IV-blocked fallback: CSCO IV rank 29 < 30, rotate to CRM (IV rank 98)",
+      "rescan_note": "触发时重扫: 原计划 CRM 已非 top-1，改用 AMZN (score=96.3)"
     }
   ]
 }
