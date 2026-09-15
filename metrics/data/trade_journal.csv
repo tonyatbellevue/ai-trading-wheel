@@ -4714,3 +4714,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-15T14:24:58.748143,skip,QCOM,sell_put,,,,,,,,,53631.63,103342.63,,,,,VIXY=17.61,1,insufficient_funds,,,
 2026-09-15T14:32:44.683315,skip,QCOM,sell_put,,,,,,,,,53631.63,103337.63,,,,,VIXY=17.61,1,insufficient_funds,,,
 2026-09-15T14:41:13.344755,skip,QCOM,sell_put,,,,,,,,,53631.63,103389.62,,,,,VIXY=17.65,1,[iv_rank] IV rank 30 < 30 (premium too thin),,,filter=other
+2026-09-15T14:48:46.289206,skip,QCOM,sell_put,,,,,,,,,53631.63,103403.63,,,,,VIXY=17.67,1,insufficient_funds,,,
