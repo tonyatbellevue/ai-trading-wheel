@@ -2,10 +2,10 @@
   "active_symbol": "QCOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "QCOM",
+    "to_symbol": "CSCO",
     "trigger_date": "2026-09-20",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $98,000, 有 $53,468)",
-    "planned_at": "2026-09-15T13:34:00.510102"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $96,000, 有 $53,564)",
+    "planned_at": "2026-09-16T19:16:53.527500"
   },
   "history": [
     {
