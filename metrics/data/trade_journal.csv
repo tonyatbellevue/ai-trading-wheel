@@ -4760,3 +4760,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-16T13:41:04.721621,exit,MSFT,,MSFT260918C00510000,,,1,,,,,53563.54,103140.54,,,,,,,,146.0,btc_50pct_profit,detected by position_tracker; entry=$2.08
 2026-09-16T13:41:07.561795,skip,QCOM,sell_put,,,,,,,,,53563.54,103142.54,,,,,VIXY=17.37,1,[iv_rank] IV rank 30 < 30 (premium too thin),,,filter=other
 2026-09-16T13:41:24.091632,entry,MSFT,sell_call,MSFT260921C00505000,505.0,2026-09-21,1,2.04,0.2481,,5,53563.54,103051.54,PASS,,,,VIXY=17.37,1,,,,cost_basis=441.13
+2026-09-16T13:49:00.835318,skip,QCOM,sell_put,,,,,,,,,53563.54,102909.54,,,,,VIXY=17.31,1,[iv_rank] IV rank 30 < 30 (premium too thin),,,filter=other
