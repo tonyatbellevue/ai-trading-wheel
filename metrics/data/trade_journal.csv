@@ -4880,3 +4880,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-18T17:24:46.567302,skip,QCOM,sell_put,,,,,,,,,53798.4,103132.4,,,,,VIXY=17.19,1,[recent_drop] QCOM 过去 3 天 -5.0% < -5% 拦截,,,filter=other
 2026-09-18T17:32:51.069320,skip,QCOM,sell_put,,,,,,,,,53798.4,103108.9,,,,,VIXY=17.20,1,[recent_drop] QCOM 过去 3 天 -5.2% < -5% 拦截,,,filter=other
 2026-09-18T17:41:04.977150,skip,QCOM,sell_put,,,,,,,,,53798.4,103182.9,,,,,VIXY=17.16,1,[recent_drop] QCOM 过去 3 天 -5.1% < -5% 拦截,,,filter=other
+2026-09-18T17:48:56.716058,skip,QCOM,sell_put,,,,,,,,,53798.4,103176.4,,,,,VIXY=17.15,1,[recent_drop] QCOM 过去 3 天 -5.2% < -5% 拦截,,,filter=other
