@@ -4865,3 +4865,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-17T19:57:00.281323,skip,QCOM,sell_put,,,,,,,,,53702.5,103403.5,,,,,VIXY=17.03,1,insufficient_funds,,,
 2026-09-18T13:41:01.099189,exit,MSFT,,MSFT260918C00502500,,,1,,,,,53666.42,103095.92,,,,,,,,94.0,btc_50pct_profit,detected by position_tracker; entry=$1.39
 2026-09-18T13:41:08.486905,entry,MSFT,sell_call,MSFT260921C00500000,500.0,2026-09-21,1,1.29,0.247,,3,53666.42,103030.0,PASS,,,,VIXY=17.16,1,,,,cost_basis=441.13
+2026-09-18T15:57:30.553286,skip,QCOM,sell_put,,,,,,,,,53798.4,103085.4,,,,,VIXY=17.21,1,[recent_drop] QCOM 过去 3 天 -5.3% < -5% 拦截,,,filter=other
