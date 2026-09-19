@@ -18,9 +18,22 @@
 
 ### 2. 安装
 
-在 `pdf_redactor\packaging\` 目录下**右键 `install.ps1` → 使用 PowerShell 运行**。
+**最省事:双击 `pdf_redactor\packaging\install.bat`。**
 
-或者开一个 PowerShell 窗口(**不需要管理员**):
+这个 .bat 存在是有原因的——Windows 默认禁止运行 .ps1,而"使用 PowerShell 运行"
+会在结束的瞬间关掉窗口,你根本看不到发生了什么。它只为这一次调用绕过策略
+(**不修改系统任何设置**),并在结束时停住等你按键。
+
+想先看它要做什么(推荐第一次这么跑):双击后没法传参,所以开个命令行窗口:
+
+```bat
+packaging\install.bat -DryRun
+```
+
+`-DryRun` 只打印每一步,不改动任何东西。参数会原样传给 install.ps1,
+所以 `-ContextMenu`、`-Uninstall`、`-Source` 都能用。
+
+或者直接开 PowerShell 窗口(**不需要管理员**):
 
 ```powershell
 cd <仓库路径>\pdf_redactor
@@ -45,8 +58,6 @@ cd <仓库路径>\pdf_redactor
 .\packaging\install.ps1 -DryRun
 ```
 
-`-DryRun` 只打印每一步,不改动任何东西。
-
 ### 3. 启动
 
 开始菜单 → **LocalRedact**,或桌面快捷方式。
@@ -55,7 +66,10 @@ cd <仓库路径>\pdf_redactor
 
 ## 如果 PowerShell 拒绝执行脚本
 
-Windows 默认禁止运行 .ps1。**只对当前这个窗口**放开即可,不影响系统设置:
+用 `install.bat` 就不会遇到这个问题(它已经处理好了)。
+
+如果你坚持直接跑 .ps1:Windows 默认禁止运行脚本,**只对当前这个窗口**放开即可,
+不影响系统设置:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -Bypass
@@ -147,9 +161,11 @@ pip install rapidocr-onnxruntime Pillow
 
 ## 卸载
 
-```powershell
-.\packaging\install.ps1 -Uninstall
+```bat
+packaging\install.bat -Uninstall
 ```
+
+或 `.\packaging\install.ps1 -Uninstall`。
 
 删除程序目录、开始菜单和桌面快捷方式、右键菜单项。**不会动你的任何 PDF。**
 
@@ -201,12 +217,17 @@ Word/图片会被拒绝,这是有意为之。
 
 ## 附:发布 Release(可选,给不想登录 GitHub 的下载方式)
 
-Artifacts 需要登录才能下载。如果你想要一个公开直链,打个 tag 即可:
+Artifacts 需要登录才能下载。想要一个公开直链的话,发一个 Release:
 
-```bash
-git tag localredact-v1.0.0
-git push origin localredact-v1.0.0
-```
+仓库 → **Actions** → **Build LocalRedact.exe** → 右上角 **Run workflow**:
 
-前提是 workflow 里启用了 release job(见 `.github/workflows/build-localredact.yml`
-里的说明)。**我没有替你打这个 tag,也没有建 Release**——那是对外发布动作,由你决定。
+* **Also publish a GitHub Release with the exe** → 勾上
+* **Tag for that release** → 填 `localredact-v1.0.0`
+
+跑完会建好 Release,附带 `LocalRedact.exe` 和 `SHA256SUMS.txt`(可校验完整性)。
+
+**我没有替你发 Release**——那是对外发布动作,由你决定。
+
+> 顺带一提:最初我把这个做成"推 tag 自动发布",结果发现 `push:` 里同时写
+> `paths:` 和 `tags:` 会让**分支推送完全不触发 workflow**(GitHub 会跳过未定义的
+> ref 类型)。改成手动运行后两边都正常了。
