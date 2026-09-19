@@ -147,7 +147,26 @@ pip install rapidocr-onnxruntime Pillow
 上传产物。
 
 去 GitHub 仓库的 **Actions → Build LocalRedact.exe → 最新一次运行 → Artifacts**，
-下载 `LocalRedact-windows-exe`，解压即得 `LocalRedact.exe`。
+下载 `LocalRedact-windows-exe`，解压即得 `LocalRedact.exe`。产物保留 90 天。
+
+已验证的一次构建（windows-latest / Python 3.12.10 / PyInstaller 6.16.0）：
+
+```
+31/31 engine tests          PASS
+14/14 headless GUI checks   PASS
+localredact.ico OK: 7 sizes [16,24,32,48,64,128,256], 8,031 bytes
+Copying icon to EXE                       <- 外壳图标已嵌入
+Copying version information to EXE        <- 版本资源已嵌入
+Size:            30.3 MB
+ProductName:     LocalRedact
+FileDescription: LocalRedact - offline PDF redaction
+FileVersion:     1.0.0.0
+Embedded icon:   32x32
+Windows end-to-end OK: 4 area(s) redacted, 4 verified empty,
+                       0 bytes leaked, metadata clear
+```
+
+单文件，无需安装器，目标机器**不需要装 Python**。
 
 ### 方式 B：本地自己打
 
@@ -223,11 +242,12 @@ spec 里的两个刻意选择：
 ## 8. 测试
 
 ```bat
-python tests\test_localredact.py        REM 29 个引擎测试
+python tests\test_localredact.py        REM 31 个引擎 + 打包测试
 python tests\smoke_gui_headless.py      REM 14 个界面逻辑检查（无需 tkinter）
+python tests\ci_windows_e2e.py          REM Windows 上的端到端 + 字节级泄漏检查
 ```
 
-`test_localredact.py` 的 29 个测试，覆盖：
+`test_localredact.py` 的 31 个测试，覆盖：
 
 * 所有校验位算法的边界值（Luhn / NRIC / 中国身份证 / HKID / IBAN / SSN / MyKad）
 * 检测规则的正例与**反例**（16 位发票号不能被当成信用卡；干净文档不能有高置信度误报）
@@ -242,6 +262,11 @@ python tests\smoke_gui_headless.py      REM 14 个界面逻辑检查（无需 tk
 * **标签边界回归测试** —— 曾经 `ic`（身份证标签）会匹配到 `Publ*ic* notice` 里面，
   把一句普通英文变成高置信度证件号命中
 * 网络封锁、临时目录覆写销毁、日志过滤
+* **打包配置** —— 用桩件 exec 一遍 `.spec`（而且故意从别的工作目录跑），确认入口脚本、
+  数据文件、图标、版本资源都真实存在，且 exe 保持无控制台 / 不用 UPX / 排除网络库。
+  这条是回归测试：`.spec` 里的相对路径是相对**spec 文件所在目录**解析的，不是工作目录，
+  第一次 Windows 构建就是因此 1 秒内失败的
+* 图标是结构合法的 7 尺寸 PNG-ICO
 
 也可以用 pytest：`pytest tests/test_localredact.py`
 
