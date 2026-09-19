@@ -189,13 +189,24 @@ function Invoke-Install {
         }
     }
 
-    $iconSource = Join-Path (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) 'packaging\localredact.ico'
+    # The icon may sit next to this script in a repo checkout, or beside the exe
+    # when only install.ps1 and the CI zip were downloaded - the zip ships the
+    # .ico too. Without it the shortcuts still show the icon embedded in the exe,
+    # so this is a nicety, not a requirement.
     $iconTarget = Join-Path $InstallDir 'localredact.ico'
-    if (Test-Path -LiteralPath $iconSource) {
+    $iconCandidates = @(
+        (Join-Path (Split-Path -Parent (Split-Path -Parent $PSCommandPath)) 'packaging\localredact.ico'),
+        (Join-Path (Split-Path -Parent $PSCommandPath) 'localredact.ico'),
+        (Join-Path (Split-Path -Parent $sourceExe) 'localredact.ico'),
+        (Join-Path (Split-Path -Parent (Split-Path -Parent $sourceExe)) 'packaging\localredact.ico')
+    )
+    $iconSource = $iconCandidates | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
+    if ($iconSource) {
         Invoke-Action 'copy the icon' {
             Copy-Item -LiteralPath $iconSource -Destination $iconTarget -Force
         }
     } else {
+        Write-Step 'no separate icon file found; shortcuts will use the exe icon'
         $iconTarget = $null
     }
 
