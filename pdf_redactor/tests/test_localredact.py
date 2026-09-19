@@ -575,6 +575,75 @@ def test_value_split_across_two_lines(tmp_path=None):
 
 
 # --------------------------------------------------------------------------
+# packaging
+# --------------------------------------------------------------------------
+def test_pyinstaller_spec_paths_resolve():
+    """The .spec must reference real files, from any working directory.
+
+    Regression test: PyInstaller resolves relative paths in a spec against the
+    SPEC FILE's directory, not the CWD, so a bare "run_app.py" in
+    packaging/localredact.spec was looked up as packaging/run_app.py and the
+    build failed immediately. Executing the spec with stub builder classes
+    catches that here instead of five minutes into a Windows build.
+    """
+    import os
+
+    root = Path(__file__).resolve().parent.parent
+    spec = root / "packaging" / "localredact.spec"
+    assert spec.is_file()
+
+    captured = {}
+
+    class _Rec:
+        def __init__(self, *args, **kwargs):
+            captured.setdefault(type(self).__name__, []).append((args, kwargs))
+
+        def __getattr__(self, name):
+            return f"<{name}>"   # a.pure, a.binaries, a.datas ...
+
+    namespace = {
+        "SPECPATH": str(spec.parent),
+        "Analysis": type("Analysis", (_Rec,), {}),
+        "PYZ": type("PYZ", (_Rec,), {}),
+        "EXE": type("EXE", (_Rec,), {}),
+    }
+    previous = os.getcwd()
+    os.chdir(tempfile.gettempdir())   # a directory that is NOT the project root
+    try:
+        exec(compile(spec.read_text(encoding="utf-8"), str(spec), "exec"), namespace)
+    finally:
+        os.chdir(previous)
+
+    args, kwargs = captured["Analysis"][0]
+    entry = args[0][0]
+    assert Path(entry).is_file(), f"spec entry script does not exist: {entry}"
+    assert Path(entry).name == "run_app.py"
+
+    for source, _dest in kwargs["datas"]:
+        assert Path(source).is_file(), f"spec data file missing: {source}"
+
+    exe_kwargs = captured["EXE"][0][1]
+    assert exe_kwargs["name"] == "LocalRedact"
+    assert exe_kwargs["console"] is False
+    assert exe_kwargs["upx"] is False, "UPX raises antivirus false positives"
+    assert Path(exe_kwargs["icon"]).is_file(), "exe icon missing"
+    assert Path(exe_kwargs["version"]).is_file(), "version resource missing"
+    for blocked in ("requests", "urllib3", "smtplib"):
+        assert blocked in kwargs["excludes"], f"{blocked} should be excluded"
+
+
+def test_icon_is_a_valid_multi_size_ico():
+    import sys as _sys
+
+    root = Path(__file__).resolve().parent.parent
+    _sys.path.insert(0, str(root / "packaging"))
+    from make_icon import ICO_SIZES, verify_ico
+
+    verify_ico(root / "packaging" / "localredact.ico", ICO_SIZES)
+    assert (root / "packaging" / "localredact_256.png").is_file()
+
+
+# --------------------------------------------------------------------------
 # standalone runner
 # --------------------------------------------------------------------------
 def _run_all() -> int:

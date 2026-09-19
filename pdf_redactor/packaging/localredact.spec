@@ -21,7 +21,15 @@ import os
 
 block_cipher = None
 
-PROJECT_ROOT = os.path.abspath(os.getcwd())
+# PyInstaller resolves relative paths inside a .spec against the SPEC FILE's
+# directory, not the working directory, so "run_app.py" here would be looked up
+# as packaging/run_app.py. Anchor everything to an absolute project root taken
+# from SPECPATH (a global PyInstaller injects into spec files) and the spec then
+# builds correctly no matter where it is invoked from.
+try:
+    PROJECT_ROOT = os.path.abspath(os.path.join(SPECPATH, os.pardir))
+except NameError:  # pragma: no cover - spec executed outside PyInstaller
+    PROJECT_ROOT = os.path.abspath(os.getcwd())
 
 # If a Tesseract install is copied to ./tesseract it is bundled beside the exe,
 # giving fully self-contained offline OCR. Leave the folder absent to build
@@ -42,7 +50,7 @@ if os.path.isdir(_tesseract_dir):
     datas.append((_tesseract_dir, "tesseract"))
 
 a = Analysis(
-    ["run_app.py"],
+    [os.path.join(PROJECT_ROOT, "run_app.py")],
     pathex=[PROJECT_ROOT],
     binaries=[],
     datas=datas,
