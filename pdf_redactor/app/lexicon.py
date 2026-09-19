@@ -44,6 +44,12 @@ STOP_TITLECASE = {
     "Margin", "Profit", "Loss", "Expense", "Budget", "Forecast", "Actual",
     "Opening", "Closing", "Beginning", "Ending", "Previous", "Current",
     "Next", "Last", "First", "Second", "Final", "Initial", "Draft",
+    # past participles that introduce a signatory - they precede a name but
+    # are not part of it ("Assessed by Dr Lim", "Approved By Manager")
+    "Assessed", "Approved", "Authorised", "Authorized", "Certified",
+    "Checked", "Completed", "Confirmed", "Endorsed", "Issued", "Received",
+    "Reviewed", "Signed", "Submitted", "Validated", "Verified", "Witnessed",
+    "Attended", "Attending", "Processed", "Updated", "Created", "Modified",
     # calendar
     "January", "February", "March", "April", "May", "June", "July", "August",
     "September", "October", "November", "December", "Monday", "Tuesday",

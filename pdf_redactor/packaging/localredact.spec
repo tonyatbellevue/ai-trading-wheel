@@ -27,7 +27,17 @@ PROJECT_ROOT = os.path.abspath(os.getcwd())
 # giving fully self-contained offline OCR. Leave the folder absent to build
 # without OCR; the app degrades gracefully and says so in the UI.
 _tesseract_dir = os.path.join(PROJECT_ROOT, "tesseract")
-datas = []
+_packaging = os.path.join(PROJECT_ROOT, "packaging")
+
+# The window icon is loaded at runtime from <bundle>/packaging, so the icon
+# files have to travel inside the exe as data. The exe's own shell icon is set
+# separately by the `icon=` argument to EXE() below - they are two different
+# mechanisms and both are needed.
+datas = [
+    (os.path.join(_packaging, name), "packaging")
+    for name in ("localredact.ico", "localredact_256.png", "localredact_64.png")
+    if os.path.isfile(os.path.join(_packaging, name))
+]
 if os.path.isdir(_tesseract_dir):
     datas.append((_tesseract_dir, "tesseract"))
 
@@ -85,7 +95,14 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=os.path.join("packaging", "localredact.ico")
-    if os.path.isfile(os.path.join(PROJECT_ROOT, "packaging", "localredact.ico"))
-    else None,
+    icon=(
+        os.path.join(PROJECT_ROOT, "packaging", "localredact.ico")
+        if os.path.isfile(os.path.join(PROJECT_ROOT, "packaging", "localredact.ico"))
+        else None
+    ),
+    version=(
+        os.path.join(PROJECT_ROOT, "packaging", "version_info.txt")
+        if os.path.isfile(os.path.join(PROJECT_ROOT, "packaging", "version_info.txt"))
+        else None
+    ),
 )

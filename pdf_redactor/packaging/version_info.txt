@@ -1,0 +1,32 @@
+# Windows version resource for LocalRedact.exe.
+# Shown on the file's Properties > Details tab. Keep in step with app/__init__.py.
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0),
+    prodvers=(1, 0, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0),
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        '040904B0',
+        [
+          StringStruct('FileDescription', 'LocalRedact - offline PDF redaction'),
+          StringStruct('FileVersion', '1.0.0.0'),
+          StringStruct('InternalName', 'LocalRedact'),
+          StringStruct('OriginalFilename', 'LocalRedact.exe'),
+          StringStruct('ProductName', 'LocalRedact'),
+          StringStruct('ProductVersion', '1.0.0.0'),
+          StringStruct('Comments',
+                       'Runs entirely offline. Never uploads documents.'),
+        ],
+      )
+    ]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])]),
+  ],
+)

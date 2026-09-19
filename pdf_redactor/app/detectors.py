@@ -65,6 +65,10 @@ UNIT_WORD_RE = r"(?:%s)" % "|".join(sorted(lex.UNIT_WORDS, key=len, reverse=True
 # A single name token: capitalised latin, an all-caps token, or CJK characters.
 _NAME_TOKEN = r"(?:[A-Z][a-zA-Z'’\-]{1,20}|[A-Z]{2,20}|[一-鿿]{1,4})"
 
+_PARTICLE_CONNECTOR = r"(?:%s)" % "|".join(
+    sorted((p for p in lex.NAME_PARTICLES if len(p) > 1), key=len, reverse=True)
+)
+
 DATE_PATTERN = (
     r"(?:"
     r"\d{4}[-/.]\d{1,2}[-/.]\d{1,2}"
@@ -171,6 +175,11 @@ def _refine_generic_account(text: str, _m: re.Match) -> Optional[float]:
     return 0.85
 
 
+_NON_NAME_TOKENS = frozenset(
+    h.lower() for h in lex.HONORIFICS
+) | frozenset(w.lower() for w in lex.STOP_TITLECASE)
+
+
 def _looks_like_name(candidate: str) -> bool:
     tokens = [t for t in re.split(r"[\s]+", candidate.strip()) if t]
     if not tokens or len(tokens) > 5:
@@ -185,6 +194,8 @@ def _looks_like_name(candidate: str) -> bool:
         if bare in lex.STOP_TITLECASE:
             return False
         if bare.title() in lex.STOP_TITLECASE:
+            return False
+        if bare.lower() in _NON_NAME_TOKENS:
             return False
     return True
 
@@ -501,7 +512,8 @@ RULES: List[Rule] = [
     Rule(
         "name_bare",
         Category.NAME,
-        r"\b[A-Z][a-z]{1,15}(?:[ \t]+(?:[a-z]{2,4}[ \t]+)?[A-Z][a-z]{1,15}){1,3}\b",
+        rf"\b[A-Z][a-z]{{1,15}}"
+        rf"(?:[ \t]+(?:{_PARTICLE_CONNECTOR}[ \t]+)?[A-Z][a-z]{{1,15}}){{1,3}}\b",
         0.52,
         refine=_refine_bare_name,
         flags=0,

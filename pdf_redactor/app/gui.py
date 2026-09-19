@@ -12,7 +12,9 @@ explicitly asks to reveal them.
 from __future__ import annotations
 
 import base64
+import os
 import queue
+import sys
 import threading
 import traceback
 from pathlib import Path
@@ -25,6 +27,7 @@ from . import APP_NAME, __version__
 from . import ocr as ocr_mod
 from .models import (
     CATEGORY_LABELS,
+    CATEGORY_SHORT_LABELS,
     DEFAULT_ENABLED,
     Category,
     Detection,
@@ -75,15 +78,60 @@ class RedactorApp(tk.Tk):
         self._tempdir.__enter__()
 
         self._build_ui()
+        self._set_window_icon()
+        self.after(150, self._apply_initial_layout)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    def _icon_dir(self):
+        """Where the icon files live, in a source tree and inside the .exe."""
+        if getattr(sys, "frozen", False):
+            return Path(getattr(sys, "_MEIPASS", ".")) / "packaging"
+        return Path(__file__).resolve().parent.parent / "packaging"
+
+    def _set_window_icon(self) -> None:
+        """Title-bar and taskbar icon. Never fatal - the app runs without it."""
+        icons = self._icon_dir()
+        try:
+            ico = icons / "localredact.ico"
+            if os.name == "nt" and ico.is_file():
+                self.iconbitmap(default=str(ico))
+                return
+            png = icons / "localredact_256.png"
+            if png.is_file():
+                self._icon_image = tk.PhotoImage(file=str(png))
+                self.iconphoto(True, self._icon_image)
+        except Exception:  # pragma: no cover - platform dependent
+            log.info("Window icon could not be set; continuing without it.")
+
+    def _apply_initial_layout(self) -> None:
+        """Give the preview the space it needs.
+
+        A ttk.Panedwindow places its sashes from the panes' *requested* widths,
+        which made the preview the narrowest pane even though it has the largest
+        weight, and clipped the review table's last column. Setting the sashes
+        explicitly once the window has a real width fixes both; the user can
+        still drag them afterwards.
+        """
+        try:
+            total = self._body.winfo_width()
+            if total < 400:
+                self.after(150, self._apply_initial_layout)
+                return
+            left = 300
+            review = max(452, min(500, int(total * 0.33)))
+            self._body.sashpos(0, left)
+            self._body.sashpos(1, max(left + 320, total - review))
+        except Exception:  # pragma: no cover - geometry not ready
+            pass
 
     # ------------------------------------------------------------------ UI
     def _build_ui(self) -> None:
         self._build_toolbar()
         body = ttk.Panedwindow(self, orient=tk.HORIZONTAL)
+        self._body = body
         body.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 4))
         body.add(self._build_left_panel(body), weight=0)
-        body.add(self._build_preview(body), weight=3)
+        body.add(self._build_preview(body), weight=4)
         body.add(self._build_review_panel(body), weight=2)
         self._build_statusbar()
 
@@ -111,8 +159,9 @@ class RedactorApp(tk.Tk):
         self.file_label = ttk.Label(bar, text="No file selected", foreground="#555")
         self.file_label.pack(side=tk.LEFT, padx=(16, 0))
 
-        self.progress = ttk.Progressbar(bar, mode="determinate", length=180)
-        self.progress.pack(side=tk.RIGHT)
+        # Packed only while a scan runs; an empty trough sitting in the toolbar
+        # reads as a broken widget.
+        self.progress = ttk.Progressbar(bar, mode="determinate", length=170)
 
     def _build_left_panel(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent, padding=(0, 4, 8, 4))
@@ -199,9 +248,9 @@ class RedactorApp(tk.Tk):
         )
         zoom.pack(side=tk.LEFT)
         zoom.bind("<<ComboboxSelected>>", lambda _e: self.refresh_preview())
-        ttk.Label(
-            nav, text="Click a box to include / exclude it", foreground="#555"
-        ).pack(side=tk.RIGHT)
+        ttk.Label(nav, text="Click a box to toggle", foreground="#555").pack(
+            side=tk.RIGHT
+        )
 
         wrap = ttk.Frame(frame, relief=tk.SUNKEN, borderwidth=1)
         wrap.pack(fill=tk.BOTH, expand=True)
@@ -248,12 +297,18 @@ class RedactorApp(tk.Tk):
             frame, columns=columns, show="headings", selectmode="extended"
         )
         headings = {
-            "sel": ("[x]", 34), "page": ("Pg", 38), "type": ("Type", 130),
-            "value": ("Value", 220), "conf": ("Conf", 56), "src": ("Source", 78),
+            "sel": ("[x]", 30), "page": ("Pg", 30), "type": ("Type", 92),
+            "value": ("Value", 176), "conf": ("Conf", 46), "src": ("Source", 60),
         }
         for key, (title, width) in headings.items():
             self.tree.heading(key, text=title)
-            self.tree.column(key, width=width, anchor=tk.W, stretch=(key == "value"))
+            self.tree.column(
+                key,
+                width=width,
+                minwidth=110 if key == "value" else width,
+                anchor=tk.W,
+                stretch=(key == "value"),
+            )
         tbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=tbar.set)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -313,6 +368,7 @@ class RedactorApp(tk.Tk):
         self.btn_open.config(state=tk.DISABLED)
         self.btn_export.config(state=tk.DISABLED)
         self.progress.config(value=0, maximum=max(1, self.session.page_count))
+        self.progress.pack(side=tk.RIGHT)
         self.set_status("Scanning...")
 
         session = self.session
@@ -353,6 +409,7 @@ class RedactorApp(tk.Tk):
                     return
                 elif kind == "error":
                     self._scan_thread = None
+                    self.progress.pack_forget()
                     self.btn_scan.config(state=tk.NORMAL)
                     self.btn_open.config(state=tk.NORMAL)
                     messagebox.showerror("Scan failed", str(payload))
@@ -371,7 +428,7 @@ class RedactorApp(tk.Tk):
         self.btn_export.config(
             state=tk.NORMAL if self.detections else tk.DISABLED
         )
-        self.progress.config(value=self.progress["maximum"])
+        self.progress.pack_forget()
         self.refresh_table()
         self.refresh_preview()
         review = sum(1 for d in self.detections if d.needs_review)
@@ -548,7 +605,7 @@ class RedactorApp(tk.Tk):
                 values=(
                     "[x]" if det.selected else "[ ]",
                     det.page + 1,
-                    CATEGORY_LABELS[det.category],
+                    CATEGORY_SHORT_LABELS[det.category],
                     det.preview(reveal),
                     conf,
                     source,

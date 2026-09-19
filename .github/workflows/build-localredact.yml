@@ -1,0 +1,89 @@
+# Builds LocalRedact.exe on a real Windows runner and publishes it as a
+# downloadable artifact.
+#
+# PyInstaller cannot cross-compile, so a Windows .exe has to be produced on
+# Windows. This workflow is the supported way to get one without needing a
+# Windows machine to hand; `pdf_redactor/packaging/build_exe.bat` does the same
+# thing locally.
+#
+# Scoped to pdf_redactor/** so it never runs for trading-bot changes.
+
+name: Build LocalRedact.exe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'pdf_redactor/**'
+      - '.github/workflows/build-localredact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: pdf_redactor
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install PyMuPDF==1.28.2 pyinstaller==6.16.0
+
+      - name: Confirm Tkinter is present
+        run: python -c "import tkinter; print('Tk', tkinter.TkVersion)"
+
+      - name: Run the engine test suite
+        run: python tests\test_localredact.py
+
+      - name: Run the headless GUI checks
+        run: python tests\smoke_gui_headless.py
+
+      - name: Check the icon generator and the committed icon
+        run: |
+          python packaging\make_icon.py
+          python packaging\make_icon.py --check
+
+      - name: Build the executable
+        run: pyinstaller packaging\localredact.spec --noconfirm
+
+      - name: Verify the executable
+        run: |
+          $exe = "dist\LocalRedact.exe"
+          if (-not (Test-Path $exe)) { Write-Error "exe was not produced"; exit 1 }
+          $item = Get-Item $exe
+          Write-Host ("Size: {0:N1} MB" -f ($item.Length / 1MB))
+          $info = $item.VersionInfo
+          Write-Host "ProductName:     $($info.ProductName)"
+          Write-Host "FileDescription: $($info.FileDescription)"
+          Write-Host "FileVersion:     $($info.FileVersion)"
+          if ($info.ProductName -ne 'LocalRedact') {
+            Write-Error "version resource missing from the exe"; exit 1
+          }
+          Add-Type -AssemblyName System.Drawing
+          $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($item.FullName)
+          if ($null -eq $icon) { Write-Error "no icon embedded in the exe"; exit 1 }
+          Write-Host "Embedded icon: $($icon.Width)x$($icon.Height)"
+
+      - name: End-to-end redaction check on Windows
+        run: python tests\ci_windows_e2e.py
+
+      - name: Upload LocalRedact.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: LocalRedact-windows-exe
+          path: |
+            pdf_redactor/dist/LocalRedact.exe
+            pdf_redactor/packaging/localredact.ico
+          if-no-files-found: error
+          retention-days: 90

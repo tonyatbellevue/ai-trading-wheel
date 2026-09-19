@@ -2,6 +2,13 @@
 
 选择 PDF → 扫描敏感信息 → 预览/勾选 → 导出脱敏 PDF。
 
+![主界面](docs/screenshot_review.png)
+
+*左侧选类别、右侧逐条勾选、中间页面上直接点框切换。默认打码显示；勾上
+`Show full values` 才显示完整值（下图，同时演示取消勾选第一项后框变灰）。*
+
+![显示完整值](docs/screenshot_revealed.png)
+
 全程在本机运行。**不上传任何 PDF、文本、图像、元数据或用户信息**，不调用任何云端 API，
 不做遥测，不做自动更新。程序启动时会主动禁用整个进程的网络能力 —— 任何一次外连尝试都会
 直接抛异常，而不是悄悄发出去。
@@ -130,7 +137,19 @@ pip install rapidocr-onnxruntime Pillow
 
 ---
 
-## 5. 打包成 .exe
+## 5. 拿到 .exe
+
+### 方式 A：直接下载 CI 构建好的（不需要装任何东西）
+
+仓库带了 `.github/workflows/build-localredact.yml`，只要 `pdf_redactor/` 有改动就会在
+**真实的 windows-latest runner** 上跑：装依赖 → 跑测试 → 校验图标 → PyInstaller 打包 →
+校验 exe 的版本资源和内嵌图标 → **在 Windows 上跑一遍完整脱敏 + 字节级泄漏检查** →
+上传产物。
+
+去 GitHub 仓库的 **Actions → Build LocalRedact.exe → 最新一次运行 → Artifacts**，
+下载 `LocalRedact-windows-exe`，解压即得 `LocalRedact.exe`。
+
+### 方式 B：本地自己打
 
 ```bat
 cd pdf_redactor
@@ -145,6 +164,25 @@ PowerShell 版本：`.\packaging\build_exe.ps1`
 想把 OCR 一起打包进去：
 * Tesseract：把整个安装目录复制到 `pdf_redactor\tesseract\`，spec 会自动打包
 * RapidOCR：在 build 脚本里取消对应的 `pip install` 注释即可
+
+### 图标
+
+![图标各尺寸](docs/icon_preview.png)
+
+`packaging/localredact.ico` 是 7 个尺寸（16/24/32/48/64/128/256）的多分辨率图标，
+**每个尺寸都是从矢量单独渲染的**，不是从一张大图缩下来的 —— 所以 16px 的任务栏图标依然清晰。
+
+```bat
+python packaging\make_icon.py           REM 重新生成
+python packaging\make_icon.py --check   REM 校验结构（CI 会跑）
+```
+
+图标在两个地方生效，机制不同、都需要：
+* **exe 的外壳图标** —— spec 里的 `icon=` 参数写进 PE 资源
+* **窗口标题栏 / 任务栏图标** —— 运行时由 `gui.py:_set_window_icon()` 读取，
+  所以 ico 和 png 也作为 data 打进了 exe
+
+`packaging/version_info.txt` 提供文件属性里的版本信息（产品名、说明、版本号）。
 
 spec 里的两个刻意选择：
 * `upx=False` —— 压缩后的 exe 很容易被杀软误报，这个工具需要看起来可信

@@ -31,6 +31,10 @@ class Category(str, Enum):
     def label(self) -> str:
         return CATEGORY_LABELS[self]
 
+    @property
+    def short_label(self) -> str:
+        return CATEGORY_SHORT_LABELS[self]
+
 
 CATEGORY_LABELS: Dict["Category", str] = {
     Category.NAME: "Name / 姓名",
@@ -47,6 +51,25 @@ CATEGORY_LABELS: Dict["Category", str] = {
     Category.IP_ADDRESS: "IP address",
     Category.CUSTOM: "Custom term",
 }
+
+# Compact labels for the review table, where the bilingual names above do not
+# fit without truncating to "National ID / NR".
+CATEGORY_SHORT_LABELS: Dict["Category", str] = {
+    Category.NAME: "Name",
+    Category.NATIONAL_ID: "National ID",
+    Category.PASSPORT: "Passport",
+    Category.ADDRESS: "Address",
+    Category.PHONE: "Phone",
+    Category.EMAIL: "Email",
+    Category.DATE_OF_BIRTH: "Birth date",
+    Category.BANK_ACCOUNT: "Bank acct",
+    Category.CREDIT_CARD: "Card",
+    Category.TAX_ID: "Tax ID",
+    Category.VEHICLE: "Vehicle",
+    Category.IP_ADDRESS: "IP",
+    Category.CUSTOM: "Custom",
+}
+
 
 # Higher wins when two detections overlap in the page text.
 CATEGORY_PRIORITY: Dict["Category", int] = {
