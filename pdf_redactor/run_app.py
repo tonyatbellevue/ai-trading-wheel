@@ -1,9 +1,13 @@
 """LocalRedact entry point.
 
 Network lockdown is installed before anything else is imported so that no
-dependency can open a socket even during its own import. Run with:
+dependency can open a socket even during its own import.
 
-    python run_app.py
+    python run_app.py                 open the app empty
+    python run_app.py report.pdf      open the app with that PDF loaded
+
+The optional path is what makes the Windows "Redact with LocalRedact" right-click
+entry work: the shell passes the selected file as the first argument.
 """
 
 from __future__ import annotations
@@ -39,7 +43,16 @@ def main() -> int:
             )
             return 2
         raise
-    run()
+    initial = None
+    args = [a for a in sys.argv[1:] if not a.startswith("-")]
+    if args:
+        candidate = Path(args[0]).expanduser()
+        if candidate.is_file():
+            initial = str(candidate)
+        else:
+            sys.stderr.write(f"File not found: {args[0]}\n")
+            return 2
+    run(initial)
     return 0
 
 

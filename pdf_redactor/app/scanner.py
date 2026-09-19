@@ -51,6 +51,16 @@ class PdfSession:
             self._doc = fitz.open(str(self.path))
         except Exception as exc:  # pragma: no cover - corrupt input
             raise PdfOpenError(f"Could not open PDF: {exc}") from exc
+        # PyMuPDF happily opens .txt, .svg, .epub and images as "documents", so
+        # an extension check is not enough - ask the parsed document what it is.
+        # Accepting a non-PDF here would mean the redaction engine later fails,
+        # or worse, appears to succeed on a file it never really processed.
+        if not self._doc.is_pdf:
+            self._doc.close()
+            raise PdfOpenError(
+                f"{self.path.name} is not a PDF. LocalRedact only processes PDF "
+                "files; convert it to PDF first."
+            )
         if self._doc.is_encrypted and not self._doc.authenticate(""):
             self._doc.close()
             raise PdfOpenError(

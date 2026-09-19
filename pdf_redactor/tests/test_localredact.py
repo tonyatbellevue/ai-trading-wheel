@@ -375,6 +375,39 @@ def test_image_pixels_are_destroyed(tmp_path=None):
     assert colours(out) == {(0, 0, 0)}, "image pixels were not repainted"
 
 
+def test_refuses_non_pdf_input(tmp_path=None):
+    """PyMuPDF opens .txt/.svg as documents; we must not.
+
+    Regression test: a plain text file loaded without complaint, which became a
+    real risk once a right-click "Redact with LocalRedact" entry could hand the
+    app any selected file.
+    """
+    tmp = Path(tmp_path or tempfile.mkdtemp())
+    from app.scanner import PdfOpenError
+
+    for name, payload in (
+        ("notes.txt", b"Name: John Anderson\nNRIC: S1234567D"),
+        ("drawing.svg", b'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>'),
+    ):
+        bad = tmp / name
+        bad.write_bytes(payload)
+        try:
+            PdfSession(bad)
+        except PdfOpenError as exc:
+            assert "not a PDF" in str(exc), exc
+        else:
+            raise AssertionError(f"{name} should have been rejected")
+
+    # The redaction engine guards independently - it is a separate entry point.
+    bad = tmp / "notes.txt"
+    try:
+        redact_pdf(bad, tmp / "out.pdf", [])
+    except RedactionError as exc:
+        assert "not a PDF" in str(exc), exc
+    else:
+        raise AssertionError("redact_pdf should have refused a non-PDF")
+
+
 def test_refuses_to_overwrite_the_original(tmp_path=None):
     tmp = Path(tmp_path or tempfile.mkdtemp())
     src = make_sample(tmp / "in6.pdf")

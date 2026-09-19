@@ -49,7 +49,7 @@ COLOUR_REVIEW = "#e08a00"
 
 
 class RedactorApp(tk.Tk):
-    def __init__(self) -> None:
+    def __init__(self, initial_path: Optional[str] = None) -> None:
         super().__init__()
         self.title(f"{APP_NAME} {__version__} - offline PDF redaction")
         self.geometry("1360x860")
@@ -81,6 +81,11 @@ class RedactorApp(tk.Tk):
         self._set_window_icon()
         self.after(150, self._apply_initial_layout)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+        if initial_path:
+            # Opened via "Redact with LocalRedact" on a .pdf, or with a path on
+            # the command line. Load it once the window exists so any error lands
+            # in a dialog rather than a traceback.
+            self.after(250, lambda: self.load_pdf(initial_path))
 
     def _icon_dir(self):
         """Where the icon files live, in a source tree and inside the .exe."""
@@ -337,12 +342,18 @@ class RedactorApp(tk.Tk):
         )
         if not path:
             return
+        self.load_pdf(path)
+
+    def load_pdf(self, path: str) -> bool:
+        """Open ``path`` for review. Returns False if it could not be opened."""
         self._close_session()
         try:
             self.session = PdfSession(path)
         except PdfOpenError as exc:
             messagebox.showerror("Cannot open PDF", str(exc))
-            return
+            self.file_label.config(text="No file selected")
+            self.btn_scan.config(state=tk.DISABLED)
+            return False
         self.result = None
         self.detections = []
         self.current_page = 0
@@ -354,6 +365,7 @@ class RedactorApp(tk.Tk):
         meta = self.session.source_metadata()
         extra = f"  Metadata present ({len(meta)} field(s)) - it will be removed." if meta else ""
         self.set_status(f"Loaded {self.session.page_count} page(s).{extra}")
+        return True
 
     def on_scan(self) -> None:
         if self.session is None or self._scan_thread is not None:
@@ -697,6 +709,6 @@ class RedactorApp(tk.Tk):
         self.destroy()
 
 
-def run() -> None:
-    app = RedactorApp()
+def run(initial_path: Optional[str] = None) -> None:
+    app = RedactorApp(initial_path=initial_path)
     app.mainloop()

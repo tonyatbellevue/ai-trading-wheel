@@ -71,7 +71,16 @@
 
 ---
 
-## 3. 安装与运行（源码方式）
+## 3. 安装与运行
+
+> **Windows 安装看这里 → [docs/INSTALL_WINDOWS.md](docs/INSTALL_WINDOWS.md)**
+> 三条路线(下载现成 exe / 自己构建 / 源码运行)、SmartScreen 与杀毒误报怎么处理、
+> OCR 怎么装、装到哪里、怎么卸载,都写清楚了。
+>
+> 最短路径:下载 CI 产物 → `.\packaging\install.ps1`(先加 `-DryRun` 看它要做什么)。
+> 不需要管理员权限。
+
+### 源码方式
 
 需要 Windows + Python 3.9 以上（[python.org](https://www.python.org/downloads/windows/)
 官方安装包，安装时**勾选 `tcl/tk and IDLE`**，GUI 需要它）。

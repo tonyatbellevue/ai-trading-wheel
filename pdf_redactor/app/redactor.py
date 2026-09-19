@@ -168,6 +168,11 @@ def redact_pdf(
     applied = 0
 
     try:
+        if not doc.is_pdf:
+            raise RedactionError(
+                f"{input_path.name} is not a PDF. Redaction rewrites PDF content "
+                "streams and cannot be applied to another format."
+            )
         if doc.is_encrypted and not doc.authenticate(""):
             raise RedactionError(
                 "This PDF is password protected. Open it with its password and "
