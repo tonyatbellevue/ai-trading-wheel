@@ -15,6 +15,16 @@
     Actions. If omitted, the script looks in .\dist, next to itself, and in your
     Downloads folder.
 
+.PARAMETER FromRelease
+    Download LocalRedact.exe from the repository's latest published Release
+    instead of looking for a local copy. Needs no GitHub login because the
+    repository is public. If no Release has been published yet, the script says
+    so and tells you how to create one.
+
+.PARAMETER Repo
+    owner/name of the repository to download the Release from. Defaults to the
+    project's own repository.
+
 .PARAMETER ContextMenu
     Also add a "Redact with LocalRedact" entry to the right-click menu of PDF
     files.
@@ -36,6 +46,8 @@
 [CmdletBinding()]
 param(
     [string]$Source,
+    [switch]$FromRelease,
+    [string]$Repo = 'tonyatbellevue/ai-trading-wheel',
     [switch]$ContextMenu,
     [switch]$NoDesktopShortcut,
     [switch]$Uninstall,
@@ -71,9 +83,67 @@ function Invoke-Action {
     & $Action
 }
 
+function Get-ExeFromRelease {
+    <# Fetch LocalRedact.exe from the newest localredact-v* Release.
+
+       The repository is public, so this is an anonymous request - no token, no
+       login. Returns $null (with an explanation) when nothing is published yet,
+       so the caller can fall back to a local copy.
+    #>
+    param([string]$Repository)
+
+    $api = "https://api.github.com/repos/$Repository/releases"
+    Write-Step "looking for a published Release in $Repository"
+    try {
+        $releases = Invoke-RestMethod -Uri $api -Headers @{
+            'User-Agent' = 'LocalRedact-installer'
+            'Accept'     = 'application/vnd.github+json'
+        } -ErrorAction Stop
+    } catch {
+        Write-Step "  could not reach GitHub: $($_.Exception.Message)"
+        return $null
+    }
+
+    $release = $releases |
+        Where-Object { $_.tag_name -like 'localredact-v*' } |
+        Select-Object -First 1
+    if (-not $release) {
+        Write-Step '  no LocalRedact Release has been published yet'
+        Write-Host ''
+        Write-Host 'To publish one (repository owner, takes about two minutes):' -ForegroundColor Yellow
+        Write-Host "  $($Repository) -> Actions -> 'Build LocalRedact.exe' -> Run workflow"
+        Write-Host "  tick 'Also publish a GitHub Release with the exe'"
+        Write-Host "  set the tag to localredact-v1.0.0, then Run"
+        Write-Host ''
+        Write-Host 'Until then, download the artifact and pass it with -Source.' -ForegroundColor Yellow
+        Write-Host ''
+        return $null
+    }
+
+    $asset = $release.assets | Where-Object { $_.name -eq $ExeName } | Select-Object -First 1
+    if (-not $asset) {
+        Write-Step "  Release $($release.tag_name) has no $ExeName attached"
+        return $null
+    }
+
+    $destination = Join-Path ([System.IO.Path]::GetTempPath()) "localredact-dl-$PID"
+    New-Item -ItemType Directory -Path $destination -Force | Out-Null
+    $script:UnpackDir = $destination
+    $file = Join-Path $destination $ExeName
+    Write-Step "downloading $ExeName from $($release.tag_name) ($([math]::Round($asset.size/1MB,1)) MB)"
+    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $file -UseBasicParsing
+    return $file
+}
+
 function Resolve-SourceExe {
     <# Find LocalRedact.exe, unpacking the CI zip if that is what we were given. #>
     param([string]$Given)
+
+    if ($FromRelease) {
+        $downloaded = Get-ExeFromRelease -Repository $Repo
+        if ($downloaded) { return $downloaded }
+        Write-Step 'falling back to looking for a local copy'
+    }
 
     $candidates = @()
     if ($Given) {
