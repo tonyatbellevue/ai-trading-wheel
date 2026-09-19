@@ -1,0 +1,8 @@
+.venv/
+build/
+dist/
+__pycache__/
+*.pyc
+*.spec.bak
+tesseract/
+*_redacted.pdf

@@ -1,0 +1,30 @@
+# LocalRedact - fully offline PDF redaction.
+#
+# Every package below runs locally. None of them contacts a network service at
+# runtime, and the app blocks sockets anyway (app/safety.py).
+
+# --- required ---------------------------------------------------------------
+# PDF parsing, per-glyph geometry, true redaction and page rendering.
+PyMuPDF==1.28.2
+
+# Tkinter is used for the GUI. It is part of the CPython standard library on
+# Windows (python.org installer, "tcl/tk and IDLE" component) - nothing to
+# install here.
+
+# --- optional: offline OCR for scanned PDFs ---------------------------------
+# Pick ONE of the two blocks below. Both run entirely on this machine.
+#
+# (a) Tesseract. Tighter redaction boxes because it reports word-level
+#     geometry. Needs the Tesseract binary as well as this wrapper:
+#     https://github.com/UB-Mannheim/tesseract/wiki  (offline installer)
+# pytesseract==0.3.13
+# Pillow==11.3.0
+#
+# (b) RapidOCR. Pure pip install; the ONNX models ship inside the wheel, so
+#     nothing is downloaded at first run. Line-level boxes, so redaction
+#     rectangles are slightly wider.
+# rapidocr-onnxruntime==1.4.4
+# Pillow==11.3.0
+
+# --- optional: building the .exe -------------------------------------------
+# pyinstaller==6.16.0
