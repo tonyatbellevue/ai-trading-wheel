@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "JNJ",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
+    "to_symbol": "JNJ",
     "trigger_date": "2026-09-27",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,000, 有 $53,798)",
-    "planned_at": "2026-09-21T13:36:15.433068"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $96,500, 有 $53,779)",
+    "planned_at": "2026-09-21T13:43:57.058998"
   },
   "history": [
     {
@@ -357,6 +357,14 @@
       "planned_to": "DRAM",
       "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,000, 有 $53,702)",
       "rescan_note": "触发时重扫: 原计划 DRAM 已非 top-1，改用 AMZN (score=96.0)"
+    },
+    {
+      "switched_at": "2026-09-21T13:42:03.764008",
+      "from": "AMZN",
+      "to": "JNJ",
+      "planned_to": "CRM",
+      "reason": "IV-blocked fallback: AMZN IV rank 26 < 30, rotate to CRM (IV rank 98)",
+      "rescan_note": "触发时重扫: 原计划 CRM 已非 top-1，改用 JNJ (score=98.5)"
     }
   ]
 }
