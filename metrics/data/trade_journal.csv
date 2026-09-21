@@ -4896,3 +4896,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-21T13:49:51.455745,entry,MSFT,sell_call,MSFT260923C00500000,500.0,2026-09-23,1,1.64,0.2673,,2,53779.31,103122.31,PASS,,,,VIXY=16.87,1,,,,cost_basis=441.13
 2026-09-21T13:57:20.031182,skip,JNJ,sell_put,,,,,,,,,53943.29,103227.29,,,,,VIXY=16.86,1,insufficient_funds,,,
 2026-09-21T14:02:07.138215,skip,JNJ,sell_put,,,,,,,,,53943.29,103298.79,,,,,VIXY=16.88,1,insufficient_funds,,,
+2026-09-21T14:09:24.678331,skip,JNJ,sell_put,,,,,,,,,53943.29,103316.29,,,,,VIXY=16.87,1,insufficient_funds,,,
