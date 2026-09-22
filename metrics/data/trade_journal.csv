@@ -4944,3 +4944,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-22T13:34:48.412837,skip,AMZN,sell_put,,,,,,,,,53943.23,103601.23,,,,,VIXY=16.83,1,[ma_trend] 股价 $255.66 < MA50 $256.27（下跌趋势）,,,filter=ma_trend
 2026-09-22T13:41:16.558169,skip,AMZN,sell_put,,,,,,,,,53943.23,103535.73,,,,,VIXY=16.83,1,[iv_rank] IV rank 29 < 30 (premium too thin),,,filter=other
 2026-09-22T13:49:20.696087,skip,AMZN,sell_put,,,,,,,,,53943.23,103473.73,,,,,VIXY=16.79,1,[iv_rank] IV rank 29 < 30 (premium too thin),,,filter=other
+2026-09-22T13:56:57.149639,skip,AMZN,sell_put,,,,,,,,,53943.23,103357.23,,,,,VIXY=16.74,1,insufficient_funds,,,
