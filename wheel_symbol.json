@@ -2,10 +2,10 @@
   "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "JNJ",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-09-27",
-    "reason": "health STOP: 现金不足 (需 $98,500, 有 $53,943)",
-    "planned_at": "2026-09-22T13:36:21.437398"
+    "reason": "health STOP: 现金不足 (需 $98,000, 有 $53,943)",
+    "planned_at": "2026-09-22T13:41:31.520660"
   },
   "history": [
     {
