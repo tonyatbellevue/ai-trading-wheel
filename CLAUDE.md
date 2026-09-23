@@ -30,6 +30,10 @@ If the user asks about positions, P&L, options trades, or "the account," default
 
 The bot's universe is the 32 tickers in `wheel_scanner.WHEEL_UNIVERSE`. The bot's account is the one returned by `AlpacaClients.trading()`. That's it.
 
+## 🎨 PPT / slides — ALWAYS use the `ppt-style` skill
+
+Every PPT, deck, slide, presentation, 一页纸 / 一张图看懂 infographic the user asks for — any topic, not just trading — **must** use `.claude/skills/ppt-style/` (the user's personal style: navy headline + one orange keyword, numbered blue→orange→purple→teal→green bands, hero band, star cards, dashed flow rail, tagline + Confidential footer). Build with `scripts/tony_deck.py`, render and visually check before delivering. Don't fall back to a generic/default template unless the user says so for that deck.
+
 ## 📅 Earnings — ALWAYS check before any option recommendation
 
 Before recommending or analyzing any option trade (open / hold / roll / BTC), **first check the underlying's next earnings date**. This is a hard reflex, not a suggestion. The user has had to remind Claude multiple times — that's a signal Claude was being lazy, not that the rule is wrong.
