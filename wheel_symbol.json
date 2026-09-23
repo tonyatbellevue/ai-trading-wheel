@@ -2,10 +2,10 @@
   "active_symbol": "JNJ",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PLTR",
+    "to_symbol": "JNJ",
     "trigger_date": "2026-09-27",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $98,500, 有 $53,943)",
-    "planned_at": "2026-09-23T13:37:10.026457"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,500, 有 $53,592)",
+    "planned_at": "2026-09-23T14:09:13.858917"
   },
   "history": [
     {
