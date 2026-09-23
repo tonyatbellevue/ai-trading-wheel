@@ -5029,3 +5029,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-23T17:17:21.682435,skip,JNJ,sell_put,,,,,,,,,53716.13,103467.13,,,,,VIXY=16.83,1,insufficient_funds,,,
 2026-09-23T17:25:13.941171,skip,JNJ,sell_put,,,,,,,,,53716.13,103452.63,,,,,VIXY=16.84,1,insufficient_funds,,,
 2026-09-23T17:33:12.810506,skip,JNJ,sell_put,,,,,,,,,53716.13,103474.13,,,,,VIXY=16.86,1,insufficient_funds,,,
+2026-09-23T17:41:05.803066,skip,JNJ,sell_put,,,,,,,,,53716.13,103479.13,,,,,VIXY=16.83,1,insufficient_funds,,,
