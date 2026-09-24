@@ -5049,3 +5049,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-23T19:49:17.938159,skip,JNJ,sell_put,,,,,,,,,53716.13,103516.63,,,,,VIXY=16.83,1,insufficient_funds,,,
 2026-09-23T19:57:05.549428,skip,JNJ,sell_put,,,,,,,,,53716.13,103540.63,,,,,VIXY=16.79,1,insufficient_funds,,,
 2026-09-24T13:33:15.066078,skip,JNJ,sell_put,,,,,,,,,53716.03,103137.03,,,,,VIXY=16.90,1,insufficient_funds,,,
+2026-09-24T13:41:01.196480,exit,MSFT,,MSFT260925C00507500,,,1,,,,,53653.0,102985.0,,,,,,,,125.0,btc_50pct_profit,detected by position_tracker; entry=$1.85
+2026-09-24T13:42:46.437830,entry,MSFT,sell_call,MSFT260925C00500000,500.0,2026-09-25,1,1.39,0.2468,,1,53653.0,102981.5,PASS,,,,VIXY=16.87,1,,,,cost_basis=441.13
