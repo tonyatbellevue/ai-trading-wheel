@@ -2,10 +2,10 @@
   "active_symbol": "PFE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "JNJ",
+    "to_symbol": "PLTR",
     "trigger_date": "2026-09-27",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,000, 有 $53,792)",
-    "planned_at": "2026-09-24T15:41:29.087822"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,500, 有 $53,792)",
+    "planned_at": "2026-09-24T15:49:17.345193"
   },
   "history": [
     {
