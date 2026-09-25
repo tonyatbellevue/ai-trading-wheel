@@ -2,10 +2,10 @@
   "active_symbol": "PLTR",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PLTR",
+    "to_symbol": "DRAM",
     "trigger_date": "2026-09-27",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $97,500, 有 $53,792)",
-    "planned_at": "2026-09-24T18:16:55.861579"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $53,792)",
+    "planned_at": "2026-09-25T13:36:10.893470"
   },
   "history": [
     {
