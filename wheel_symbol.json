@@ -1,11 +1,11 @@
 {
-  "active_symbol": "PLTR",
+  "active_symbol": "ANET",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "DRAM",
-    "trigger_date": "2026-09-27",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $53,792)",
-    "planned_at": "2026-09-25T13:36:10.893470"
+    "to_symbol": "ANET",
+    "trigger_date": "2026-10-04",
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $98,500, 有 $52,970)",
+    "planned_at": "2026-09-28T13:35:23.288868"
   },
   "history": [
     {
@@ -394,6 +394,14 @@
       "to": "PLTR",
       "planned_to": "PLTR",
       "reason": "CAUTION + better alternative (PLTR score +66%)"
+    },
+    {
+      "switched_at": "2026-09-28T13:34:30.416087",
+      "from": "PLTR",
+      "to": "ANET",
+      "planned_to": "DRAM",
+      "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $99,500, 有 $53,792)",
+      "rescan_note": "触发时重扫: 原计划 DRAM 已非 top-1，改用 ANET (score=98.3)"
     }
   ]
 }
