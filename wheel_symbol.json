@@ -1,11 +1,11 @@
 {
-  "active_symbol": "KLAC",
+  "active_symbol": "PFE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "KLAC",
+    "to_symbol": "ANET",
     "trigger_date": "2026-10-04",
-    "reason": "health STOP: 现金不足 (需 $100,500, 有 $53,187)",
-    "planned_at": "2026-09-29T14:43:15.459630"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $100,500, 有 $53,187)",
+    "planned_at": "2026-09-30T13:36:34.189138"
   },
   "history": [
     {
@@ -410,6 +410,14 @@
       "planned_to": "BAC",
       "reason": "IV-blocked fallback: ANET IV rank 6 < 30, rotate to BAC (IV rank 81)",
       "rescan_note": "触发时重扫: 原计划 BAC 已非 top-1，改用 KLAC (score=99.2)"
+    },
+    {
+      "switched_at": "2026-09-30T13:35:12.712262",
+      "from": "KLAC",
+      "to": "PFE",
+      "planned_to": "ANET",
+      "reason": "CAUTION + better alternative (ANET score +15%)",
+      "rescan_note": "触发时重扫: 原计划 ANET 已非 top-1，改用 PFE (score=99.3)"
     }
   ]
 }
