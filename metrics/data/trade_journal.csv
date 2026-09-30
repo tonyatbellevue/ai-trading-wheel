@@ -5205,3 +5205,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-29T19:41:25.666780,skip,KLAC,sell_put,,,,,,,,,53186.79,103938.79,,,,,VIXY=16.74,1,insufficient_funds,,,
 2026-09-29T19:48:57.400343,skip,KLAC,sell_put,,,,,,,,,53186.79,103869.29,,,,,VIXY=16.74,1,insufficient_funds,,,
 2026-09-29T19:56:56.552639,skip,KLAC,sell_put,,,,,,,,,53186.79,103735.79,,,,,VIXY=16.75,1,insufficient_funds,,,
+2026-09-30T13:56:57.612847,skip,PFE,sell_put,,,,,,,,,53186.73,104334.73,,,,,VIXY=16.56,1,[iv_rank] IV rank 2 < 30 (premium too thin),,,filter=other
