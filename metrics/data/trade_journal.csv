@@ -5251,3 +5251,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-09-30T19:32:56.839099,skip,KLAC,sell_put,,,,,,,,,53186.73,104414.73,,,,,VIXY=16.75,1,insufficient_funds,,,
 2026-09-30T19:41:07.303962,skip,KLAC,sell_put,,,,,,,,,53186.73,104390.23,,,,,VIXY=16.78,1,insufficient_funds,,,
 2026-09-30T19:49:19.693963,skip,KLAC,sell_put,,,,,,,,,53186.73,104370.73,,,,,VIXY=16.80,1,insufficient_funds,,,
+2026-09-30T19:56:54.704836,skip,KLAC,sell_put,,,,,,,,,53186.73,104198.21,,,,,VIXY=16.86,1,insufficient_funds,,,
