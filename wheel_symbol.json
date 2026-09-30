@@ -2,10 +2,10 @@
   "active_symbol": "KLAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "KLAC",
     "trigger_date": "2026-10-04",
-    "reason": "health STOP: 现金不足 (需 $102,000, 有 $53,187)",
-    "planned_at": "2026-09-30T14:57:48.928096"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,500, 有 $53,187)",
+    "planned_at": "2026-09-30T15:02:27.728522"
   },
   "history": [
     {
