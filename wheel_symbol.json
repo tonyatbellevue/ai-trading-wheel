@@ -1,11 +1,11 @@
 {
-  "active_symbol": "PFE",
+  "active_symbol": "ANET",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "ANET",
     "trigger_date": "2026-10-04",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,500, 有 $52,592)",
-    "planned_at": "2026-10-01T13:58:52.697792"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,000, 有 $52,592)",
+    "planned_at": "2026-10-01T14:03:35.899219"
   },
   "history": [
     {
@@ -482,6 +482,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: ANET IV rank 2 < 30, rotate to GM (IV rank 80)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 PFE (score=98.6)"
+    },
+    {
+      "switched_at": "2026-10-01T14:02:42.550326",
+      "from": "PFE",
+      "to": "ANET",
+      "planned_to": "BAC",
+      "reason": "IV-blocked fallback: PFE IV rank 1 < 30, rotate to BAC (IV rank 80)",
+      "rescan_note": "触发时重扫: 原计划 BAC 已非 top-1，改用 ANET (score=97.9)"
     }
   ]
 }
