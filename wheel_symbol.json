@@ -2,10 +2,10 @@
   "active_symbol": "ANET",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ANET",
+    "to_symbol": "PFE",
     "trigger_date": "2026-10-04",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,000, 有 $52,700)",
-    "planned_at": "2026-10-01T17:33:01.270484"
+    "planned_at": "2026-10-01T17:49:07.043730"
   },
   "history": [
     {
