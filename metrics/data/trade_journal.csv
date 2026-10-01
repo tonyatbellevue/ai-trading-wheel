@@ -5257,3 +5257,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-01T14:16:53.366016,skip,MCHP,sell_put,,,,,,,,,52591.68,104156.08,,,,,VIXY=17.25,1,[iv_rank] IV rank 17 < 30 (premium too thin),,,filter=other
 2026-10-01T14:32:54.127494,skip,PFE,sell_put,,,,,,,,,52591.68,104133.68,,,,,VIXY=17.21,1,[iv_rank] IV rank 1 < 30 (premium too thin),,,filter=other
 2026-10-01T14:41:14.307363,skip,PFE,sell_put,,,,,,,,,52591.68,104070.18,,,,,VIXY=17.18,1,[iv_rank] IV rank 1 < 30 (premium too thin),,,filter=other
+2026-10-01T14:56:49.429754,skip,ANET,sell_put,,,,,,,,,52591.68,103910.68,,,,,VIXY=17.26,1,[iv_rank] IV rank 2 < 30 (premium too thin),,,filter=other
