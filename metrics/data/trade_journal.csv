@@ -5265,3 +5265,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-01T15:32:53.055172,skip,ANET,sell_put,,,,,,,,,52591.68,103878.18,,,,,VIXY=17.30,1,[iv_rank] IV rank 2 < 30 (premium too thin),,,filter=other
 2026-10-01T15:41:15.324038,skip,ANET,sell_put,,,,,,,,,52591.68,103832.68,,,,,VIXY=17.27,1,[iv_rank] IV rank 2 < 30 (premium too thin),,,filter=other
 2026-10-01T15:49:03.260566,skip,ANET,sell_put,,,,,,,,,52591.68,103877.68,,,,,VIXY=17.27,1,[iv_rank] IV rank 2 < 30 (premium too thin),,,filter=other
+2026-10-01T15:57:05.071738,exit,MSFT,,MSFT261005C00530000,,,1,,,,,52518.65,103836.65,,,,,,,,127.0,btc_50pct_profit,detected by position_tracker; entry=$2.00
+2026-10-01T15:57:09.158264,skip,ANET,sell_put,,,,,,,,,52518.65,103832.65,,,,,VIXY=17.24,1,[iv_rank] IV rank 2 < 30 (premium too thin),,,filter=other
+2026-10-01T15:57:29.790189,entry,MSFT,sell_call,MSFT261005C00522500,522.5,2026-10-05,1,1.81,0.2453,,4,52518.65,103857.65,PASS,,,,VIXY=17.22,1,,,,cost_basis=441.13
