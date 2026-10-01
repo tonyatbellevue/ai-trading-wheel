@@ -2,10 +2,10 @@
   "active_symbol": "ANET",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ANET",
+    "to_symbol": "KLAC",
     "trigger_date": "2026-10-04",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $100,500, 有 $52,592)",
-    "planned_at": "2026-10-01T15:18:02.274511"
+    "reason": "health STOP: 现金不足 (需 $101,500, 有 $52,592)",
+    "planned_at": "2026-10-01T15:33:10.671748"
   },
   "history": [
     {
