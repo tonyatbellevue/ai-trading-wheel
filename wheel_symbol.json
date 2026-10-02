@@ -1,11 +1,11 @@
 {
-  "active_symbol": "DRAM",
+  "active_symbol": "INTC",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "DRAM",
     "trigger_date": "2026-10-04",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $102,000, 有 $52,700)",
-    "planned_at": "2026-10-02T13:37:28.657301"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $101,000, 有 $52,700)",
+    "planned_at": "2026-10-02T13:43:12.358381"
   },
   "history": [
     {
@@ -520,6 +520,14 @@
       "to": "DRAM",
       "planned_to": "DRAM",
       "reason": "IDLE+profit rotation: DRAM scores +100% above ANET (账户权益 $104,329 ≥ 上日)"
+    },
+    {
+      "switched_at": "2026-10-02T13:42:17.573993",
+      "from": "DRAM",
+      "to": "INTC",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: DRAM IV rank 8 < 30, rotate to GM (IV rank 80)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 INTC (score=88.7)"
     }
   ]
 }
