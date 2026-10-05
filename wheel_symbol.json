@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ANET",
+    "to_symbol": "KLAC",
     "trigger_date": "2026-10-11",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,500, 有 $52,352)",
-    "planned_at": "2026-10-05T15:57:44.753672"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,000, 有 $52,352)",
+    "planned_at": "2026-10-05T17:49:45.769859"
   },
   "history": [
     {
