@@ -1,11 +1,11 @@
 {
-  "active_symbol": "KLAC",
+  "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "LHX",
     "trigger_date": "2026-10-11",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,000, 有 $52,352)",
-    "planned_at": "2026-10-05T18:34:36.007393"
+    "planned_at": "2026-10-05T18:42:58.707874"
   },
   "history": [
     {
@@ -552,6 +552,14 @@
       "planned_to": "LHX",
       "reason": "CAUTION + better alternative (LHX score +18%)",
       "rescan_note": "触发时重扫: 原计划 LHX 已非 top-1，改用 KLAC (score=98.4)"
+    },
+    {
+      "switched_at": "2026-10-05T18:42:02.641670",
+      "from": "KLAC",
+      "to": "CSCO",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: KLAC IV rank 20 < 30, rotate to GM (IV rank 84)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 CSCO (score=99.5)"
     }
   ]
 }
