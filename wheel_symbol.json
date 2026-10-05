@@ -1,11 +1,11 @@
 {
-  "active_symbol": "KLAC",
+  "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "KLAC",
+    "to_symbol": "ANET",
     "trigger_date": "2026-10-11",
-    "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,059)",
-    "planned_at": "2026-10-05T13:38:59.286560"
+    "reason": "health STOP: 现金不足 (需 $104,500, 有 $52,059)",
+    "planned_at": "2026-10-05T13:45:17.432453"
   },
   "history": [
     {
@@ -536,6 +536,14 @@
       "planned_to": "DRAM",
       "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $102,000, 有 $52,700)",
       "rescan_note": "触发时重扫: 原计划 DRAM 已非 top-1，改用 KLAC (score=98.4)"
+    },
+    {
+      "switched_at": "2026-10-05T13:42:13.115521",
+      "from": "KLAC",
+      "to": "CSCO",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: KLAC IV rank 21 < 30, rotate to GM (IV rank 82)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 CSCO (score=99.5)"
     }
   ]
 }
