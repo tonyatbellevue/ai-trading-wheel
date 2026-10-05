@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "CSCO",
+    "to_symbol": "LHX",
     "trigger_date": "2026-10-11",
-    "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,250)",
-    "planned_at": "2026-10-05T13:57:42.937346"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,000, 有 $52,250)",
+    "planned_at": "2026-10-05T14:25:53.500733"
   },
   "history": [
     {
