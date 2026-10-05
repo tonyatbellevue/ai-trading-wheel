@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ANET",
+    "to_symbol": "CSCO",
     "trigger_date": "2026-10-11",
-    "reason": "health STOP: 现金不足 (需 $104,500, 有 $52,059)",
-    "planned_at": "2026-10-05T13:45:17.432453"
+    "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,250)",
+    "planned_at": "2026-10-05T13:57:42.937346"
   },
   "history": [
     {
