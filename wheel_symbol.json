@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "LHX",
+    "to_symbol": "KLAC",
     "trigger_date": "2026-10-11",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,500, 有 $52,352)",
-    "planned_at": "2026-10-05T19:02:33.640340"
+    "planned_at": "2026-10-05T19:09:59.437429"
   },
   "history": [
     {
