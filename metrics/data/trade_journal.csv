@@ -5352,3 +5352,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-02T19:56:57.819740,skip,INTC,sell_put,,,,,,,,,52699.52,104304.52,,,,,VIXY=16.72,1,insufficient_funds,,,
 2026-10-05T13:41:07.111828,exit,MSFT,,MSFT261005C00522500,,,1,,,,,52059.49,105046.49,,,,,,,,-424.0,btc_50pct_profit,detected by position_tracker; entry=$1.81
 2026-10-05T13:43:10.782977,entry,MSFT,sell_call,MSFT261007C00540000,540.0,2026-10-07,1,1.9,0.2522,,2,52059.49,105177.49,PASS,,,,VIXY=16.57,1,,,,cost_basis=441.13
+2026-10-05T13:48:56.712862,skip,CSCO,sell_put,,,,,,,,,52250.47,105029.97,,,,,VIXY=16.59,1,[ma_trend] 股价 $111.88 < MA50 $112.05（下跌趋势）,,,filter=ma_trend
