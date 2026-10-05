@@ -1,11 +1,11 @@
 {
-  "active_symbol": "INTC",
+  "active_symbol": "KLAC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "DRAM",
-    "trigger_date": "2026-10-04",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $102,000, 有 $52,700)",
-    "planned_at": "2026-10-02T19:17:46.116253"
+    "to_symbol": "KLAC",
+    "trigger_date": "2026-10-11",
+    "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,059)",
+    "planned_at": "2026-10-05T13:38:59.286560"
   },
   "history": [
     {
@@ -528,6 +528,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: DRAM IV rank 8 < 30, rotate to GM (IV rank 80)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 INTC (score=88.7)"
+    },
+    {
+      "switched_at": "2026-10-05T13:36:17.766259",
+      "from": "INTC",
+      "to": "KLAC",
+      "planned_to": "DRAM",
+      "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $102,000, 有 $52,700)",
+      "rescan_note": "触发时重扫: 原计划 DRAM 已非 top-1，改用 KLAC (score=98.4)"
     }
   ]
 }
