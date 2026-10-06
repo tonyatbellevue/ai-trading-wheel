@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "CSCO",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-10-11",
     "reason": "health STOP: 现金不足 (需 $105,500, 有 $52,352)",
-    "planned_at": "2026-10-06T15:09:51.640417"
+    "planned_at": "2026-10-06T15:20:06.085448"
   },
   "history": [
     {
