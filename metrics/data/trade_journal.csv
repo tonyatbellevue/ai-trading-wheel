@@ -5517,3 +5517,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-08T15:01:43.116807,skip,CSCO,sell_put,,,,,,,,,52468.19,105344.69,,,,,VIXY=16.40,1,insufficient_funds,,,
 2026-10-08T15:09:06.964077,skip,CSCO,sell_put,,,,,,,,,52468.19,105430.19,,,,,VIXY=16.44,1,insufficient_funds,,,
 2026-10-08T15:17:14.507653,skip,CSCO,sell_put,,,,,,,,,52468.19,105361.19,,,,,VIXY=16.48,1,insufficient_funds,,,
+2026-10-08T15:25:09.151962,skip,CSCO,sell_put,,,,,,,,,52468.19,105344.96,,,,,VIXY=16.46,1,insufficient_funds,,,
