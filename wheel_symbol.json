@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "XOM",
+    "to_symbol": "PLTR",
     "trigger_date": "2026-10-11",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,500, 有 $52,468)",
-    "planned_at": "2026-10-08T15:09:47.780824"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,000, 有 $52,422)",
+    "planned_at": "2026-10-08T19:56:57.806732"
   },
   "history": [
     {
