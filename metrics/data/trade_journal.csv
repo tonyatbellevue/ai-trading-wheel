@@ -5567,3 +5567,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-09T14:41:30.146256,skip,INTC,sell_put,,,,,,,,,52567.11,105521.11,,,,,VIXY=16.31,1,[recent_drop] INTC 过去 3 天 -5.7% < -5% 拦截,,,filter=other
 2026-10-09T14:49:21.566868,skip,INTC,sell_put,,,,,,,,,52567.11,105611.11,,,,,VIXY=16.34,1,[recent_drop] INTC 过去 3 天 -5.5% < -5% 拦截,,,filter=other
 2026-10-09T14:57:01.471445,skip,INTC,sell_put,,,,,,,,,52567.11,105598.79,,,,,VIXY=16.33,1,[recent_drop] INTC 过去 3 天 -5.1% < -5% 拦截,,,filter=other
+2026-10-09T15:02:12.403516,skip,INTC,sell_put,,,,,,,,,52567.11,105634.61,,,,,VIXY=16.31,1,[recent_drop] INTC 过去 3 天 -5.2% < -5% 拦截,,,filter=other
