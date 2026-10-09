@@ -1,6 +1,16 @@
 {
-  "timestamp": "2026-10-09T13:49:08.971378",
-  "options": {},
+  "timestamp": "2026-10-09T13:56:55.703926",
+  "options": {
+    "MSFT261012C00535000": {
+      "qty": -1.0,
+      "entry": 1.45,
+      "current": 1.33,
+      "underlying": "MSFT",
+      "strike": 535.0,
+      "expiry": "2026-10-12",
+      "type": "C"
+    }
+  },
   "stocks": {
     "MSFT": {
       "qty": 100.0,
