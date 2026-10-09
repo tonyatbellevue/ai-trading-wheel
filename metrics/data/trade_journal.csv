@@ -5556,3 +5556,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-08T19:41:05.333272,skip,CSCO,sell_put,,,,,,,,,52422.16,104658.16,,,,,VIXY=16.57,1,[sector_etf] XLK(networking) 今日 -2.0% < -2% 拦截,,,filter=other
 2026-10-08T19:49:05.390487,skip,CSCO,sell_put,,,,,,,,,52422.16,104712.16,,,,,VIXY=16.55,1,insufficient_funds,,,
 2026-10-08T19:56:51.976725,skip,CSCO,sell_put,,,,,,,,,52422.16,104709.16,,,,,VIXY=16.56,1,insufficient_funds,,,
+2026-10-09T13:37:01.689511,entry,MSFT,sell_call,MSFT261012C00535000,535.0,2026-10-12,1,1.44,0.2583,,3,52422.13,105291.13,PASS,,,,VIXY=16.33,1,,,,cost_basis=441.13

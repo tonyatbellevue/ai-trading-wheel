@@ -1,11 +1,11 @@
 {
-  "active_symbol": "CSCO",
+  "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PLTR",
+    "to_symbol": "DRAM",
     "trigger_date": "2026-10-11",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,000, 有 $52,422)",
-    "planned_at": "2026-10-08T19:56:57.806732"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,500, 有 $52,422)",
+    "planned_at": "2026-10-09T13:38:51.312461"
   },
   "history": [
     {
@@ -560,6 +560,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: KLAC IV rank 20 < 30, rotate to GM (IV rank 84)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 CSCO (score=99.5)"
+    },
+    {
+      "switched_at": "2026-10-09T13:35:35.474214",
+      "from": "CSCO",
+      "to": "NVDA",
+      "planned_to": "DRAM",
+      "reason": "IDLE+profit rotation: DRAM scores +100% above CSCO (账户权益 $105,364 ≥ 上日)",
+      "rescan_note": "触发时重扫: 原计划 DRAM 已非 top-1，改用 NVDA (score=92.5)"
     }
   ]
 }
