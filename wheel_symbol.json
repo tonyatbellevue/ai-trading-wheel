@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "INTC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "DRAM",
+    "to_symbol": "NVDA",
     "trigger_date": "2026-10-11",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,500, 有 $52,422)",
-    "planned_at": "2026-10-09T13:38:51.312461"
+    "planned_at": "2026-10-09T13:43:06.890110"
   },
   "history": [
     {
@@ -568,6 +568,14 @@
       "planned_to": "DRAM",
       "reason": "IDLE+profit rotation: DRAM scores +100% above CSCO (账户权益 $105,364 ≥ 上日)",
       "rescan_note": "触发时重扫: 原计划 DRAM 已非 top-1，改用 NVDA (score=92.5)"
+    },
+    {
+      "switched_at": "2026-10-09T13:42:13.915808",
+      "from": "NVDA",
+      "to": "INTC",
+      "planned_to": "ARM",
+      "reason": "IV-blocked fallback: NVDA IV rank 2 < 30, rotate to ARM (IV rank 80)",
+      "rescan_note": "触发时重扫: 原计划 ARM 已非 top-1，改用 INTC (score=89.3)"
     }
   ]
 }
