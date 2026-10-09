@@ -2,10 +2,10 @@
   "active_symbol": "INTC",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "DRAM",
+    "to_symbol": "INTC",
     "trigger_date": "2026-10-11",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $105,500, 有 $52,567)",
-    "planned_at": "2026-10-09T15:02:42.604741"
+    "planned_at": "2026-10-09T15:25:45.392182"
   },
   "history": [
     {
