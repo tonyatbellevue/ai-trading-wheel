@@ -1,11 +1,11 @@
 {
-  "active_symbol": "INTC",
+  "active_symbol": "PLTR",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "INTC",
-    "trigger_date": "2026-10-11",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $106,000, 有 $52,567)",
-    "planned_at": "2026-10-09T19:41:58.053874"
+    "to_symbol": "PLTR",
+    "trigger_date": "2026-10-18",
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $105,500, 有 $52,567)",
+    "planned_at": "2026-10-12T13:37:05.312692"
   },
   "history": [
     {
@@ -576,6 +576,14 @@
       "planned_to": "ARM",
       "reason": "IV-blocked fallback: NVDA IV rank 2 < 30, rotate to ARM (IV rank 80)",
       "rescan_note": "触发时重扫: 原计划 ARM 已非 top-1，改用 INTC (score=89.3)"
+    },
+    {
+      "switched_at": "2026-10-12T13:35:50.400384",
+      "from": "INTC",
+      "to": "PLTR",
+      "planned_to": "INTC",
+      "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $106,000, 有 $52,567)",
+      "rescan_note": "触发时重扫: 原计划 INTC 已非 top-1，改用 PLTR (score=98.6)"
     }
   ]
 }
