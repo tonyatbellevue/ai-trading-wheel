@@ -5612,3 +5612,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-12T13:49:16.848760,skip,BAC,sell_put,,,,,,,,,52022.02,105908.02,,,,,VIXY=16.13,1,[earnings] 财报日 2026-10-14 在 5d 窗口内,,,filter=earnings
 2026-10-12T14:09:11.885611,skip,XOM,sell_put,,,,,,,,,52022.02,105899.02,,,,,VIXY=16.12,1,insufficient_funds,,,
 2026-10-12T14:17:08.615051,skip,XOM,sell_put,,,,,,,,,52022.02,105854.02,,,,,VIXY=16.08,1,insufficient_funds,,,
+2026-10-12T14:25:19.586068,skip,XOM,sell_put,,,,,,,,,52022.02,105908.02,,,,,VIXY=16.09,1,insufficient_funds,,,
