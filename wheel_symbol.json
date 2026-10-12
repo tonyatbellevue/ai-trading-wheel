@@ -1,11 +1,11 @@
 {
-  "active_symbol": "PLTR",
+  "active_symbol": "BAC",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "PLTR",
     "trigger_date": "2026-10-18",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $105,500, 有 $52,567)",
-    "planned_at": "2026-10-12T13:37:05.312692"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $106,000, 有 $52,022)",
+    "planned_at": "2026-10-12T13:45:19.966662"
   },
   "history": [
     {
@@ -584,6 +584,14 @@
       "planned_to": "INTC",
       "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $106,000, 有 $52,567)",
       "rescan_note": "触发时重扫: 原计划 INTC 已非 top-1，改用 PLTR (score=98.6)"
+    },
+    {
+      "switched_at": "2026-10-12T13:42:17.345032",
+      "from": "PLTR",
+      "to": "BAC",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: PLTR IV rank 2 < 30, rotate to GM (IV rank 77)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 BAC (score=97.4)"
     }
   ]
 }
