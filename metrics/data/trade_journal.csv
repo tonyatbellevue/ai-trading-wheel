@@ -5610,3 +5610,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-12T13:41:10.059004,exit,MSFT,,MSFT261012C00535000,,,1,,,,,52022.02,106167.52,,,,,,,,-340.0,btc_50pct_profit,detected by position_tracker; entry=$1.45
 2026-10-12T13:43:11.417814,entry,MSFT,sell_call,MSFT261016C00552500,552.5,2026-10-16,1,2.17,0.2364,,4,52022.02,106078.02,PASS,,,,VIXY=16.15,1,,,,cost_basis=441.13
 2026-10-12T13:49:16.848760,skip,BAC,sell_put,,,,,,,,,52022.02,105908.02,,,,,VIXY=16.13,1,[earnings] 财报日 2026-10-14 在 5d 窗口内,,,filter=earnings
+2026-10-12T14:09:11.885611,skip,XOM,sell_put,,,,,,,,,52022.02,105899.02,,,,,VIXY=16.12,1,insufficient_funds,,,
