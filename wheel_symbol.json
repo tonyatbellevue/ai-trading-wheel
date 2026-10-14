@@ -1,11 +1,11 @@
 {
-  "active_symbol": "XOM",
+  "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PLTR",
+    "to_symbol": "XOM",
     "trigger_date": "2026-10-18",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $107,000, 有 $52,239)",
-    "planned_at": "2026-10-13T15:57:49.610235"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $106,500, 有 $52,239)",
+    "planned_at": "2026-10-14T13:36:38.393435"
   },
   "history": [
     {
@@ -608,6 +608,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: PLTR IV rank 2 < 30, rotate to GM (IV rank 77)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 XOM (score=99.2)"
+    },
+    {
+      "switched_at": "2026-10-14T13:35:42.353564",
+      "from": "XOM",
+      "to": "WMT",
+      "planned_to": "BAC",
+      "reason": "IV-blocked fallback: XOM IV rank 16 < 30, rotate to BAC (IV rank 98)",
+      "rescan_note": "触发时重扫: 原计划 BAC 已非 top-1，改用 WMT (score=98.6)"
     }
   ]
 }
