@@ -2,10 +2,10 @@
   "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "GM",
+    "to_symbol": "WMT",
     "trigger_date": "2026-10-18",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $105,500, 有 $52,379)",
-    "planned_at": "2026-10-15T18:25:42.850256"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $106,500, 有 $52,379)",
+    "planned_at": "2026-10-15T18:33:49.135301"
   },
   "history": [
     {
