@@ -5822,3 +5822,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-16T14:24:49.848428,skip,NVDA,sell_put,,,,,,,,,52490.76,106004.76,,,,,VIXY=16.15,1,[ma_trend] 股价 $217.40 < MA50 $223.14（下跌趋势）,,,filter=ma_trend
 2026-10-16T14:32:51.265077,skip,NVDA,sell_put,,,,,,,,,52490.76,105828.32,,,,,VIXY=16.14,1,[ma_trend] 股价 $217.54 < MA50 $223.14（下跌趋势）,,,filter=ma_trend
 2026-10-16T14:41:06.693267,skip,NVDA,sell_put,,,,,,,,,52490.76,105904.76,,,,,VIXY=16.09,1,[ma_trend] 股价 $218.29 < MA50 $223.16（下跌趋势）,,,filter=ma_trend
+2026-10-16T14:49:16.325107,skip,NVDA,sell_put,,,,,,,,,52490.76,105992.26,,,,,VIXY=16.01,1,[ma_trend] 股价 $218.34 < MA50 $223.16（下跌趋势）,,,filter=ma_trend
