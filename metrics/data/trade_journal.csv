@@ -5812,3 +5812,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-15T19:49:16.349696,skip,WMT,sell_put,,,,,,,,,52378.81,106245.31,,,,,VIXY=16.31,1,insufficient_funds,,,
 2026-10-15T19:56:58.853026,skip,WMT,sell_put,,,,,,,,,52378.81,106189.81,,,,,VIXY=16.39,1,insufficient_funds,,,
 2026-10-16T13:41:15.517869,skip,NVDA,sell_put,,,,,,,,,52378.81,105938.81,,,,,VIXY=16.23,1,[ma_trend] 股价 $215.33 < MA50 $223.10（下跌趋势）,,,filter=ma_trend
+2026-10-16T13:48:55.114450,exit,MSFT,,MSFT261019C00547500,,,1,,,,,52315.78,105999.28,,,,,,,,140.0,btc_50pct_profit,detected by position_tracker; entry=$2.05
+2026-10-16T13:48:56.799306,skip,NVDA,sell_put,,,,,,,,,52315.78,106003.78,,,,,VIXY=16.15,1,[ma_trend] 股价 $216.07 < MA50 $223.12（下跌趋势）,,,filter=ma_trend
+2026-10-16T13:49:08.242079,entry,MSFT,sell_call,MSFT261021C00547500,547.5,2026-10-21,1,1.75,0.2272,,5,52315.78,106003.28,PASS,,,,VIXY=16.16,1,,,,cost_basis=441.13
