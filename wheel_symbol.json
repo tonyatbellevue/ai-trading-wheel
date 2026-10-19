@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "F",
+    "to_symbol": "GM",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,500, 有 $52,651)",
-    "planned_at": "2026-10-19T15:09:18.419370"
+    "planned_at": "2026-10-19T15:25:24.437548"
   },
   "history": [
     {
