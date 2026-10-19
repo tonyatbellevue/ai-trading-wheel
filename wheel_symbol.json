@@ -1,11 +1,11 @@
 {
-  "active_symbol": "XOM",
+  "active_symbol": "F",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "XOM",
     "trigger_date": "2026-10-25",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,500, 有 $52,651)",
-    "planned_at": "2026-10-19T13:37:21.195157"
+    "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,651)",
+    "planned_at": "2026-10-19T13:42:52.336959"
   },
   "history": [
     {
@@ -631,6 +631,14 @@
       "planned_to": "JNJ",
       "reason": "IV-blocked fallback: NVDA IV rank 1 < 30, rotate to JNJ (IV rank 92)",
       "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 XOM (score=97.4)"
+    },
+    {
+      "switched_at": "2026-10-19T13:41:58.406071",
+      "from": "XOM",
+      "to": "F",
+      "planned_to": "JNJ",
+      "reason": "IV-blocked fallback: XOM IV rank 11 < 30, rotate to JNJ (IV rank 92)",
+      "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 F (score=97.2)"
     }
   ]
 }
