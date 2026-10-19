@@ -1,11 +1,11 @@
 {
-  "active_symbol": "F",
+  "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "XOM",
+    "to_symbol": "F",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,651)",
-    "planned_at": "2026-10-19T13:42:52.336959"
+    "planned_at": "2026-10-19T13:50:59.677391"
   },
   "history": [
     {
@@ -639,6 +639,14 @@
       "planned_to": "JNJ",
       "reason": "IV-blocked fallback: XOM IV rank 11 < 30, rotate to JNJ (IV rank 92)",
       "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 F (score=97.2)"
+    },
+    {
+      "switched_at": "2026-10-19T13:50:02.354318",
+      "from": "F",
+      "to": "GM",
+      "planned_to": "CSCO",
+      "reason": "IV-blocked fallback: F IV rank 6 < 30, rotate to CSCO (IV rank 64)",
+      "rescan_note": "触发时重扫: 原计划 CSCO 已非 top-1，改用 GM (score=96.0)"
     }
   ]
 }
