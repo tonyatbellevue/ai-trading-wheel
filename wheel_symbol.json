@@ -2,10 +2,10 @@
   "active_symbol": "GM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
+    "to_symbol": "LHX",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,500, 有 $52,651)",
-    "planned_at": "2026-10-20T16:33:14.583558"
+    "planned_at": "2026-10-20T16:57:16.506484"
   },
   "history": [
     {
