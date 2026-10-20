@@ -5966,3 +5966,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-20T19:32:53.429554,skip,AMZN,sell_put,,,,,,,,,52579.57,105662.57,,,,,VIXY=16.98,1,insufficient_funds,,,
 2026-10-20T19:32:58.128965,entry,MSFT,sell_call,MSFT261023C00540000,540.0,2026-10-23,1,1.86,0.2467,,3,52579.57,105659.07,PASS,,,,VIXY=16.98,1,,,,cost_basis=441.13
 2026-10-20T19:41:14.515789,skip,AMZN,sell_put,,,,,,,,,52767.55,105666.55,,,,,VIXY=16.99,1,insufficient_funds,,,
+2026-10-20T19:48:52.342822,skip,AMZN,sell_put,,,,,,,,,52767.55,105679.55,,,,,VIXY=16.97,1,insufficient_funds,,,
