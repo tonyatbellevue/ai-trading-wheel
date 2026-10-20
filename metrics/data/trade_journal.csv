@@ -5940,3 +5940,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-20T16:16:46.798574,skip,GM,sell_put,,,,,,,,,52650.6,105727.6,,,,,VIXY=16.86,1,[earnings] 财报日 2026-10-20 在 5d 窗口内,,,filter=earnings
 2026-10-20T16:24:59.093711,skip,GM,sell_put,,,,,,,,,52650.6,105658.6,,,,,VIXY=16.90,1,[earnings] 财报日 2026-10-20 在 5d 窗口内,,,filter=earnings
 2026-10-20T16:32:54.552893,skip,GM,sell_put,,,,,,,,,52650.6,105738.1,,,,,VIXY=16.87,1,[earnings] 财报日 2026-10-20 在 5d 窗口内,,,filter=earnings
+2026-10-20T16:41:28.142259,skip,GM,sell_put,,,,,,,,,52650.6,105735.6,,,,,VIXY=16.82,1,[earnings] 财报日 2026-10-20 在 5d 窗口内,,,filter=earnings
