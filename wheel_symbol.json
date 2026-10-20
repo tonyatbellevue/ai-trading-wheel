@@ -1,11 +1,11 @@
 {
-  "active_symbol": "GM",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "LHX",
+    "to_symbol": "AMZN",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,500, 有 $52,651)",
-    "planned_at": "2026-10-20T16:57:16.506484"
+    "planned_at": "2026-10-20T17:10:34.653276"
   },
   "history": [
     {
@@ -647,6 +647,13 @@
       "planned_to": "CSCO",
       "reason": "IV-blocked fallback: F IV rank 6 < 30, rotate to CSCO (IV rank 64)",
       "rescan_note": "触发时重扫: 原计划 CSCO 已非 top-1，改用 GM (score=96.0)"
+    },
+    {
+      "switched_at": "2026-10-20T17:09:43.354958",
+      "from": "GM",
+      "to": "AMZN",
+      "planned_to": "AMZN",
+      "reason": "CAUTION + better alternative (AMZN score +15%)"
     }
   ]
 }
