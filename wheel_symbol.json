@@ -2,10 +2,10 @@
   "active_symbol": "PFE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "XOM",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,000, 有 $52,767)",
-    "planned_at": "2026-10-21T14:16:55.987225"
+    "planned_at": "2026-10-21T14:33:52.193296"
   },
   "history": [
     {
