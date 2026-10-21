@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-10-21T18:32:56.240882",
+  "timestamp": "2026-10-21T18:41:24.715066",
   "options": {
     "MSFT261023C00540000": {
       "qty": -1.0,
       "entry": 1.88,
-      "current": 1.73,
+      "current": 1.66,
       "underlying": "MSFT",
       "strike": 540.0,
       "expiry": "2026-10-23",
