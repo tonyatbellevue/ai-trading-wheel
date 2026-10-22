@@ -6095,3 +6095,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-22T18:09:02.405236,skip,MSFT,sell_call,,,,,,,,,52730.45,105103.45,,,,,VIXY=17.67,1,[earnings] 财报日 2026-10-28 在 5d 窗口内,,,filter=earnings
 2026-10-22T18:17:02.903997,skip,PFE,sell_put,,,,,,,,,52730.45,105138.45,,,,,VIXY=17.66,1,insufficient_funds,,,
 2026-10-22T18:17:48.651601,skip,MSFT,sell_call,,,,,,,,,52730.45,105153.45,,,,,VIXY=17.61,1,[earnings] 财报日 2026-10-28 在 5d 窗口内,,,filter=earnings
+2026-10-22T18:24:54.963492,skip,PFE,sell_put,,,,,,,,,52730.45,105146.45,,,,,VIXY=17.58,1,insufficient_funds,,,
+2026-10-22T18:25:01.012228,skip,MSFT,sell_call,,,,,,,,,52730.45,105148.95,,,,,VIXY=17.57,1,[earnings] 财报日 2026-10-28 在 5d 窗口内,,,filter=earnings
