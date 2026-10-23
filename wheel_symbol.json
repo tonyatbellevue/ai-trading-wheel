@@ -1,11 +1,11 @@
 {
-  "active_symbol": "DRAM",
+  "active_symbol": "NVDA",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NVDA",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: 现金不足 (需 $100,500, 有 $52,730)",
-    "planned_at": "2026-10-23T17:03:44.416073"
+    "planned_at": "2026-10-23T17:10:48.279216"
   },
   "history": [
     {
@@ -724,6 +724,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: NVDA IV rank 14 < 30, rotate to GM (IV rank 74)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 DRAM (score=85.8)"
+    },
+    {
+      "switched_at": "2026-10-23T17:09:53.381113",
+      "from": "DRAM",
+      "to": "NVDA",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: DRAM IV rank 22 < 30, rotate to GM (IV rank 74)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 NVDA (score=91.2)"
     }
   ]
 }
