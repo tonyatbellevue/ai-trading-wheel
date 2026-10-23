@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "DRAM",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NVDA",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: 现金不足 (需 $100,500, 有 $52,730)",
-    "planned_at": "2026-10-23T16:26:36.058266"
+    "planned_at": "2026-10-23T16:34:57.026816"
   },
   "history": [
     {
@@ -684,6 +684,14 @@
       "to": "NVDA",
       "planned_to": "NVDA",
       "reason": "IDLE+profit rotation: NVDA scores +18% above AMZN (账户权益 $105,130 ≥ 上日)"
+    },
+    {
+      "switched_at": "2026-10-23T16:34:01.677331",
+      "from": "NVDA",
+      "to": "DRAM",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: NVDA IV rank 14 < 30, rotate to GM (IV rank 74)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 DRAM (score=85.8)"
     }
   ]
 }
