@@ -1,11 +1,11 @@
 {
-  "active_symbol": "NVDA",
+  "active_symbol": "AMZN",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NVDA",
     "trigger_date": "2026-10-25",
     "reason": "health STOP: 现金不足 (需 $100,500, 有 $52,730)",
-    "planned_at": "2026-10-23T18:26:54.135992"
+    "planned_at": "2026-10-23T18:34:51.539323"
   },
   "history": [
     {
@@ -812,6 +812,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: DRAM IV rank 21 < 30, rotate to GM (IV rank 74)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 NVDA (score=91.2)"
+    },
+    {
+      "switched_at": "2026-10-23T18:33:58.682230",
+      "from": "NVDA",
+      "to": "AMZN",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: NVDA IV rank 14 < 30, rotate to GM (IV rank 74)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 AMZN (score=87.1)"
     }
   ]
 }
