@@ -1,11 +1,11 @@
 {
-  "active_symbol": "XOM",
+  "active_symbol": "LHX",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "XOM",
     "trigger_date": "2026-11-01",
     "reason": "health STOP: 现金不足 (需 $101,000, 有 $52,730)",
-    "planned_at": "2026-10-26T14:10:50.414935"
+    "planned_at": "2026-10-26T14:19:00.344014"
   },
   "history": [
     {
@@ -844,6 +844,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: LHX IV rank 17 < 30, rotate to GM (IV rank 72)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 XOM (score=97.4)"
+    },
+    {
+      "switched_at": "2026-10-26T14:18:07.706156",
+      "from": "XOM",
+      "to": "LHX",
+      "planned_to": "GM",
+      "reason": "IV-blocked fallback: XOM IV rank 15 < 30, rotate to GM (IV rank 73)",
+      "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 LHX (score=96.2)"
     }
   ]
 }
