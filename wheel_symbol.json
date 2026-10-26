@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "NVDA",
-    "trigger_date": "2026-10-25",
+    "to_symbol": "XOM",
+    "trigger_date": "2026-11-01",
     "reason": "health STOP: 现金不足 (需 $100,500, 有 $52,730)",
-    "planned_at": "2026-10-23T18:34:51.539323"
+    "planned_at": "2026-10-26T13:37:14.290329"
   },
   "history": [
     {
@@ -820,6 +820,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: NVDA IV rank 14 < 30, rotate to GM (IV rank 74)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 AMZN (score=87.1)"
+    },
+    {
+      "switched_at": "2026-10-26T13:36:19.580404",
+      "from": "AMZN",
+      "to": "XOM",
+      "planned_to": "NVDA",
+      "reason": "health STOP: 现金不足 (需 $100,500, 有 $52,730)",
+      "rescan_note": "触发时重扫: 原计划 NVDA 已非 top-1，改用 XOM (score=97.4)"
     }
   ]
 }
