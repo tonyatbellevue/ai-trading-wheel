@@ -6303,3 +6303,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-27T16:25:40.389858,skip,MSFT,sell_call,,,,,,,,,52730.42,106060.42,,,,,VIXY=17.28,1,[earnings] 财报日 2026-10-28 在 5d 窗口内,,,filter=earnings
 2026-10-27T16:41:17.088812,skip,BAC,sell_put,,,,,,,,,52730.42,106007.42,,,,,VIXY=17.33,1,[ma_trend] 股价 $50.67 < MA50 $57.18（下跌趋势）,,,filter=ma_trend
 2026-10-27T16:41:56.839253,skip,MSFT,sell_call,,,,,,,,,52730.42,106004.42,,,,,VIXY=17.33,1,[earnings] 财报日 2026-10-28 在 5d 窗口内,,,filter=earnings
+2026-10-27T16:49:15.389455,skip,BAC,sell_put,,,,,,,,,52730.42,105946.42,,,,,VIXY=17.39,1,[ma_trend] 股价 $50.65 < MA50 $57.18（下跌趋势）,,,filter=ma_trend
+2026-10-27T16:49:47.819859,skip,MSFT,sell_call,,,,,,,,,52730.42,105938.92,,,,,VIXY=17.39,1,[earnings] 财报日 2026-10-28 在 5d 窗口内,,,filter=earnings
