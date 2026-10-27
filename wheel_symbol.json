@@ -1,11 +1,11 @@
 {
-  "active_symbol": "WMT",
+  "active_symbol": "XOM",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "XOM",
     "trigger_date": "2026-11-01",
-    "reason": "health STOP: 现金不足 (需 $102,000, 有 $52,730)",
-    "planned_at": "2026-10-27T15:17:45.507642"
+    "reason": "health STOP: 现金不足 (需 $102,500, 有 $52,730)",
+    "planned_at": "2026-10-27T15:26:45.017097"
   },
   "history": [
     {
@@ -1188,6 +1188,13 @@
       "planned_to": "JNJ",
       "reason": "IV-blocked fallback: LHX IV rank 24 < 30, rotate to JNJ (IV rank 98)",
       "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 WMT (score=98.0)"
+    },
+    {
+      "switched_at": "2026-10-27T15:25:51.908461",
+      "from": "WMT",
+      "to": "XOM",
+      "planned_to": "XOM",
+      "reason": "CAUTION + better alternative (XOM score +18%)"
     }
   ]
 }
