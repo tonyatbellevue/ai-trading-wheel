@@ -1,11 +1,11 @@
 {
-  "active_symbol": "BAC",
+  "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "CSCO",
     "trigger_date": "2026-11-01",
     "reason": "health STOP: IV 过高，风险显著; 现金不足 (需 $101,500, 有 $52,730)",
-    "planned_at": "2026-10-28T16:09:59.197564"
+    "planned_at": "2026-10-28T16:34:24.157455"
   },
   "history": [
     {
@@ -1203,6 +1203,14 @@
       "planned_to": "GM",
       "reason": "IV-blocked fallback: XOM IV rank 18 < 30, rotate to GM (IV rank 90)",
       "rescan_note": "触发时重扫: 原计划 GM 已非 top-1，改用 BAC (score=96.7)"
+    },
+    {
+      "switched_at": "2026-10-28T16:33:29.423622",
+      "from": "BAC",
+      "to": "CSCO",
+      "planned_to": "PFE",
+      "reason": "CAUTION + better alternative (PFE score +14%)",
+      "rescan_note": "触发时重扫: 原计划 PFE 已非 top-1，改用 CSCO (score=95.5)"
     }
   ]
 }
