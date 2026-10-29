@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "BAC",
     "trigger_date": "2026-11-01",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,000, 有 $52,929)",
-    "planned_at": "2026-10-29T18:41:27.760540"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $103,500, 有 $52,929)",
+    "planned_at": "2026-10-29T18:48:57.642690"
   },
   "history": [
     {
