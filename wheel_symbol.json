@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "CSCO",
     "trigger_date": "2026-11-01",
     "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,000, 有 $52,929)",
-    "planned_at": "2026-10-29T18:56:59.098543"
+    "planned_at": "2026-10-29T19:02:08.508156"
   },
   "history": [
     {
