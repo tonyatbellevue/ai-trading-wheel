@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "PFE",
     "trigger_date": "2026-11-01",
     "reason": "health STOP: 现金不足 (需 $103,000, 有 $52,980)",
-    "planned_at": "2026-10-29T15:02:23.221689"
+    "planned_at": "2026-10-29T15:17:08.835309"
   },
   "history": [
     {
