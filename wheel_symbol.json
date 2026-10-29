@@ -2,10 +2,10 @@
   "active_symbol": "CSCO",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "CSCO",
+    "to_symbol": "WMT",
     "trigger_date": "2026-11-01",
-    "reason": "health STOP: IV 过高，风险显著; 现金不足 (需 $102,000, 有 $52,730)",
-    "planned_at": "2026-10-28T19:57:24.104189"
+    "reason": "health STOP: 现金不足 (需 $102,500, 有 $52,730)",
+    "planned_at": "2026-10-29T13:36:10.655116"
   },
   "history": [
     {
