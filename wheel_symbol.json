@@ -4,8 +4,8 @@
     "from_symbol": "MSFT",
     "to_symbol": "PFE",
     "trigger_date": "2026-11-01",
-    "reason": "health STOP: 现金不足 (需 $104,000, 有 $52,980)",
-    "planned_at": "2026-10-29T18:09:02.900399"
+    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $104,000, 有 $52,929)",
+    "planned_at": "2026-10-29T18:19:32.363734"
   },
   "history": [
     {
