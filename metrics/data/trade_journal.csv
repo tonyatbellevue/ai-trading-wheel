@@ -6538,3 +6538,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-30T16:08:54.449698,skip,CSCO,sell_put,,,,,,,,,53280.2,105225.7,,,,,VIXY=18.27,1,[sector_etf] XLK(networking) 今日 -4.8% < -2% 拦截,,,filter=other
 2026-10-30T16:16:52.290297,skip,CSCO,sell_put,,,,,,,,,53280.2,105223.2,,,,,VIXY=18.29,1,[sector_etf] XLK(networking) 今日 -4.9% < -2% 拦截,,,filter=other
 2026-10-30T16:25:00.654278,skip,CSCO,sell_put,,,,,,,,,53280.2,105249.7,,,,,VIXY=18.30,1,[sector_etf] XLK(networking) 今日 -4.8% < -2% 拦截,,,filter=other
+2026-10-30T16:33:01.559413,skip,CSCO,sell_put,,,,,,,,,53280.2,105340.2,,,,,VIXY=18.34,1,[sector_etf] XLK(networking) 今日 -4.8% < -2% 拦截,,,filter=other
