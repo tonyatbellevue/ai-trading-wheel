@@ -6517,3 +6517,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-10-30T13:41:06.064168,exit,MSFT,,MSFT261102C00540000,,,1,,,,,53094.22,104945.22,,,,,,,,141.0,btc_50pct_profit,detected by position_tracker; entry=$2.00
 2026-10-30T13:41:07.645340,skip,CSCO,sell_put,,,,,,,,,53094.22,104964.22,,,,,VIXY=17.61,1,[sector_etf] XLK(networking) 今日 -3.7% < -2% 拦截,,,filter=other
 2026-10-30T13:41:20.019551,entry,MSFT,sell_call,MSFT261102C00527500,527.5,2026-11-02,1,1.85,0.2572,,3,53094.22,105019.22,PASS,,,,VIXY=17.57,1,,,,cost_basis=441.13
+2026-10-30T13:48:52.773167,skip,CSCO,sell_put,,,,,,,,,53280.2,105212.2,,,,,VIXY=17.79,1,[sector_etf] XLK(networking) 今日 -4.0% < -2% 拦截,,,filter=other
