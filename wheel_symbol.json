@@ -2,10 +2,10 @@
   "active_symbol": "PFE",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "PFE",
+    "to_symbol": "WMT",
     "trigger_date": "2026-11-08",
-    "reason": "health STOP: 现金不足 (需 $100,500, 有 $53,491)",
-    "planned_at": "2026-11-02T20:25:09.951240"
+    "reason": "health STOP: 现金不足 (需 $99,000, 有 $53,491)",
+    "planned_at": "2026-11-02T20:33:05.918493"
   },
   "history": [
     {
