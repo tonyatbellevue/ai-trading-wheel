@@ -6617,3 +6617,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-02T20:56:55.048359,skip,PFE,sell_put,,,,,,,,,53491.08,104179.08,,,,,VIXY=18.46,1,[earnings] 财报日 2026-11-03 在 5d 窗口内,,,filter=earnings
 2026-11-03T14:33:32.364326,skip,PFE,sell_put,,,,,,,,,53491.01,104387.01,,,,,VIXY=18.54,1,[earnings] 财报日 2026-11-03 在 5d 窗口内,,,filter=earnings
 2026-11-03T14:41:23.790350,skip,PFE,sell_put,,,,,,,,,53491.01,104580.01,,,,,VIXY=18.50,1,[earnings] 财报日 2026-11-03 在 5d 窗口内,,,filter=earnings
+2026-11-03T14:48:43.913403,exit,MSFT,,MSFT261106C00537500,,,1,,,,,53405.98,104432.98,,,,,,,,178.0,btc_50pct_profit,detected by position_tracker; entry=$2.62
+2026-11-03T14:49:00.658887,skip,PFE,sell_put,,,,,,,,,53405.98,104413.48,,,,,VIXY=18.35,1,[earnings] 财报日 2026-11-03 在 5d 窗口内,,,filter=earnings
+2026-11-03T14:49:37.754150,entry,MSFT,sell_call,MSFT261104C00520000,520.0,2026-11-04,1,1.92,0.2473,,1,53405.98,104471.98,PASS,,,,VIXY=18.32,1,,,,cost_basis=441.13
