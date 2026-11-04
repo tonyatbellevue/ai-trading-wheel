@@ -6675,3 +6675,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-04T14:41:08.298006,exit,MSFT,,MSFT261104C00530000,,,1,,,,,51624.77,106724.77,,,,,,,,-1471.0,btc_50pct_profit,detected by position_tracker; entry=$1.69
 2026-11-04T14:41:36.793242,skip,PFE,sell_put,,,,,,,,,51624.77,106766.77,,,,,VIXY=16.76,1,insufficient_funds,,,
 2026-11-04T14:42:01.829494,entry,MSFT,sell_call,MSFT261106C00562500,562.5,2026-11-06,1,2.41,0.2482,,2,51624.77,106699.77,PASS,,,,VIXY=16.75,1,,,,cost_basis=441.13
+2026-11-04T14:49:17.488581,skip,PFE,sell_put,,,,,,,,,51865.75,106633.25,,,,,VIXY=16.74,1,insufficient_funds,,,
