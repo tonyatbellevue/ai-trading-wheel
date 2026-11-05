@@ -6773,3 +6773,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-05T20:08:55.506925,skip,PFE,sell_put,,,,,,,,,52039.63,105512.63,,,,,VIXY=20.21,1,[sector_etf] XLV(pharma) 今日 -2.1% < -2% 拦截,,,filter=other
 2026-11-05T20:16:51.150524,skip,PFE,sell_put,,,,,,,,,52039.63,105530.63,,,,,VIXY=20.17,1,[sector_etf] XLV(pharma) 今日 -2.2% < -2% 拦截,,,filter=other
 2026-11-05T20:24:46.287110,skip,PFE,sell_put,,,,,,,,,52039.63,105502.63,,,,,VIXY=20.22,1,[sector_etf] XLV(pharma) 今日 -2.3% < -2% 拦截,,,filter=other
+2026-11-05T20:32:57.519703,skip,PFE,sell_put,,,,,,,,,52039.63,105417.63,,,,,VIXY=20.43,1,[sector_etf] XLV(pharma) 今日 -2.5% < -2% 拦截,,,filter=other
