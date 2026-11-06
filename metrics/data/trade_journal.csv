@@ -6778,3 +6778,5 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-05T20:48:41.238225,skip,PFE,sell_put,,,,,,,,,52039.63,105363.63,,,,,VIXY=20.95,1,[sector_etf] XLV(pharma) 今日 -2.4% < -2% 拦截,,,filter=other
 2026-11-05T20:56:54.161954,skip,PFE,sell_put,,,,,,,,,52039.63,105646.63,,,,,VIXY=21.02,1,[sector_etf] XLV(pharma) 今日 -2.5% < -2% 拦截,,,filter=other
 2026-11-06T14:32:49.249934,skip,PFE,sell_put,,,,,,,,,52039.56,105064.56,,,,,VIXY=20.90,1,[ma_trend] 股价 $28.71 < MA50 $28.73（下跌趋势）,,,filter=ma_trend
+2026-11-06T15:41:09.260870,exit,MSFT,,MSFT261109C00557500,,,1,,,,,52008.53,105483.52,,,,,,,,201.0,btc_50pct_profit,detected by position_tracker; entry=$2.41
+2026-11-06T15:41:45.925052,entry,MSFT,sell_call,MSFT261111C00547500,547.5,2026-11-11,1,2.71,0.2522,,5,52008.53,105463.28,PASS,,,,VIXY=20.32,1,,,,cost_basis=441.13
