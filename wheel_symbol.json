@@ -1,11 +1,11 @@
 {
-  "active_symbol": "PFE",
+  "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "AMZN",
-    "trigger_date": "2026-11-08",
-    "reason": "health STOP: 现金不足 (需 $102,500, 有 $52,040)",
-    "planned_at": "2026-11-06T14:33:07.529176"
+    "to_symbol": "WMT",
+    "trigger_date": "2026-11-15",
+    "reason": "health STOP: 现金不足 (需 $106,000, 有 $52,279)",
+    "planned_at": "2026-11-09T14:34:24.926906"
   },
   "history": [
     {
@@ -1227,6 +1227,13 @@
       "planned_to": "JNJ",
       "reason": "IV-blocked fallback: WMT IV rank 22 < 30, rotate to JNJ (IV rank 94)",
       "rescan_note": "触发时重扫: 原计划 JNJ 已非 top-1，改用 PFE (score=97.4)"
+    },
+    {
+      "switched_at": "2026-11-09T14:33:30.768665",
+      "from": "PFE",
+      "to": "WMT",
+      "planned_to": "WMT",
+      "reason": "CAUTION + better alternative (WMT score +30%)"
     }
   ]
 }
