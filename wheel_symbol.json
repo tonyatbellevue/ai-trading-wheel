@@ -2,10 +2,10 @@
   "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ADBE",
+    "to_symbol": "WMT",
     "trigger_date": "2026-11-15",
     "reason": "health STOP: 现金不足 (需 $107,000, 有 $52,279)",
-    "planned_at": "2026-11-09T19:57:48.841529"
+    "planned_at": "2026-11-09T20:02:29.777104"
   },
   "history": [
     {
