@@ -2,10 +2,10 @@
   "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "WMT",
+    "to_symbol": "F",
     "trigger_date": "2026-11-15",
     "reason": "health STOP: 现金不足 (需 $106,500, 有 $52,279)",
-    "planned_at": "2026-11-10T16:09:39.788799"
+    "planned_at": "2026-11-10T16:25:49.177376"
   },
   "history": [
     {
