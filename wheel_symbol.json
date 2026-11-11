@@ -2,10 +2,10 @@
   "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "ADBE",
+    "to_symbol": "F",
     "trigger_date": "2026-11-15",
-    "reason": "health STOP: IV 过低，权利金收益不足; 现金不足 (需 $102,000, 有 $52,408)",
-    "planned_at": "2026-11-11T20:10:22.560449"
+    "reason": "health STOP: 现金不足 (需 $101,000, 有 $52,408)",
+    "planned_at": "2026-11-11T20:17:45.115635"
   },
   "history": [
     {
