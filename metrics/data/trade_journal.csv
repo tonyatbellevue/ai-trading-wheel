@@ -6974,3 +6974,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-12T19:09:18.091054,skip,WMT,sell_put,,,,,,,,,52619.24,104872.74,,,,,VIXY=17.37,1,insufficient_funds,,,
 2026-11-12T19:17:10.632064,skip,WMT,sell_put,,,,,,,,,52619.24,104845.24,,,,,VIXY=17.33,1,insufficient_funds,,,
 2026-11-12T19:25:23.162196,skip,WMT,sell_put,,,,,,,,,52619.24,104765.24,,,,,VIXY=17.38,1,insufficient_funds,,,
+2026-11-12T19:33:27.669796,skip,WMT,sell_put,,,,,,,,,52619.24,104721.24,,,,,VIXY=17.47,1,insufficient_funds,,,
