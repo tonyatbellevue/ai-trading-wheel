@@ -6991,3 +6991,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-13T14:41:12.043187,skip,WMT,sell_put,,,,,,,,,52567.15,104551.65,,,,,VIXY=17.51,1,[earnings] 财报日 2026-11-19 在 5d 窗口内,,,filter=earnings
 2026-11-13T14:41:29.647097,entry,MSFT,sell_call,MSFT261118C00532500,532.5,2026-11-18,1,2.62,0.2538,,5,52567.15,104582.65,PASS,,,,VIXY=17.52,1,,,,cost_basis=441.13
 2026-11-13T14:49:00.405252,skip,WMT,sell_put,,,,,,,,,52830.13,104801.13,,,,,VIXY=17.61,1,[earnings] 财报日 2026-11-19 在 5d 窗口内,,,filter=earnings
+2026-11-13T14:56:58.437860,skip,WMT,sell_put,,,,,,,,,52830.13,104724.13,,,,,VIXY=17.85,1,[earnings] 财报日 2026-11-19 在 5d 窗口内,,,filter=earnings
