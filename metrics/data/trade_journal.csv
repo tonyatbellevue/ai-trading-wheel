@@ -7041,3 +7041,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-13T20:49:22.237192,skip,WMT,sell_put,,,,,,,,,52830.13,104898.13,,,,,VIXY=18.09,1,[earnings] 财报日 2026-11-19 在 5d 窗口内,,,filter=earnings
 2026-11-13T20:56:56.324698,skip,WMT,sell_put,,,,,,,,,52830.13,104895.13,,,,,VIXY=17.95,1,[earnings] 财报日 2026-11-19 在 5d 窗口内,,,filter=earnings
 2026-11-16T14:41:05.991938,skip,AMZN,sell_put,,,,,,,,,52830.06,104629.31,,,,,VIXY=18.41,1,[sector_etf] XLK(megacap_tech) 今日 -2.2% < -2% 拦截,,,filter=other
+2026-11-16T14:48:58.387420,skip,AMZN,sell_put,,,,,,,,,52830.06,104795.06,,,,,VIXY=18.35,1,insufficient_funds,,,
