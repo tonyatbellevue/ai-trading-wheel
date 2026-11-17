@@ -7101,3 +7101,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-17T15:32:53.775738,skip,AMZN,sell_put,,,,,,,,,52830.06,103473.06,,,,,VIXY=19.70,1,insufficient_funds,,,
 2026-11-17T15:41:02.341117,skip,AMZN,sell_put,,,,,,,,,52830.06,103130.06,,,,,VIXY=20.02,1,[sector_etf] XLK(megacap_tech) 今日 -2.1% < -2% 拦截,,,filter=other
 2026-11-17T15:49:02.321486,skip,AMZN,sell_put,,,,,,,,,52830.06,102924.56,,,,,VIXY=20.78,0,[spy_market] SPY $728.80 < MA200 $732.32 (市场破位),,,filter=ma_trend
+2026-11-17T15:56:57.450245,skip,AMZN,sell_put,,,,,,,,,52830.06,102795.56,,,,,VIXY=20.40,0,[spy_market] SPY $728.30 < MA200 $732.32 (市场破位),,,filter=ma_trend
