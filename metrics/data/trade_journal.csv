@@ -7155,3 +7155,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-18T15:48:54.100238,skip,AMZN,sell_put,,,,,,,,,52830.06,103030.06,,,,,VIXY=20.96,0,[spy_market] SPY $728.61 < MA200 $732.54 (市场破位),,,filter=ma_trend
 2026-11-18T15:56:59.484716,skip,AMZN,sell_put,,,,,,,,,52830.06,103236.06,,,,,VIXY=20.79,0,[spy_market] SPY $729.98 < MA200 $732.54 (市场破位),,,filter=ma_trend
 2026-11-18T16:01:44.954946,skip,AMZN,sell_put,,,,,,,,,52830.06,103349.06,,,,,VIXY=20.75,0,[spy_market] SPY $730.49 < MA200 $732.55 (市场破位),,,filter=ma_trend
+2026-11-18T16:09:17.973165,skip,AMZN,sell_put,,,,,,,,,52830.06,103456.06,,,,,VIXY=20.68,0,[spy_market] SPY $730.36 < MA200 $732.55 (市场破位),,,filter=ma_trend
