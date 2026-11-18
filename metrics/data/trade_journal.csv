@@ -7177,3 +7177,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-18T18:33:09.632643,skip,AMZN,sell_put,,,,,,,,,52830.06,103636.56,,,,,VIXY=19.72,1,insufficient_funds,,,
 2026-11-18T18:41:18.364891,skip,AMZN,sell_put,,,,,,,,,52830.06,103750.06,,,,,VIXY=19.71,1,insufficient_funds,,,
 2026-11-18T18:49:23.055987,skip,AMZN,sell_put,,,,,,,,,52830.06,103732.06,,,,,VIXY=19.63,1,insufficient_funds,,,
+2026-11-18T18:56:54.298094,skip,AMZN,sell_put,,,,,,,,,52830.06,103821.06,,,,,VIXY=19.69,1,insufficient_funds,,,
