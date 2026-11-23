@@ -1,11 +1,11 @@
 {
-  "active_symbol": "AMZN",
+  "active_symbol": "WMT",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "GOOGL",
-    "trigger_date": "2026-11-22",
-    "reason": "health STOP: 现金不足 (需 $92,000, 有 $53,258)",
-    "planned_at": "2026-11-20T20:57:18.029679"
+    "to_symbol": "WMT",
+    "trigger_date": "2026-11-29",
+    "reason": "health STOP: 现金不足 (需 $98,000, 有 $53,258)",
+    "planned_at": "2026-11-23T14:34:34.032214"
   },
   "history": [
     {
@@ -1241,6 +1241,14 @@
       "to": "AMZN",
       "planned_to": "AMZN",
       "reason": "health STOP: 现金不足 (需 $103,000, 有 $52,619)"
+    },
+    {
+      "switched_at": "2026-11-23T14:33:40.229325",
+      "from": "AMZN",
+      "to": "WMT",
+      "planned_to": "GOOGL",
+      "reason": "health STOP: 现金不足 (需 $92,000, 有 $53,258)",
+      "rescan_note": "触发时重扫: 原计划 GOOGL 已非 top-1，改用 WMT (score=97.9)"
     }
   ]
 }
