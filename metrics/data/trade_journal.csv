@@ -7316,3 +7316,6 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-23T15:56:52.851216,skip,WMT,sell_put,,,,,,,,,53257.86,103147.36,,,,,VIXY=22.23,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
 2026-11-23T16:01:58.648878,skip,WMT,sell_put,,,,,,,,,53257.86,103149.86,,,,,VIXY=22.20,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
 2026-11-23T16:08:56.723071,skip,WMT,sell_put,,,,,,,,,53257.86,103144.87,,,,,VIXY=22.18,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
+2026-11-23T16:16:52.918740,exit,MSFT,,MSFT261123C00505000,,,1,,,,,53182.83,103071.83,,,,,,,,138.0,btc_50pct_profit,detected by position_tracker; entry=$2.19
+2026-11-23T16:16:55.560391,skip,WMT,sell_put,,,,,,,,,53182.83,103071.83,,,,,VIXY=22.31,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
+2026-11-23T16:17:46.339581,entry,MSFT,sell_call,MSFT261125C00512500,512.5,2026-11-25,1,2.46,0.2402,,2,53182.83,103125.83,PASS,,,,VIXY=22.27,0,,,,cost_basis=441.13
