@@ -7305,3 +7305,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-20T20:57:02.678027,skip,AMZN,sell_put,,,,,,,,,53257.92,101420.42,,,,,VIXY=26.45,0,[spy_market] SPY $687.58 < MA200 $732.74 (市场破位),,,filter=ma_trend
 2026-11-23T14:41:29.909626,skip,WMT,sell_put,,,,,,,,,53257.86,103059.86,,,,,VIXY=23.15,0,"[vix_regime] SPY 30d RV 25% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
 2026-11-23T14:48:56.130848,skip,WMT,sell_put,,,,,,,,,53257.86,103145.86,,,,,VIXY=23.51,0,"[vix_regime] SPY 30d RV 26% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
+2026-11-23T14:56:56.966019,skip,WMT,sell_put,,,,,,,,,53257.86,103275.86,,,,,VIXY=22.56,0,"[vix_regime] SPY 30d RV 26% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
