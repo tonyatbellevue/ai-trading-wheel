@@ -1,11 +1,11 @@
 {
-  "active_symbol": "PFE",
+  "active_symbol": "NFLX",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NFLX",
     "trigger_date": "2026-11-29",
-    "reason": "health STOP: 现金不足 (需 $97,000, 有 $53,631)",
-    "planned_at": "2026-11-24T17:58:36.496566"
+    "reason": "health STOP: 现金不足 (需 $96,500, 有 $53,631)",
+    "planned_at": "2026-11-24T18:26:39.365913"
   },
   "history": [
     {
@@ -1256,6 +1256,14 @@
       "to": "PFE",
       "planned_to": "PFE",
       "reason": "CAUTION + better alternative (PFE score +15%)"
+    },
+    {
+      "switched_at": "2026-11-24T18:25:46.319877",
+      "from": "PFE",
+      "to": "NFLX",
+      "planned_to": "F",
+      "reason": "CAUTION + better alternative (F score +27%)",
+      "rescan_note": "触发时重扫: 原计划 F 已非 top-1，改用 NFLX (score=94.1)"
     }
   ]
 }
