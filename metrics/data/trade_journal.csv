@@ -7359,3 +7359,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-24T14:32:52.346815,exit,MSFT,,MSFT261125C00512500,,,1,,,,,53358.69,102415.19,,,,,,,,173.0,btc_50pct_profit,detected by position_tracker; entry=$2.47
 2026-11-24T14:32:54.055078,skip,WMT,sell_put,,,,,,,,,53358.69,102416.94,,,,,VIXY=23.69,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
 2026-11-24T14:33:03.727271,entry,MSFT,sell_call,MSFT261127C00502500,502.5,2026-11-27,1,2.7,0.2642,,3,53358.69,102459.69,PASS,,,,VIXY=23.64,0,,,,cost_basis=441.13
+2026-11-24T14:41:11.190424,skip,WMT,sell_put,,,,,,,,,53630.67,102490.17,,,,,VIXY=23.51,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
