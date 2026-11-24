@@ -1,11 +1,11 @@
 {
-  "active_symbol": "WMT",
+  "active_symbol": "PFE",
   "plan": {
     "from_symbol": "MSFT",
     "to_symbol": "NFLX",
     "trigger_date": "2026-11-29",
     "reason": "health STOP: 现金不足 (需 $97,000, 有 $53,631)",
-    "planned_at": "2026-11-24T17:41:58.869138"
+    "planned_at": "2026-11-24T17:58:36.496566"
   },
   "history": [
     {
@@ -1249,6 +1249,13 @@
       "planned_to": "GOOGL",
       "reason": "health STOP: 现金不足 (需 $92,000, 有 $53,258)",
       "rescan_note": "触发时重扫: 原计划 GOOGL 已非 top-1，改用 WMT (score=97.9)"
+    },
+    {
+      "switched_at": "2026-11-24T17:57:42.596105",
+      "from": "WMT",
+      "to": "PFE",
+      "planned_to": "PFE",
+      "reason": "CAUTION + better alternative (PFE score +15%)"
     }
   ]
 }
