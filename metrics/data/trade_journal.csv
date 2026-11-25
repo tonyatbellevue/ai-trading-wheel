@@ -7412,3 +7412,4 @@ event_at,event_type,symbol,action,contract,strike,expiry,qty,premium,delta,iv,dt
 2026-11-25T14:41:20.833738,skip,NFLX,sell_put,,,,,,,,,53557.58,101485.4,,,,,VIXY=25.49,0,"[vix_regime] SPY 30d RV 28% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
 2026-11-25T14:41:35.648910,entry,MSFT,sell_call,MSFT261127C00490000,490.0,2026-11-27,1,1.98,0.238,,2,53557.58,101492.58,PASS,,,,VIXY=25.55,0,,,,cost_basis=441.13
 2026-11-25T14:48:56.276382,skip,NFLX,sell_put,,,,,,,,,53557.58,101484.58,,,,,VIXY=25.64,0,"[vix_regime] SPY 30d RV 28% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
+2026-11-25T14:56:59.096630,skip,NFLX,sell_put,,,,,,,,,53755.56,101667.42,,,,,VIXY=25.12,0,"[vix_regime] SPY 30d RV 27% > 25% (panic regime, ≈ VIX > 28)",,,filter=other
