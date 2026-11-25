@@ -2,10 +2,10 @@
   "active_symbol": "NFLX",
   "plan": {
     "from_symbol": "MSFT",
-    "to_symbol": "F",
+    "to_symbol": "NFLX",
     "trigger_date": "2026-11-29",
-    "reason": "health STOP: 现金不足 (需 $95,500, 有 $53,756)",
-    "planned_at": "2026-11-25T18:09:17.821812"
+    "reason": "health STOP: 现金不足 (需 $95,000, 有 $53,756)",
+    "planned_at": "2026-11-25T18:33:14.132175"
   },
   "history": [
     {
